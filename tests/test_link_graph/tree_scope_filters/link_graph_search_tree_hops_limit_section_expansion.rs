@@ -1,4 +1,7 @@
-use super::*;
+use super::support::{LinkGraphScope, LinkGraphSearchFilters, LinkGraphSearchOptions, json};
+use crate::test_link_graph::tree_scope_fixture_support::{
+    TreeScopeFixture, assert_tree_scope_fixture, ordered_section_labels,
+};
 
 #[test]
 fn test_link_graph_search_tree_hops_limit_section_expansion()

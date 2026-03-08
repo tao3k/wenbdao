@@ -1,4 +1,4 @@
-use super::*;
+use super::support::{LinkGraphSearchOptions, LinkGraphSemanticDocumentScope, parse_search_query};
 
 #[test]
 fn link_graph_parse_search_query_supports_semantic_policy_directives() {

@@ -5,7 +5,7 @@
       "content": "alpha root section carries enough words to remain stable while powering semantic exports for hybrid retrieval.",
       "doc_id": "docs/alpha",
       "kind": "section",
-      "line_range": [1, 3],
+      "line_range": [1, 4],
       "path": "docs/alpha.md",
       "semantic_path": ["Alpha"]
     },
@@ -14,7 +14,7 @@
       "content": "beta child section keeps enough detail to survive semantic document export without thinning away.",
       "doc_id": "docs/alpha",
       "kind": "section",
-      "line_range": [4, 6],
+      "line_range": [5, 8],
       "path": "docs/alpha.md",
       "semantic_path": ["Alpha", "Beta"]
     },
@@ -23,7 +23,7 @@
       "content": "gamma leaf body stays visible for semantic document export tests.",
       "doc_id": "docs/alpha",
       "kind": "section",
-      "line_range": [7, 8],
+      "line_range": [9, 11],
       "path": "docs/alpha.md",
       "semantic_path": ["Alpha", "Beta", "Gamma"]
     },
@@ -32,7 +32,7 @@
       "content": "alpha root section carries enough words to remain stable while powering semantic exports for hybrid retrieval.",
       "doc_id": "docs/alpha",
       "kind": "summary",
-      "line_range": [1, 3],
+      "line_range": [1, 4],
       "path": "docs/alpha.md",
       "semantic_path": ["Alpha"]
     }

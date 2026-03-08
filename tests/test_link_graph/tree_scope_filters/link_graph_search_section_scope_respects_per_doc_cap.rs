@@ -1,4 +1,8 @@
-use super::*;
+use super::support::{LinkGraphScope, LinkGraphSearchFilters, LinkGraphSearchOptions, json};
+use crate::test_link_graph::tree_scope_fixture_support::{
+    TreeScopeFixture, assert_tree_scope_fixture, per_path_counts_snapshot,
+    tree_hit_outline_snapshot,
+};
 
 #[test]
 fn test_link_graph_search_section_scope_respects_per_doc_cap()

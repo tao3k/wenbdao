@@ -1,4 +1,9 @@
-use super::*;
+use super::markdown_attachments_fixture_support::{
+    AttachmentFixture, assert_markdown_attachment_fixture, attachment_hits_snapshot,
+    stats_and_neighbors_snapshot,
+};
+use serde_json::json;
+use xiuxian_wendao::link_graph::{LinkGraphAttachmentKind, LinkGraphDirection};
 
 #[test]
 fn test_link_graph_extracts_markdown_links_relative_and_anchor()

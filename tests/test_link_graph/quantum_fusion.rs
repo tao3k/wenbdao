@@ -1,4 +1,7 @@
-use super::*;
+use super::quantum_fixture_support::{
+    assert_quantum_fixture, build_hybrid_fixture, contexts_snapshot,
+    default_quantum_fusion_options, page_index_fallback_snapshot,
+};
 use xiuxian_wendao::{QuantumAnchorHit, QuantumFusionOptions};
 
 #[test]

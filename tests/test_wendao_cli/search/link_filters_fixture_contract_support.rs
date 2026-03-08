@@ -1,8 +1,8 @@
-use super::*;
 use crate::fixture_json_assertions::assert_json_fixture_eq;
 use serde_json::{Value, json};
 use std::fs;
 use std::path::{Path, PathBuf};
+use tempfile::TempDir;
 
 pub(crate) struct SearchLinkFiltersFixture {
     _temp_dir: TempDir,

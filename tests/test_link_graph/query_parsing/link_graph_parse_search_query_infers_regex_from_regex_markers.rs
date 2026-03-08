@@ -1,4 +1,4 @@
-use super::*;
+use super::support::{LinkGraphMatchStrategy, LinkGraphSearchOptions, parse_search_query};
 
 #[test]
 fn test_link_graph_parse_search_query_infers_regex_from_regex_markers() {

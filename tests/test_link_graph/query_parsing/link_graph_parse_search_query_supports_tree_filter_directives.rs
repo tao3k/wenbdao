@@ -1,4 +1,6 @@
-use super::*;
+use super::support::{
+    LinkGraphEdgeType, LinkGraphScope, LinkGraphSearchOptions, parse_search_query,
+};
 
 #[test]
 fn test_link_graph_parse_search_query_supports_tree_filter_directives() {

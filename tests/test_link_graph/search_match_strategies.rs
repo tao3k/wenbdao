@@ -1,4 +1,9 @@
-use super::*;
+use super::search_match_fixture_support::{
+    SearchMatchFixture, assert_search_match_fixture, hits_outline_snapshot, parsed_query_snapshot,
+};
+use xiuxian_wendao::link_graph::{
+    LinkGraphMatchStrategy, LinkGraphSearchOptions, parse_search_query,
+};
 
 #[test]
 fn test_link_graph_parse_search_query_supports_path_fuzzy_strategy() {

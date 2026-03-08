@@ -1,4 +1,7 @@
-use super::*;
+use super::build_scope_fixture_support::{
+    BuildScopeFixture, assert_build_scope_fixture, docs_snapshot, stats_and_toc_snapshot,
+};
+use xiuxian_wendao::link_graph::LinkGraphIndex;
 
 #[test]
 fn test_link_graph_build_with_excluded_dirs_skips_cache_tree()

@@ -1,4 +1,9 @@
-use super::*;
+use super::support::{
+    LinkGraphEdgeType, LinkGraphScope, LinkGraphSearchFilters, LinkGraphSearchOptions,
+};
+use crate::test_link_graph::tree_scope_fixture_support::{
+    TreeScopeFixture, assert_tree_scope_fixture, tree_hit_outline_snapshot,
+};
 
 #[test]
 fn test_link_graph_search_edge_type_filter_restricts_structural_scope()

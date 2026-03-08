@@ -1,6 +1,10 @@
+use super::support::{
+    BATCH_SIZE, DEFAULT_TARGET_P95_MS, DOC_COUNT, HARD_SANITY_P95_MS, HUB_COUNT, LinkGraphIndex,
+    MAX_DISTANCE, QUERY_COUNT, QuantumFusionOptions, RELATED_LIMIT, WARMUP_QUERY_COUNT,
+    build_anchor_batches, build_hybrid_fixture, collect_leaf_anchor_ids, env_f64, env_flag,
+    percentile, tempdir,
+};
 use std::time::Instant;
-
-use super::*;
 
 #[test]
 #[ignore = "heavy benchmark; run with --ignored to validate batch-native hybrid retrieval latency"]
@@ -17,8 +21,8 @@ fn test_link_graph_hybrid_batch_latency_on_2k_fixture() -> Result<(), Box<dyn st
     let query_batches = build_anchor_batches(&anchor_ids)?;
     let options = QuantumFusionOptions {
         alpha: 0.6,
-        max_distance: MAX_DISTANCE,
-        related_limit: RELATED_LIMIT,
+        max_distance: 2,
+        related_limit: 12,
         ppr: None,
     };
 

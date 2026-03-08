@@ -1,4 +1,6 @@
-use super::*;
+use super::support::{
+    LinkGraphSearchOptions, LinkGraphSortField, LinkGraphSortOrder, parse_search_query, sort_term,
+};
 
 #[test]
 fn test_link_graph_parse_search_query_supports_multi_sort_terms_in_directive() {

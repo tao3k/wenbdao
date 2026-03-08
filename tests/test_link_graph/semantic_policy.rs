@@ -1,4 +1,7 @@
-use super::*;
+use super::semantic_policy_fixture_support::{
+    SemanticPolicyFixture, assert_semantic_policy_fixture, parsed_semantic_policy_snapshot,
+    planned_payload_semantic_policy_snapshot,
+};
 use xiuxian_wendao::{
     LinkGraphSearchOptions, LinkGraphSemanticDocumentScope, LinkGraphSemanticSearchPolicy,
     parse_search_query,

@@ -1,6 +1,7 @@
-use super::*;
+use crate::test_wendao_cli::support::wendao_cmd;
+use serde_json::Value;
 
-use fixture_contract_support::{
+use super::fixture_contract_support::{
     SearchBasicFixture, assert_search_basic_fixture, search_payload_snapshot,
 };
 

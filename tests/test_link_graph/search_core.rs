@@ -1,4 +1,11 @@
-use super::*;
+use super::search_core_fixture_support::{
+    SearchCoreFixture, assert_search_core_fixture, direct_id_snapshot, hits_snapshot,
+    planned_payload_snapshot, stats_and_hits_snapshot,
+};
+use super::support::sort_term;
+use xiuxian_wendao::link_graph::{
+    LinkGraphMatchStrategy, LinkGraphSearchOptions, LinkGraphSortField, LinkGraphSortOrder,
+};
 
 #[test]
 fn test_link_graph_build_search_and_stats() -> Result<(), Box<dyn std::error::Error>> {

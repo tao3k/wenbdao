@@ -1,4 +1,4 @@
-use super::*;
+mod support;
 
 mod link_graph_parse_search_query_does_not_infer_regex_from_plain_parentheses;
 mod link_graph_parse_search_query_infers_regex_from_regex_markers;

@@ -1,4 +1,13 @@
-use super::*;
+use super::cache_build_fixture_support::{
+    CacheBuildFixture, assert_cache_build_fixture, cache_hits_snapshot, cache_stats_snapshot,
+    read_cache_build_fixture, saliency_state_snapshot,
+};
+use super::support::{clear_cache_keys, count_cache_keys, unique_cache_prefix, write_file};
+use serde_json::json;
+use xiuxian_wendao::link_graph::{LinkGraphIndex, LinkGraphSearchOptions};
+use xiuxian_wendao::{
+    LinkGraphSaliencyPolicy, compute_link_graph_saliency, valkey_saliency_get_with_valkey,
+};
 
 #[test]
 fn test_link_graph_build_with_cache_reuses_snapshot() -> Result<(), Box<dyn std::error::Error>> {

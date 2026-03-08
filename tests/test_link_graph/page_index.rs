@@ -1,4 +1,8 @@
-use super::*;
+use super::page_index_fixture_support::{
+    PageIndexFixture, assert_page_index_fixture, page_index_tree_snapshot, read_page_index_fixture,
+    semantic_documents_snapshot,
+};
+use super::support::write_file;
 
 #[test]
 fn test_link_graph_page_index_builds_hierarchy_and_line_ranges()

@@ -1,4 +1,10 @@
-use super::*;
+use super::graph_navigation_fixture_support::{
+    NavigationFixture, assert_graph_navigation_fixture, navigation_surface_snapshot,
+    related_diagnostics_snapshot,
+};
+use xiuxian_wendao::link_graph::{
+    LinkGraphDirection, LinkGraphIndex, LinkGraphPprSubgraphMode, LinkGraphRelatedPprOptions,
+};
 
 #[test]
 fn test_link_graph_neighbors_related_metadata_and_toc() -> Result<(), Box<dyn std::error::Error>> {

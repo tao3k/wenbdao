@@ -1,6 +1,8 @@
 use std::sync::Arc;
 
-use super::*;
+use super::quantum_fixture_support::{
+    assert_quantum_fixture, build_hybrid_fixture, contexts_snapshot, default_quantum_fusion_options,
+};
 use arrow::array::{Float64Array, StringArray};
 use arrow::datatypes::{DataType, Field, Schema};
 use arrow::record_batch::RecordBatch;

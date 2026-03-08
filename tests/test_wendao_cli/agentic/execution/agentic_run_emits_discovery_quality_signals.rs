@@ -1,4 +1,9 @@
-use super::*;
+use crate::test_wendao_cli::agentic::execution::support::{
+    run_agentic_recent_json, run_agentic_run_persist, write_agentic_execution_config,
+};
+use crate::test_wendao_cli::support::{clear_valkey_prefix, unique_agentic_prefix, write_file};
+use serde_json::Value;
+use tempfile::TempDir;
 
 #[test]
 fn test_wendao_agentic_run_emits_discovery_quality_signals()

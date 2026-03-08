@@ -1,5 +1,3 @@
-use super::*;
-
 mod fixture_contract_support;
 mod search_path_fuzzy_emits_section_context;
 mod search_returns_matches;

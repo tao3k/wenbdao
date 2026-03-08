@@ -1,4 +1,9 @@
-use super::*;
+use crate::test_wendao_cli::agentic::overlay::support::{
+    run_wendao_json, run_wendao_ok, write_agentic_config,
+};
+use crate::test_wendao_cli::support::{clear_valkey_prefix, unique_agentic_prefix, write_file};
+use serde_json::Value;
+use tempfile::TempDir;
 
 #[test]
 fn test_wendao_promoted_overlay_is_isolated_by_key_prefix() -> Result<(), Box<dyn std::error::Error>>

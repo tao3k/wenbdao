@@ -1,4 +1,4 @@
-use super::*;
+use super::support::{LinkGraphSearchOptions, parse_search_query};
 
 #[test]
 fn test_link_graph_parse_search_query_supports_parenthesized_boolean_tags() {
