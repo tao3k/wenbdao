@@ -1,0 +1,30 @@
+{
+  "image_hits": {
+    "hit_count": 1,
+    "hits": [
+      {
+        "attachment_ext": "png",
+        "attachment_name": "pic.png",
+        "attachment_path": "docs/assets/pic.png",
+        "kind": "image",
+        "source_path": "docs/a.md",
+        "source_stem": "a",
+        "source_title": "A"
+      }
+    ]
+  },
+  "pdf_hits": {
+    "hit_count": 1,
+    "hits": [
+      {
+        "attachment_ext": "pdf",
+        "attachment_name": "paper.pdf",
+        "attachment_path": "docs/files/paper.pdf",
+        "kind": "pdf",
+        "source_path": "docs/a.md",
+        "source_stem": "a",
+        "source_title": "A"
+      }
+    ]
+  }
+}

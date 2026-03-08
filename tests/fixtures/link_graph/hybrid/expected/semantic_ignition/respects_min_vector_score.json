@@ -1,0 +1,16 @@
+{
+  "expected_anchor_id": "docs/alpha#alpha---details---leaf",
+  "result": {
+    "contexts": [
+      {
+        "anchor_id": "docs/alpha#alpha---details---leaf",
+        "related_clusters": ["docs/beta", "docs/gamma"],
+        "saliency_score": 0.710786030434,
+        "semantic_path": ["Alpha", "Details", "Leaf"],
+        "topology_score": 0.455953434781,
+        "trace_label": "[Path: Alpha > Details > Leaf]",
+        "vector_score": 0.82
+      }
+    ]
+  }
+}

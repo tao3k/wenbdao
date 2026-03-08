@@ -1,0 +1,35 @@
+{
+  "graph_confidence_level": "high",
+  "graph_confidence_score": 0.986525,
+  "has_monitor_slowest_phase": true,
+  "phase_labels": [
+    "link_graph.overlay.promoted",
+    "link_graph.search.execute",
+    "link_graph.search.plan_parse",
+    "link_graph.search.policy"
+  ],
+  "policy_reason_validated": true,
+  "reason": "graph_sufficient",
+  "requested_mode": "hybrid",
+  "results": [
+    {
+      "best_section": "Beta",
+      "match_reason": "fts+section_heading_exact",
+      "path": "docs/b.md",
+      "stem": "b",
+      "title": "Beta"
+    },
+    {
+      "best_section": "Alpha",
+      "match_reason": "fts+section_body_contains",
+      "path": "docs/a.md",
+      "stem": "a",
+      "title": "Alpha"
+    }
+  ],
+  "retrieval_plan": {
+    "document_scope": "all",
+    "has_semantic_policy": true
+  },
+  "selected_mode": "graph_only"
+}

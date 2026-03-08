@@ -1,0 +1,4 @@
+{
+  "match_strategy": "path_fuzzy",
+  "query": "architecture graph"
+}

@@ -1,0 +1,24 @@
+{
+  "hits": [
+    {
+      "best_section": null,
+      "doc_type": null,
+      "match_reason": "fts",
+      "path": "alpha.md",
+      "score": 0.9,
+      "stem": "alpha",
+      "tags": [],
+      "title": "Alpha"
+    },
+    {
+      "best_section": null,
+      "doc_type": null,
+      "match_reason": "fts",
+      "path": "zeta.md",
+      "score": 0.9,
+      "stem": "zeta",
+      "tags": [],
+      "title": "Zeta"
+    }
+  ]
+}

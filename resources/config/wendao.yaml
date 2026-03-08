@@ -1,0 +1,106 @@
+# =============================================================================
+# Wendao (LinkGraph Engine) Configuration
+# =============================================================================
+link_graph:
+  # Primary graph backend (Wendao Rust engine).
+  backend: "wendao"
+  # Default backend config location relative to notebook root.
+  # Always used by LinkGraph config resolver (can be relative or absolute).
+  config_relative_path: ".wendao/config.toml"
+  # Optional explicit watch roots for Live-Wire markdown refresh.
+  # When non-empty, watcher uses only these project-relative directories.
+  watch_dirs: []
+  # File patterns watched for LinkGraph refresh triggers.
+  watch_patterns:
+    - "**/*.md"
+    - "**/*.markdown"
+    - "**/*.mdx"
+    - "**/SKILL.md"
+  # Optional relative whitelist. If non-empty, only these paths are indexed.
+  # Example:
+  # include_dirs: ["assets/knowledge", "docs", ".data/harvested"]
+  include_dirs: []
+  # When include_dirs is empty, auto-select existing directories from
+  # include_dirs_auto_candidates.
+  include_dirs_auto: true
+  include_dirs_auto_candidates:
+    - "assets/knowledge"
+    - "docs"
+    - ".data/harvested"
+    - ".data/research/papers"
+  # Additional directory excludes (non-hidden). Hidden/runtime dirs are always
+  # excluded by built-in policy; entries starting with "." are ignored here.
+  exclude_dirs:
+    - "target"
+    - "node_modules"
+  # Cross-process stats cache TTL (seconds) for fast repeated CLI runs.
+  stats_persistent_cache_ttl_sec: 120.0
+  # Valkey-backed Rust index snapshot cache (db-first).
+  # URL resolution is unified and config-first:
+  # 1) link_graph.cache.valkey_url (this file / user wendao.yaml)
+  # 2) VALKEY_URL (environment fallback)
+  cache:
+    valkey_url: "redis://localhost:6379/0"
+    key_prefix: "xiuxian_wendao:link_graph:index"
+    ttl_seconds: 300
+  # Runtime guards for related-note PPR traversal.
+  related_ppr:
+    # Bound candidate fan-out before kernel build.
+    max_candidates: 4096
+    # Bound seed-based partition fan-out.
+    max_partitions: 8
+    # End-to-end runtime budget for one related query.
+    time_budget_ms: 250.0
+  # Graph-first retrieval policy runtime knobs (WG4).
+  retrieval_mode: "hybrid"
+  candidate_multiplier: 4
+  max_sources: 8
+  hybrid:
+    min_hits: 2
+    min_top_score: 0.25
+  graph_rows_per_source: 8
+  # Agentic suggested-link passive logging (Phase A: log only, no mutation).
+  agentic:
+    suggested_link:
+      # Max stream entries retained in Valkey list.
+      max_entries: 2000
+      # Optional stream TTL seconds; null keeps stream persistent.
+      ttl_seconds: null
+    search:
+      # Engine-level default for including provisional suggestions in search payload.
+      include_provisional_default: false
+      # Max provisional suggestions included when enabled.
+      provisional_limit: 50
+    expansion:
+      # Max worker partitions for one bounded expansion planning cycle.
+      max_workers: 4
+      # Max candidate notes selected before pair generation.
+      max_candidates: 256
+      # Max candidate pairs assigned to one worker.
+      max_pairs_per_worker: 128
+      # End-to-end planner wall-clock budget in milliseconds.
+      time_budget_ms: 250.0
+    execution:
+      # Per-worker runtime budget for bounded execution cycle.
+      worker_time_budget_ms: 120.0
+      # Default persistence mode for `wendao agentic run` (can override via CLI).
+      persist_suggestions_default: false
+      # Max retry attempts when one persistence write fails.
+      persist_retry_attempts: 2
+      # Max latest-state rows scanned for idempotency dedupe.
+      idempotency_scan_limit: 2000
+      # Suggested-link relation label used by execution runtime.
+      relation: "related_to"
+      # Agent id stamped on execution-generated proposals.
+      agent_id: "qianhuan-architect"
+      # Human-readable evidence prefix for execution-generated proposals.
+      evidence_prefix: "agentic expansion bridge candidate"
+  # Response-time stats probe budget (seconds) for search(mode=link_graph|hybrid).
+  # Keeps graph_stats useful without blocking long on cold miss.
+  stats_response_probe_timeout_sec: 0.05
+  # Background refresh timeout (seconds) for async stats refresh on cache miss.
+  stats_response_refresh_timeout_sec: 5.0
+  index:
+    delta:
+      # Switch to full rebuild when a single delta batch reaches this size.
+      full_rebuild_threshold: 256

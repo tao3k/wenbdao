@@ -1,0 +1,24 @@
+{
+  "row_count": 3,
+  "rows": [
+    {
+      "distance": 1,
+      "path": "docs/a.md",
+      "stem": "a",
+      "title": "A"
+    },
+    {
+      "distance": 1,
+      "path": "docs/c.md",
+      "stem": "c",
+      "title": "C"
+    },
+    {
+      "distance": 2,
+      "path": "docs/d.md",
+      "stem": "d",
+      "title": "D"
+    }
+  ],
+  "stems": ["a", "c", "d"]
+}

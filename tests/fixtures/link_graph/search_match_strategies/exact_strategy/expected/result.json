@@ -1,0 +1,11 @@
+{
+  "hit_count": 1,
+  "hits": [
+    {
+      "best_section": null,
+      "match_reason": "exact",
+      "path": "docs/b.md",
+      "stem": "b"
+    }
+  ]
+}

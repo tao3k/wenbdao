@@ -1,0 +1,4 @@
+{
+  "distance_1": ["docs/a.md", "docs/c.md"],
+  "distance_2": ["docs/a.md", "docs/c.md", "docs/d.md"]
+}

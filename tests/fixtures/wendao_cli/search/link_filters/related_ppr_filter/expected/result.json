@@ -1,0 +1,46 @@
+{
+  "filters": {
+    "link_to_seed_count": null,
+    "related": {
+      "max_distance": 2,
+      "ppr": {
+        "alpha": 0.9,
+        "max_iter": 64,
+        "subgraph_mode": "force",
+        "tol": 1e-6
+      },
+      "seed_count": 1
+    }
+  },
+  "limit": 10,
+  "query": ".md",
+  "results": [
+    {
+      "best_section": null,
+      "match_reason": "fts+graph_rank",
+      "path": "docs/a.md",
+      "stem": "a",
+      "title": "A"
+    },
+    {
+      "best_section": null,
+      "match_reason": "fts+graph_rank",
+      "path": "docs/c.md",
+      "stem": "c",
+      "title": "C"
+    },
+    {
+      "best_section": null,
+      "match_reason": "fts+graph_rank",
+      "path": "docs/d.md",
+      "stem": "d",
+      "title": "D"
+    }
+  ],
+  "sort_terms": [
+    {
+      "field": "path",
+      "order": "asc"
+    }
+  ]
+}

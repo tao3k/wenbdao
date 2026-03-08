@@ -1,0 +1,7 @@
+{
+  "query": "beta topic",
+  "semantic_policy": {
+    "document_scope": "summary_only",
+    "min_vector_score": 0.62
+  }
+}

@@ -1,0 +1,3 @@
+# D
+
+gamma divergence

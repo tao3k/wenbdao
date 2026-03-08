@@ -1,0 +1,108 @@
+{
+  "missing": {
+    "count": 1,
+    "kind": "MissingLinkedResources",
+    "missing": [
+      {
+        "id": "missing_template",
+        "source_path": "zhixing/skill.md",
+        "target_path": "zhixing/templates/not_found.j2"
+      }
+    ]
+  },
+  "valid": {
+    "config_blocks": [
+      {
+        "config_type": "persona",
+        "heading": "Persona: Agenda Steward",
+        "id": "agenda_steward",
+        "language": "toml",
+        "target": null
+      },
+      {
+        "config_type": "template",
+        "heading": "Template: Draft Agenda",
+        "id": "draft_agenda",
+        "language": "jinja2",
+        "target": null
+      }
+    ],
+    "config_count": 2,
+    "files": [
+      {
+        "link_targets_by_id": {
+          "agenda_steward": [
+            {
+              "reference_type": null,
+              "target_path": "zhixing/personas/agenda_steward.toml"
+            }
+          ],
+          "draft_agenda": [
+            {
+              "reference_type": null,
+              "target_path": "zhixing/templates/draft_agenda.j2"
+            }
+          ]
+        },
+        "links_by_id": {
+          "agenda_steward": ["zhixing/personas/agenda_steward.toml"],
+          "draft_agenda": ["zhixing/templates/draft_agenda.j2"]
+        },
+        "path": "zhixing/skill.md",
+        "reference_types": {
+          "attachment": [],
+          "persona": [],
+          "template": []
+        }
+      }
+    ],
+    "files_len": 1
+  },
+  "wendao_uri": {
+    "config_blocks": [
+      {
+        "config_type": "template",
+        "heading": "Template: Draft Agenda",
+        "id": "draft_agenda.j2",
+        "language": "jinja2",
+        "target": "draft_agenda.j2"
+      }
+    ],
+    "config_count": 1,
+    "files": [
+      {
+        "link_targets_by_id": {
+          "draft_agenda.j2": [
+            {
+              "reference_type": "template",
+              "target_path": "wendao://skills/agenda-management/references/draft_agenda.j2"
+            }
+          ],
+          "logo.png": [
+            {
+              "reference_type": "attachment",
+              "target_path": "wendao://skills/agenda-management/references/logo.png"
+            }
+          ]
+        },
+        "links_by_id": {
+          "draft_agenda.j2": [
+            "wendao://skills/agenda-management/references/draft_agenda.j2"
+          ],
+          "logo.png": ["wendao://skills/agenda-management/references/logo.png"]
+        },
+        "path": "zhixing/skills/agenda-management/SKILL.md",
+        "reference_types": {
+          "attachment": [
+            "wendao://skills/agenda-management/references/logo.png"
+          ],
+          "persona": [],
+          "template": [
+            "wendao://skills/agenda-management/references/draft_agenda.j2"
+          ]
+        }
+      }
+    ],
+    "files_len": 1
+  }
+}

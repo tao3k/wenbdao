@@ -1,0 +1,28 @@
+{
+  "case_sensitive": false,
+  "created_after": 1704153600,
+  "created_before": 1704758400,
+  "filters": {
+    "link_to_seed_count": null,
+    "linked_by_seed_count": null,
+    "related_seed_count": null
+  },
+  "limit": 10,
+  "match_strategy": "fts",
+  "query": ".md",
+  "results": [
+    {
+      "best_section": null,
+      "match_reason": "fts",
+      "path": "docs/b.md",
+      "stem": "b",
+      "title": "B"
+    }
+  ],
+  "sort_terms": [
+    {
+      "field": "created",
+      "order": "asc"
+    }
+  ]
+}

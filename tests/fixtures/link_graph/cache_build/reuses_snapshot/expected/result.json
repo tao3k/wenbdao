@@ -1,0 +1,17 @@
+{
+  "has_cache_keys": true,
+  "index1_stats": {
+    "links_in_graph": 2,
+    "nodes_in_graph": 2,
+    "orphans": 0,
+    "total_notes": 2
+  },
+  "index2_stats": {
+    "links_in_graph": 2,
+    "nodes_in_graph": 2,
+    "orphans": 0,
+    "total_notes": 2
+  },
+  "same_links_in_graph": true,
+  "same_total_notes": true
+}

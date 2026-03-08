@@ -1,0 +1,33 @@
+{
+  "case_sensitive": false,
+  "filters": {
+    "link_to_seed_count": null,
+    "linked_by_seed_count": null,
+    "related_seed_count": null
+  },
+  "limit": 5,
+  "match_strategy": "fts",
+  "query": ".md",
+  "results": [
+    {
+      "best_section": null,
+      "match_reason": "fts",
+      "path": "notes/alpha.md",
+      "stem": "alpha",
+      "title": "Alpha"
+    },
+    {
+      "best_section": null,
+      "match_reason": "fts",
+      "path": "notes/zeta.md",
+      "stem": "zeta",
+      "title": "Zeta"
+    }
+  ],
+  "sort_terms": [
+    {
+      "field": "path",
+      "order": "asc"
+    }
+  ]
+}

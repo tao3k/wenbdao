@@ -1,0 +1,11 @@
+{
+  "hit_count": 1,
+  "hits": [
+    {
+      "best_section": "Beta Note",
+      "match_reason": "regex",
+      "path": "docs/beta-note.md",
+      "stem": "beta-note"
+    }
+  ]
+}

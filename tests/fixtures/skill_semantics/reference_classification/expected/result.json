@@ -1,0 +1,42 @@
+{
+  "api_config_type": {
+    "entity": "API",
+    "reference_type": "api",
+    "relation": "REFERENCES"
+  },
+  "attachment_inferred": {
+    "entity": "OTHER(Attachment)",
+    "reference_type": "attachment",
+    "relation": "ATTACHED_TO"
+  },
+  "concept_fallback": {
+    "entity": "CONCEPT",
+    "reference_type": null,
+    "relation": "REFERENCES"
+  },
+  "document_by_extension": {
+    "entity": "DOCUMENT",
+    "reference_type": null,
+    "relation": "REFERENCES"
+  },
+  "persona_hint": {
+    "entity": "OTHER(Persona)",
+    "reference_type": "persona",
+    "relation": "MANIFESTS"
+  },
+  "qianji_flow_hint": {
+    "entity": "OTHER(QianjiFlow)",
+    "reference_type": "qianji-flow",
+    "relation": "GOVERNS"
+  },
+  "template_by_extension": {
+    "entity": "OTHER(Template)",
+    "reference_type": null,
+    "relation": "REFERENCES"
+  },
+  "tool_config_type": {
+    "entity": "TOOL",
+    "reference_type": "tool",
+    "relation": "GOVERNS"
+  }
+}

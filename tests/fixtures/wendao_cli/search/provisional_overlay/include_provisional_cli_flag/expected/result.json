@@ -1,0 +1,29 @@
+{
+  "injected_paths": ["docs/a.md", "docs/b.md"],
+  "provisional_error": null,
+  "provisional_suggestions": [
+    {
+      "agent_id": "qianhuan-architect",
+      "relation": "related_to",
+      "source_id": "docs/a.md",
+      "state": null,
+      "target_id": "docs/b.md"
+    }
+  ],
+  "results": [
+    {
+      "best_section": "A",
+      "match_reason": "fts+section_body_contains+agentic_provisional",
+      "path": "docs/a.md",
+      "stem": "a",
+      "title": "A"
+    },
+    {
+      "best_section": null,
+      "match_reason": "agentic_provisional_injection",
+      "path": "docs/b.md",
+      "stem": "b",
+      "title": "B"
+    }
+  ]
+}

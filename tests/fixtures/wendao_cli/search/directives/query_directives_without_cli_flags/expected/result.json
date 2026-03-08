@@ -1,0 +1,35 @@
+{
+  "case_sensitive": false,
+  "created_after": null,
+  "created_before": null,
+  "filters": {
+    "link_to_seed_count": 1,
+    "linked_by_seed_count": null,
+    "related_seed_count": null
+  },
+  "limit": 10,
+  "match_strategy": "fts",
+  "query": ".md",
+  "results": [
+    {
+      "best_section": null,
+      "match_reason": "fts+graph_rank",
+      "path": "docs/a.md",
+      "stem": "a",
+      "title": "A"
+    },
+    {
+      "best_section": null,
+      "match_reason": "fts+graph_rank",
+      "path": "docs/c.md",
+      "stem": "c",
+      "title": "C"
+    }
+  ],
+  "sort_terms": [
+    {
+      "field": "path",
+      "order": "asc"
+    }
+  ]
+}

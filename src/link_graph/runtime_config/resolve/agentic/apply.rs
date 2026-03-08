@@ -1,0 +1,36 @@
+mod execution;
+mod expansion;
+mod helpers;
+mod search;
+mod suggested;
+
+use crate::link_graph::runtime_config::models::LinkGraphAgenticRuntimeConfig;
+use serde_yaml::Value;
+
+pub(super) fn apply_suggested_link_settings(
+    settings: &Value,
+    resolved: &mut LinkGraphAgenticRuntimeConfig,
+) {
+    suggested::apply_suggested_link_settings(settings, resolved);
+}
+
+pub(super) fn apply_search_settings(
+    settings: &Value,
+    resolved: &mut LinkGraphAgenticRuntimeConfig,
+) {
+    search::apply_search_settings(settings, resolved);
+}
+
+pub(super) fn apply_expansion_settings(
+    settings: &Value,
+    resolved: &mut LinkGraphAgenticRuntimeConfig,
+) {
+    expansion::apply_expansion_settings(settings, resolved);
+}
+
+pub(super) fn apply_execution_settings(
+    settings: &Value,
+    resolved: &mut LinkGraphAgenticRuntimeConfig,
+) {
+    execution::apply_execution_settings(settings, resolved);
+}

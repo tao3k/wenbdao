@@ -1,0 +1,50 @@
+{
+  "nodes": [
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [],
+              "is_thinned": false,
+              "level": 3,
+              "line_range": [7, 9],
+              "node_id": "docs/alpha#alpha---beta---gamma",
+              "summary": null,
+              "text": "Gamma body.",
+              "title": "Gamma",
+              "token_count": 2
+            }
+          ],
+          "is_thinned": false,
+          "level": 2,
+          "line_range": [4, 6],
+          "node_id": "docs/alpha#alpha---beta",
+          "summary": null,
+          "text": "beta child section also carries enough words to preserve its nested heading tree and keep gamma visible beneath it.",
+          "title": "Beta",
+          "token_count": 19
+        },
+        {
+          "children": [],
+          "is_thinned": false,
+          "level": 2,
+          "line_range": [10, 11],
+          "node_id": "docs/alpha#alpha---delta",
+          "summary": null,
+          "text": "Delta body.",
+          "title": "Delta",
+          "token_count": 2
+        }
+      ],
+      "is_thinned": false,
+      "level": 1,
+      "line_range": [1, 3],
+      "node_id": "docs/alpha#alpha",
+      "summary": null,
+      "text": "alpha root section carries enough words to remain stable without thinning across the page index builder path today.",
+      "title": "Alpha",
+      "token_count": 18
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "diagnostics": {
+    "alpha": 0.9,
+    "candidate_cap": 4096,
+    "candidate_cap_ge_candidate_count": true,
+    "candidate_capped": false,
+    "candidate_count": 3,
+    "final_residual_non_negative": true,
+    "fusion_duration_non_negative": true,
+    "graph_node_count": 8,
+    "horizon_restricted": true,
+    "iteration_count_ge_one": true,
+    "kernel_duration_non_negative": true,
+    "max_iter": 64,
+    "partition_avg_node_count": 8.0,
+    "partition_duration_non_negative": true,
+    "partition_max_node_count": 8,
+    "partition_min_node_count": 8,
+    "subgraph_count": 1,
+    "subgraph_mode": "force",
+    "time_budget_positive": true,
+    "timed_out": false,
+    "tol": 1e-6,
+    "total_duration_non_negative": true
+  },
+  "rows": [
+    {
+      "direction": "both",
+      "distance": 1,
+      "path": "a.md",
+      "stem": "a",
+      "title": "A"
+    },
+    {
+      "direction": "both",
+      "distance": 1,
+      "path": "c.md",
+      "stem": "c",
+      "title": "C"
+    },
+    {
+      "direction": "both",
+      "distance": 2,
+      "path": "d.md",
+      "stem": "d",
+      "title": "D"
+    }
+  ]
+}

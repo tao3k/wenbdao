@@ -1,0 +1,19 @@
+{
+  "b_before_d": true,
+  "positions": {
+    "B": 0,
+    "D": 1
+  },
+  "rows": [
+    {
+      "distance": 1,
+      "path": "B.md",
+      "stem": "B"
+    },
+    {
+      "distance": 1,
+      "path": "D.md",
+      "stem": "D"
+    }
+  ]
+}

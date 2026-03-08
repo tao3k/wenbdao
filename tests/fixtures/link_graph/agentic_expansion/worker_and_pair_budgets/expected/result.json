@@ -1,0 +1,59 @@
+{
+  "candidate_notes": 4,
+  "capped_by_pair_limit": true,
+  "config": {
+    "max_candidates": 4,
+    "max_pairs_per_worker": 2,
+    "max_workers": 2,
+    "time_budget_ms": 1000.0
+  },
+  "elapsed_ms_non_negative": true,
+  "evaluated_pairs": 6,
+  "query": null,
+  "selected_pairs": 4,
+  "selected_pairs_matches_worker_sum": true,
+  "timed_out": false,
+  "total_notes": 4,
+  "total_possible_pairs": 6,
+  "unique_pair_count": 4,
+  "worker_count": 2,
+  "worker_pair_sum": 4,
+  "workers": [
+    {
+      "pair_count": 2,
+      "pair_count_matches_pairs_len": true,
+      "pairs": [
+        {
+          "left_id": "notes/a",
+          "priority": 0.3,
+          "right_id": "notes/b"
+        },
+        {
+          "left_id": "notes/a",
+          "priority": 0.0,
+          "right_id": "notes/c"
+        }
+      ],
+      "seed_ids": ["notes/a", "notes/b", "notes/c"],
+      "worker_id": 0
+    },
+    {
+      "pair_count": 2,
+      "pair_count_matches_pairs_len": true,
+      "pairs": [
+        {
+          "left_id": "notes/a",
+          "priority": 0.0,
+          "right_id": "notes/d"
+        },
+        {
+          "left_id": "notes/b",
+          "priority": 0.0,
+          "right_id": "notes/c"
+        }
+      ],
+      "seed_ids": ["notes/a", "notes/d", "notes/b", "notes/c"],
+      "worker_id": 1
+    }
+  ]
+}

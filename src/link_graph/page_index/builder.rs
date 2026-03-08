@@ -1,0 +1,129 @@
+use crate::link_graph::index::IndexedSection;
+use crate::link_graph::models::{PageIndexMeta, PageIndexNode};
+use std::collections::HashMap;
+use std::sync::Arc;
+
+/// Build a deterministic page tree for one document from flat parsed sections.
+pub(in crate::link_graph) fn build_page_index_tree(
+    doc_id: &str,
+    doc_title: &str,
+    sections: &[IndexedSection],
+) -> Vec<PageIndexNode> {
+    let mut roots = Vec::new();
+    let mut stack = Vec::new();
+    let mut slug_counts = HashMap::new();
+    let has_named_headings = sections
+        .iter()
+        .any(|section| !section.heading_path.trim().is_empty());
+
+    for section in sections {
+        if section.section_text.trim().is_empty() && section.heading_path.trim().is_empty() {
+            continue;
+        }
+        let node = build_node(
+            doc_id,
+            doc_title,
+            section,
+            has_named_headings,
+            &mut slug_counts,
+        );
+        while stack
+            .last()
+            .is_some_and(|parent: &PageIndexNode| parent.level >= node.level)
+        {
+            close_last_open_node(&mut roots, &mut stack);
+        }
+        stack.push(node);
+    }
+
+    while !stack.is_empty() {
+        close_last_open_node(&mut roots, &mut stack);
+    }
+
+    roots
+}
+
+fn build_node(
+    doc_id: &str,
+    doc_title: &str,
+    section: &IndexedSection,
+    has_named_headings: bool,
+    slug_counts: &mut HashMap<String, usize>,
+) -> PageIndexNode {
+    let title = effective_title(section, doc_title, has_named_headings);
+    let slug = effective_slug(section, &title);
+    let sequence = slug_counts.entry(slug.clone()).or_insert(0);
+    *sequence += 1;
+    let node_id = if *sequence == 1 {
+        format!("{doc_id}#{slug}")
+    } else {
+        format!("{doc_id}#{slug}-{}", *sequence - 1)
+    };
+    let line_start = section.line_start.max(1);
+    let line_end = section.line_end.max(line_start);
+
+    PageIndexNode {
+        node_id,
+        title,
+        level: effective_level(section.heading_level),
+        text: Arc::<str>::from(section.section_text.as_str()),
+        summary: None,
+        children: Vec::new(),
+        metadata: PageIndexMeta {
+            line_range: (line_start, line_end),
+            token_count: count_tokens(&section.section_text),
+            is_thinned: false,
+        },
+    }
+}
+
+fn close_last_open_node(roots: &mut Vec<PageIndexNode>, stack: &mut Vec<PageIndexNode>) {
+    let Some(node) = stack.pop() else {
+        return;
+    };
+    if let Some(parent) = stack.last_mut() {
+        parent.children.push(node);
+    } else {
+        roots.push(node);
+    }
+}
+
+fn effective_title(section: &IndexedSection, doc_title: &str, has_named_headings: bool) -> String {
+    if !section.heading_title.trim().is_empty() {
+        return section.heading_title.clone();
+    }
+    if has_named_headings {
+        return "Overview".to_string();
+    }
+    doc_title.to_string()
+}
+
+fn effective_level(level: usize) -> usize {
+    level.clamp(1, 6)
+}
+
+fn effective_slug(section: &IndexedSection, title: &str) -> String {
+    let raw = if section.heading_path_lower.trim().is_empty() {
+        title
+    } else {
+        section.heading_path_lower.as_str()
+    };
+    let slug = raw
+        .chars()
+        .map(|ch| match ch {
+            'a'..='z' | '0'..='9' => ch,
+            'A'..='Z' => ch.to_ascii_lowercase(),
+            _ => '-',
+        })
+        .collect::<String>();
+    let slug = slug.trim_matches('-').to_string();
+    if slug.is_empty() {
+        "overview".to_string()
+    } else {
+        slug
+    }
+}
+
+fn count_tokens(text: &str) -> usize {
+    text.split_whitespace().count()
+}

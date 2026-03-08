@@ -1,0 +1,72 @@
+{
+  "metadata": {
+    "path": "b.md",
+    "stem": "b",
+    "tags": ["one", "two"],
+    "title": "b"
+  },
+  "neighbors": [
+    {
+      "direction": "both",
+      "distance": 1,
+      "path": "b.md",
+      "stem": "b",
+      "title": "b"
+    },
+    {
+      "direction": "both",
+      "distance": 1,
+      "path": "sub/c.md",
+      "stem": "c",
+      "title": "C"
+    }
+  ],
+  "related": [
+    {
+      "direction": "both",
+      "distance": 1,
+      "path": "b.md",
+      "stem": "b",
+      "title": "b"
+    },
+    {
+      "direction": "both",
+      "distance": 1,
+      "path": "sub/c.md",
+      "stem": "c",
+      "title": "C"
+    }
+  ],
+  "toc": [
+    {
+      "doc_type": null,
+      "id": "a",
+      "lead": "[[b]]",
+      "path": "a.md",
+      "stem": "a",
+      "tags": [],
+      "title": "Alpha",
+      "word_count": 4
+    },
+    {
+      "doc_type": null,
+      "id": "b",
+      "lead": "[[a]]",
+      "path": "b.md",
+      "stem": "b",
+      "tags": ["one", "two"],
+      "title": "b",
+      "word_count": 1
+    },
+    {
+      "doc_type": null,
+      "id": "sub/c",
+      "lead": "[[a]]",
+      "path": "sub/c.md",
+      "stem": "c",
+      "tags": [],
+      "title": "C",
+      "word_count": 3
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "documents": [
+    {
+      "anchor_id": "docs/alpha#alpha",
+      "content": "alpha root section carries enough words to remain stable while powering semantic exports for hybrid retrieval.",
+      "doc_id": "docs/alpha",
+      "kind": "section",
+      "line_range": [1, 3],
+      "path": "docs/alpha.md",
+      "semantic_path": ["Alpha"]
+    },
+    {
+      "anchor_id": "docs/alpha#alpha---beta",
+      "content": "beta child section keeps enough detail to survive semantic document export without thinning away.",
+      "doc_id": "docs/alpha",
+      "kind": "section",
+      "line_range": [4, 6],
+      "path": "docs/alpha.md",
+      "semantic_path": ["Alpha", "Beta"]
+    },
+    {
+      "anchor_id": "docs/alpha#alpha---beta---gamma",
+      "content": "gamma leaf body stays visible for semantic document export tests.",
+      "doc_id": "docs/alpha",
+      "kind": "section",
+      "line_range": [7, 8],
+      "path": "docs/alpha.md",
+      "semantic_path": ["Alpha", "Beta", "Gamma"]
+    },
+    {
+      "anchor_id": "docs/alpha",
+      "content": "alpha root section carries enough words to remain stable while powering semantic exports for hybrid retrieval.",
+      "doc_id": "docs/alpha",
+      "kind": "summary",
+      "line_range": [1, 3],
+      "path": "docs/alpha.md",
+      "semantic_path": ["Alpha"]
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "injected_paths": [],
+  "provisional_error": null,
+  "provisional_suggestions": [
+    {
+      "agent_id": "qianhuan-architect",
+      "relation": "related_to",
+      "source_id": "docs/a.md",
+      "state": null,
+      "target_id": "docs/b.md"
+    }
+  ],
+  "results": [
+    {
+      "best_section": "A",
+      "match_reason": "fts+section_body_contains",
+      "path": "docs/a.md",
+      "stem": "a",
+      "title": "A"
+    }
+  ]
+}

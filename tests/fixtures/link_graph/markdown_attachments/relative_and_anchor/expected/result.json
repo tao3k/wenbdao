@@ -1,0 +1,24 @@
+{
+  "neighbors": [
+    {
+      "direction": "outgoing",
+      "distance": 1,
+      "path": "docs/b.md",
+      "stem": "b",
+      "title": "B"
+    },
+    {
+      "direction": "both",
+      "distance": 1,
+      "path": "docs/sub/c.md",
+      "stem": "c",
+      "title": "C"
+    }
+  ],
+  "stats": {
+    "links_in_graph": 3,
+    "nodes_in_graph": 3,
+    "orphans": 0,
+    "total_notes": 3
+  }
+}

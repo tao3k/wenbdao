@@ -1,0 +1,24 @@
+{
+  "hits": [
+    {
+      "best_section": "Checkpoint Schema and Vector Checkpoint System",
+      "doc_type": null,
+      "match_reason": "fts+section_heading_token",
+      "path": "docs/explanation/vector-checkpoint.md",
+      "score": 0.9677,
+      "stem": "vector-checkpoint",
+      "tags": [],
+      "title": "Checkpoint Schema and Vector Checkpoint System"
+    },
+    {
+      "best_section": "Reference Documentation",
+      "doc_type": null,
+      "match_reason": "fts+section_body_contains+graph_rank",
+      "path": "docs/reference/README.md",
+      "score": 0.8765,
+      "stem": "README",
+      "tags": [],
+      "title": "Reference Documentation"
+    }
+  ]
+}

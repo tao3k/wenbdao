@@ -1,0 +1,30 @@
+{
+  "stats": {
+    "links_in_graph": 2,
+    "nodes_in_graph": 2,
+    "orphans": 0,
+    "total_notes": 2
+  },
+  "toc": [
+    {
+      "doc_type": null,
+      "id": "docs/a",
+      "lead": "[[b]]",
+      "path": "docs/a.md",
+      "stem": "a",
+      "tags": [],
+      "title": "Alpha",
+      "word_count": 3
+    },
+    {
+      "doc_type": null,
+      "id": "docs/b",
+      "lead": "[[a]]",
+      "path": "docs/b.md",
+      "stem": "b",
+      "tags": [],
+      "title": "Beta",
+      "word_count": 3
+    }
+  ]
+}

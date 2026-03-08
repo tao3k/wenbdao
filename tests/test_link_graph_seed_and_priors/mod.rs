@@ -1,0 +1,6 @@
+//! Integration tests for structural priors and seed-grounded related retrieval.
+
+mod fixture_contract_support;
+mod link_graph_related_filter_seed_accuracy_is_cluster_grounded;
+mod link_graph_related_journal_semantic_pull_surfaces_agenda_tasks;
+mod link_graph_structural_priors_promote_architecture_hub_top3;

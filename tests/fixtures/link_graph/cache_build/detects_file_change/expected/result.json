@@ -1,0 +1,20 @@
+{
+  "hits": {
+    "hit_count": 1,
+    "hits": [
+      {
+        "best_section": "Alpha",
+        "match_reason": "fts+section_body_contains",
+        "path": "docs/a.md",
+        "stem": "a",
+        "title": "Alpha"
+      }
+    ]
+  },
+  "stats": {
+    "links_in_graph": 0,
+    "nodes_in_graph": 2,
+    "orphans": 2,
+    "total_notes": 2
+  }
+}

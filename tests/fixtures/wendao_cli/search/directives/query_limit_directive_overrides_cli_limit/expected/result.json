@@ -1,0 +1,28 @@
+{
+  "case_sensitive": false,
+  "created_after": null,
+  "created_before": null,
+  "filters": {
+    "link_to_seed_count": null,
+    "linked_by_seed_count": null,
+    "related_seed_count": null
+  },
+  "limit": 1,
+  "match_strategy": "fts",
+  "query": "shared keyword",
+  "results": [
+    {
+      "best_section": "A",
+      "match_reason": "fts+section_body_contains",
+      "path": "docs/a.md",
+      "stem": "a",
+      "title": "A"
+    }
+  ],
+  "sort_terms": [
+    {
+      "field": "path",
+      "order": "asc"
+    }
+  ]
+}

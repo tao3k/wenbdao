@@ -1,0 +1,12 @@
+{
+  "b_before_d": true,
+  "positions": {
+    "B": 0,
+    "D": 1
+  },
+  "ranked_stems": ["B", "D"],
+  "seed_weights": {
+    "A": 0.99,
+    "C": 0.01
+  }
+}

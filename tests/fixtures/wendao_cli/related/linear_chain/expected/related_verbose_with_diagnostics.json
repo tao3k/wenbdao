@@ -1,0 +1,72 @@
+{
+  "diagnostics": {
+    "alpha": 0.9,
+    "candidate_capped_is_bool": true,
+    "fusion_duration_ms_non_negative": true,
+    "has_candidate_cap": true,
+    "has_candidate_count": true,
+    "has_final_residual": true,
+    "has_graph_node_count": true,
+    "has_iteration_count": true,
+    "horizon_restricted": true,
+    "kernel_duration_ms_non_negative": true,
+    "max_iter": 64,
+    "partition_avg_node_count": 8.0,
+    "partition_duration_ms_non_negative": true,
+    "partition_max_node_count": 8,
+    "partition_min_node_count": 8,
+    "subgraph_count": 1,
+    "subgraph_mode": "force",
+    "time_budget_ms_non_negative": true,
+    "timed_out_is_bool": true,
+    "tol": 1e-6,
+    "total_duration_ms_non_negative": true
+  },
+  "limit": 10,
+  "max_distance": 2,
+  "monitor": {
+    "has_slowest_phase": true,
+    "phase_labels": [
+      "link_graph.overlay.promoted",
+      "link_graph.related.ppr",
+      "link_graph.related.subgraph.fusion",
+      "link_graph.related.subgraph.partition"
+    ]
+  },
+  "ppr": {
+    "alpha": 0.9,
+    "max_iter": 64,
+    "subgraph_mode": "force",
+    "tol": 1e-6
+  },
+  "promoted_overlay": {
+    "applied_is_bool": true,
+    "source": "valkey.suggested_link_recent_latest"
+  },
+  "results": {
+    "row_count": 3,
+    "rows": [
+      {
+        "distance": 1,
+        "path": "docs/a.md",
+        "stem": "a",
+        "title": "A"
+      },
+      {
+        "distance": 1,
+        "path": "docs/c.md",
+        "stem": "c",
+        "title": "C"
+      },
+      {
+        "distance": 2,
+        "path": "docs/d.md",
+        "stem": "d",
+        "title": "D"
+      }
+    ],
+    "stems": ["a", "c", "d"]
+  },
+  "stem": "b",
+  "total": 3
+}

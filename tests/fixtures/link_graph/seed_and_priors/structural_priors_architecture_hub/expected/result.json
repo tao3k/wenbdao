@@ -1,0 +1,100 @@
+{
+  "baseline": {
+    "hit_count": 4,
+    "hits": [
+      {
+        "best_section": "Hub",
+        "doc_type": null,
+        "match_reason": "fts+section_body_contains",
+        "path": "docs/hub.md",
+        "score": 0.81,
+        "stem": "hub",
+        "tags": [],
+        "title": "Hub"
+      },
+      {
+        "best_section": "Leaf A",
+        "doc_type": null,
+        "match_reason": "fts+section_body_contains",
+        "path": "docs/leaf-a.md",
+        "score": 0.81,
+        "stem": "leaf-a",
+        "tags": [],
+        "title": "Leaf A"
+      },
+      {
+        "best_section": "Leaf B",
+        "doc_type": null,
+        "match_reason": "fts+section_body_contains",
+        "path": "docs/leaf-b.md",
+        "score": 0.81,
+        "stem": "leaf-b",
+        "tags": [],
+        "title": "Leaf B"
+      },
+      {
+        "best_section": "Leaf C",
+        "doc_type": null,
+        "match_reason": "fts+section_body_contains",
+        "path": "docs/leaf-c.md",
+        "score": 0.81,
+        "stem": "leaf-c",
+        "tags": [],
+        "title": "Leaf C"
+      }
+    ],
+    "stems": ["hub", "leaf-a", "leaf-b", "leaf-c"]
+  },
+  "boosted": {
+    "hit_count": 4,
+    "hits": [
+      {
+        "best_section": "Hub",
+        "doc_type": null,
+        "match_reason": "fts+section_body_contains+graph_rank",
+        "path": "docs/hub.md",
+        "score": 0.8765,
+        "stem": "hub",
+        "tags": [],
+        "title": "Hub"
+      },
+      {
+        "best_section": "Leaf A",
+        "doc_type": null,
+        "match_reason": "fts+section_body_contains",
+        "path": "docs/leaf-a.md",
+        "score": 0.81,
+        "stem": "leaf-a",
+        "tags": [],
+        "title": "Leaf A"
+      },
+      {
+        "best_section": "Leaf B",
+        "doc_type": null,
+        "match_reason": "fts+section_body_contains",
+        "path": "docs/leaf-b.md",
+        "score": 0.81,
+        "stem": "leaf-b",
+        "tags": [],
+        "title": "Leaf B"
+      },
+      {
+        "best_section": "Leaf C",
+        "doc_type": null,
+        "match_reason": "fts+section_body_contains",
+        "path": "docs/leaf-c.md",
+        "score": 0.81,
+        "stem": "leaf-c",
+        "tags": [],
+        "title": "Leaf C"
+      }
+    ],
+    "stems": ["hub", "leaf-a", "leaf-b", "leaf-c"]
+  },
+  "hub_in_top3": true,
+  "hub_match_reason_includes_graph_rank": true,
+  "hub_rank": 0,
+  "hub_score_improved": true,
+  "hub_score_with_priors": 0.8765,
+  "hub_score_without_semantic_boost": 0.81
+}

@@ -1,0 +1,34 @@
+{
+  "delete_mode": "delta",
+  "final_stats": {
+    "links_in_graph": 0,
+    "nodes_in_graph": 1,
+    "orphans": 1,
+    "total_notes": 1
+  },
+  "new_hits": {
+    "hit_count": 1,
+    "hits": [
+      {
+        "best_section": "Beta",
+        "match_reason": "fts+section_body_contains",
+        "path": "docs/b.md",
+        "stem": "b",
+        "title": "Beta"
+      }
+    ]
+  },
+  "old_hits": {
+    "hit_count": 1,
+    "hits": [
+      {
+        "best_section": "Beta",
+        "match_reason": "fts+section_body_contains+graph_rank",
+        "path": "docs/b.md",
+        "stem": "b",
+        "title": "Beta"
+      }
+    ]
+  },
+  "update_mode": "delta"
+}

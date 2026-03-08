@@ -1,0 +1,67 @@
+{
+  "callback": {
+    "shared_pointer_equal": false,
+    "shared_text": "callback body",
+    "stripped_text": "callback body"
+  },
+  "canonical_uri": "wendao://skills/agenda-management/references/prompts/classifier.md",
+  "embedded_reads": {
+    "teacher_shared_pointer_equal": false,
+    "teacher_shared_preview": [
+      "---",
+      "type: persona",
+      "name: agenda_professor",
+      "description: Cognitive surgeon auditing the Unity of Knowledge and Action via Socratic inquiry.",
+      "metadata:",
+      "  version: \"1.1.0\"",
+      "  authors: [\"CyberXiuXian\"]",
+      "  role_class: auditor",
+      "  seniority: \"Senior Professor (20+ Years)\"",
+      "  ethos: \"Unity of Knowledge and Action. Absolute traceability.\""
+    ],
+    "teacher_stripped_pointer_equal": true,
+    "teacher_plain_stripped_preview": [
+      "---",
+      "type: persona",
+      "name: agenda_professor",
+      "description: Cognitive surgeon auditing the Unity of Knowledge and Action via Socratic inquiry.",
+      "metadata:",
+      "  version: \"1.1.0\"",
+      "  authors: [\"CyberXiuXian\"]",
+      "  role_class: auditor",
+      "  seniority: \"Senior Professor (20+ Years)\"",
+      "  ethos: \"Unity of Knowledge and Action. Absolute traceability.\""
+    ],
+    "teacher_utf8_preview": [
+      "---",
+      "type: persona",
+      "name: agenda_professor",
+      "description: Cognitive surgeon auditing the Unity of Knowledge and Action via Socratic inquiry.",
+      "metadata:",
+      "  version: \"1.1.0\"",
+      "  authors: [\"CyberXiuXian\"]",
+      "  role_class: auditor",
+      "  seniority: \"Senior Professor (20+ Years)\"",
+      "  ethos: \"Unity of Knowledge and Action. Absolute traceability.\""
+    ],
+    "teacher_stripped_preview": [
+      "---",
+      "type: persona",
+      "name: agenda_professor",
+      "description: Cognitive surgeon auditing the Unity of Knowledge and Action via Socratic inquiry.",
+      "metadata:",
+      "  version: \"1.1.0\"",
+      "  authors: [\"CyberXiuXian\"]",
+      "  role_class: auditor",
+      "  seniority: \"Senior Professor (20+ Years)\"",
+      "  ethos: \"Unity of Knowledge and Action. Absolute traceability.\""
+    ]
+  },
+  "errors": {
+    "invalid_relative_path": "InvalidRelativeAssetPath",
+    "invalid_semantic_name": "InvalidUri",
+    "missing_embedded_asset": "EmbeddedAssetNotFound"
+  },
+  "rules_uri": "wendao://skills/agenda-management/references/rules.md",
+  "teacher_uri": "wendao://skills/agenda-management/references/teacher.md"
+}

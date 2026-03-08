@@ -1,0 +1,18 @@
+{
+  "contains": {
+    "EntityA": true,
+    "EntityB": true
+  },
+  "rows": [
+    {
+      "distance": 1,
+      "path": "EntityA.md",
+      "stem": "EntityA"
+    },
+    {
+      "distance": 1,
+      "path": "EntityB.md",
+      "stem": "EntityB"
+    }
+  ]
+}

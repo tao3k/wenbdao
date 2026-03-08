@@ -1,0 +1,3 @@
+# Alpha Note
+
+[[beta-note]]

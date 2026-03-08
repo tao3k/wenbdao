@@ -1,0 +1,31 @@
+{
+  "config_id_agenda_flow": [
+    "wendao://skills/agenda-management/references/agenda_flow.toml"
+  ],
+  "config_id_soul_forge_flow": [
+    "wendao://skills/forge-evolution/references/soul_forge_flow.toml"
+  ],
+  "empty": [],
+  "query_prefix_only": [],
+  "query_prefixed_semantic_carryover": [
+    "wendao://skills/agenda-management/references/critique_agenda.j2",
+    "wendao://skills/agenda-management/references/prompts/agenda_validation_genesis_rules.md",
+    "wendao://skills/agenda-management/references/rules.md"
+  ],
+  "reference_type_template": [
+    "wendao://skills/agenda-management/references/critique_agenda.j2",
+    "wendao://skills/agenda-management/references/draft_agenda.j2",
+    "wendao://skills/agenda-management/references/final_agenda.j2"
+  ],
+  "semantic_carryover": [
+    "wendao://skills/agenda-management/references/critique_agenda.j2",
+    "wendao://skills/agenda-management/references/prompts/agenda_validation_genesis_rules.md",
+    "wendao://skills/agenda-management/references/rules.md"
+  ],
+  "type_alias_template": [
+    "wendao://skills/agenda-management/references/critique_agenda.j2",
+    "wendao://skills/agenda-management/references/draft_agenda.j2",
+    "wendao://skills/agenda-management/references/final_agenda.j2"
+  ],
+  "unknown_config_id": []
+}

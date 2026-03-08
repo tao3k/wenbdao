@@ -1,0 +1,45 @@
+{
+  "delta_mode": "delta",
+  "delta_refresh": {
+    "hits": {
+      "hit_count": 1,
+      "hits": [
+        {
+          "best_section": "Alpha",
+          "match_reason": "fts+section_body_contains+graph_rank",
+          "path": "docs/a.md",
+          "stem": "a",
+          "title": "Alpha"
+        }
+      ]
+    },
+    "stats": {
+      "links_in_graph": 1,
+      "nodes_in_graph": 2,
+      "orphans": 0,
+      "total_notes": 2
+    }
+  },
+  "full_mode": "full",
+  "full_refresh": {
+    "hits": {
+      "hit_count": 1,
+      "hits": [
+        {
+          "best_section": "Alpha",
+          "match_reason": "fts+section_body_contains+graph_rank",
+          "path": "docs/a.md",
+          "stem": "a",
+          "title": "Alpha"
+        }
+      ]
+    },
+    "stats": {
+      "links_in_graph": 2,
+      "nodes_in_graph": 2,
+      "orphans": 0,
+      "total_notes": 2
+    }
+  },
+  "noop_mode": "noop"
+}

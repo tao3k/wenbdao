@@ -1,0 +1,76 @@
+{
+  "graph_confidence_level": "high",
+  "graph_confidence_score": 0.9125,
+  "graph_hit_count": 2,
+  "hit_count": 2,
+  "hits": [
+    {
+      "best_section": "Alpha / Architecture",
+      "doc_type": null,
+      "match_reason": "fts+section_heading_token",
+      "path": "docs/a.md",
+      "score": 0.75,
+      "stem": "a",
+      "tags": [],
+      "title": "Alpha"
+    },
+    {
+      "best_section": "Beta",
+      "doc_type": null,
+      "match_reason": "fts+section_body_token",
+      "path": "docs/b.md",
+      "score": 0.54,
+      "stem": "b",
+      "tags": [],
+      "title": "Beta"
+    }
+  ],
+  "query": "architecture graph",
+  "reason": "graph_sufficient",
+  "requested_mode": "hybrid",
+  "results": [
+    {
+      "best_section": "Alpha / Architecture",
+      "doc_type": null,
+      "match_reason": "fts+section_heading_token",
+      "path": "docs/a.md",
+      "score": 0.75,
+      "stem": "a",
+      "tags": [],
+      "title": "Alpha"
+    },
+    {
+      "best_section": "Beta",
+      "doc_type": null,
+      "match_reason": "fts+section_body_token",
+      "path": "docs/b.md",
+      "score": 0.54,
+      "stem": "b",
+      "tags": [],
+      "title": "Beta"
+    }
+  ],
+  "retrieval_plan": {
+    "backend_name": "wendao",
+    "budget": {
+      "candidate_limit": 40,
+      "max_sources": 8,
+      "rows_per_source": 8
+    },
+    "graph_confidence_level": "high",
+    "graph_confidence_score": 0.9125,
+    "graph_hit_count": 2,
+    "reason": "graph_sufficient",
+    "requested_mode": "hybrid",
+    "schema": "omni.link_graph.retrieval_plan.v1",
+    "selected_mode": "graph_only",
+    "semantic_policy": {
+      "document_scope": "all",
+      "min_vector_score": null
+    },
+    "source_hint_count": 2
+  },
+  "section_hit_count": 2,
+  "selected_mode": "graph_only",
+  "source_hint_count": 2
+}

@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "xiuxian_wendao.link_graph.suggested_link_decision.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "suggestion_id",
+    "source_id",
+    "target_id",
+    "relation",
+    "previous_state",
+    "target_state",
+    "decided_by",
+    "reason",
+    "decided_at_unix"
+  ],
+  "properties": {
+    "schema": {
+      "type": "string",
+      "const": "xiuxian_wendao.link_graph.suggested_link_decision.v1"
+    },
+    "suggestion_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "target_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "relation": {
+      "type": "string",
+      "minLength": 1
+    },
+    "previous_state": {
+      "type": "string",
+      "enum": ["provisional", "promoted", "rejected"]
+    },
+    "target_state": {
+      "type": "string",
+      "enum": ["promoted", "rejected"]
+    },
+    "decided_by": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "decided_at_unix": {
+      "type": "number",
+      "minimum": 0
+    }
+  }
+}

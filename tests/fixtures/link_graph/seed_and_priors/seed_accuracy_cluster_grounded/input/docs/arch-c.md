@@ -1,0 +1,3 @@
+# Arch C
+
+platform note

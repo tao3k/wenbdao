@@ -1,0 +1,7 @@
+{
+  "mentioned_by": ["docs/b.md"],
+  "mentions": ["docs/a.md", "docs/c.md"],
+  "missing_backlink": ["docs/a.md"],
+  "orphan": ["docs/c.md"],
+  "tagless": ["docs/c.md"]
+}

@@ -1,0 +1,8 @@
+---
+tags:
+  - gamma
+---
+
+# D
+
+content

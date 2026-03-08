@@ -1,0 +1,1 @@
+Entity A canonical node.

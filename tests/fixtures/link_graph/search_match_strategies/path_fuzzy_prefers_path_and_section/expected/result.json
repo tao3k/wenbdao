@@ -1,0 +1,17 @@
+{
+  "hit_count": 2,
+  "hits": [
+    {
+      "best_section": "Architecture / Graph Engine",
+      "match_reason": "path_fuzzy+section_heading_token",
+      "path": "docs/architecture/graph.md",
+      "stem": "graph"
+    },
+    {
+      "best_section": "Misc",
+      "match_reason": "path_fuzzy+section_body_token",
+      "path": "docs/notes/misc.md",
+      "stem": "misc"
+    }
+  ]
+}

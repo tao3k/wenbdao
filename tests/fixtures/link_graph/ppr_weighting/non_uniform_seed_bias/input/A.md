@@ -1,0 +1,1 @@
+A links to [[B]]

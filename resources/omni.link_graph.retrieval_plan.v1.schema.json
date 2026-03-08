@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.omni.dev/omni.link_graph.retrieval_plan.v1.schema.json",
+  "title": "Omni LinkGraph Retrieval Plan v1",
+  "description": "Canonical policy plan contract for graph-first retrieval routing.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "requested_mode",
+    "selected_mode",
+    "reason",
+    "backend_name",
+    "graph_hit_count",
+    "source_hint_count",
+    "graph_confidence_score",
+    "graph_confidence_level",
+    "semantic_policy",
+    "budget"
+  ],
+  "properties": {
+    "schema": {
+      "const": "omni.link_graph.retrieval_plan.v1"
+    },
+    "requested_mode": {
+      "type": "string",
+      "enum": ["graph_only", "hybrid", "vector_only"]
+    },
+    "selected_mode": {
+      "type": "string",
+      "enum": ["graph_only", "hybrid", "vector_only"]
+    },
+    "reason": {
+      "type": "string",
+      "enum": [
+        "backend_unavailable",
+        "vector_only_requested",
+        "graph_only_requested",
+        "graph_only_requested_empty",
+        "graph_only_search_timeout",
+        "graph_only_payload_overridden",
+        "graph_only_payload_mode_conflict",
+        "graph_only_policy_missing",
+        "graph_sufficient",
+        "graph_insufficient",
+        "hybrid_selected",
+        "graph_search_timeout",
+        "graph_policy_mode_conflict",
+        "graph_policy_missing"
+      ]
+    },
+    "backend_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "graph_hit_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "source_hint_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "graph_confidence_score": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0
+    },
+    "graph_confidence_level": {
+      "type": "string",
+      "enum": ["none", "low", "medium", "high"]
+    },
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidate_limit", "max_sources", "rows_per_source"],
+      "properties": {
+        "candidate_limit": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_sources": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "rows_per_source": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "semantic_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["document_scope"],
+      "properties": {
+        "document_scope": {
+          "type": "string",
+          "enum": ["all", "summary_only"]
+        },
+        "min_vector_score": {
+          "type": ["number", "null"],
+          "minimum": 0.0,
+          "maximum": 1.0
+        }
+      }
+    }
+  }
+}
