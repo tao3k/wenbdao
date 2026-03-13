@@ -1,0 +1,17 @@
+[scenario]
+id = "026_graph_nav_neighbors_related_metadata_and_toc"
+name = "Graph Navigation: neighbors related metadata and toc"
+description = "graph_navigation scenario"
+category = "graph_navigation"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+
+[expected]
+type = "json_snapshot"
+files = ["result.json"]
+
+[runner]
+build_page_index = true
+collect_links = true

@@ -1,4 +1,4 @@
-//! `PyO3` bindings for `LinkGraph` note enhancement.
+//! `PyO3` bindings for LinkGraph note enhancement.
 //!
 //! Exposes Rust-native `enhance_note` and `enhance_notes_batch` to Python.
 

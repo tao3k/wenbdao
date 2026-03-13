@@ -5,9 +5,7 @@ use super::super::types::{
 };
 use super::common::{normalize_optional_string, now_unix_f64, suggestion_id_from_parts};
 
-pub(super) fn normalize_record_for_read(
-    mut record: LinkGraphSuggestedLink,
-) -> LinkGraphSuggestedLink {
+pub fn normalize_record_for_read(mut record: LinkGraphSuggestedLink) -> LinkGraphSuggestedLink {
     if record.suggestion_id.trim().is_empty() {
         record.suggestion_id = suggestion_id_from_parts(
             &record.source_id,
@@ -25,46 +23,36 @@ pub(super) fn normalize_record_for_read(
     record
 }
 
-pub(super) fn normalize_request(
+pub fn normalize_request(
     request: LinkGraphSuggestedLinkRequest,
 ) -> Result<LinkGraphSuggestedLink, String> {
-    let LinkGraphSuggestedLinkRequest {
-        source_id,
-        target_id,
-        relation,
-        confidence,
-        evidence,
-        agent_id,
-        created_at_unix,
-    } = request;
-
-    let source_id = source_id.trim().to_string();
+    let source_id = request.source_id.trim().to_string();
     if source_id.is_empty() {
         return Err("suggested_link source_id must be non-empty".to_string());
     }
 
-    let target_id = target_id.trim().to_string();
+    let target_id = request.target_id.trim().to_string();
     if target_id.is_empty() {
         return Err("suggested_link target_id must be non-empty".to_string());
     }
 
-    let relation = relation.trim().to_string();
+    let relation = request.relation.trim().to_string();
     if relation.is_empty() {
         return Err("suggested_link relation must be non-empty".to_string());
     }
 
-    let evidence = evidence.trim().to_string();
+    let evidence = request.evidence.trim().to_string();
     if evidence.is_empty() {
         return Err("suggested_link evidence must be non-empty".to_string());
     }
 
-    let agent_id = agent_id.trim().to_string();
+    let agent_id = request.agent_id.trim().to_string();
     if agent_id.is_empty() {
         return Err("suggested_link agent_id must be non-empty".to_string());
     }
 
-    let confidence = confidence.clamp(0.0, 1.0);
-    let created_at_unix = created_at_unix.unwrap_or_else(now_unix_f64);
+    let confidence = request.confidence.clamp(0.0, 1.0);
+    let created_at_unix = request.created_at_unix.unwrap_or_else(now_unix_f64);
     if !created_at_unix.is_finite() || created_at_unix < 0.0 {
         return Err("suggested_link created_at_unix must be finite and non-negative".to_string());
     }
@@ -93,39 +81,32 @@ pub(super) fn normalize_request(
     })
 }
 
-pub(super) fn normalize_decision_request(
+pub fn normalize_decision_request(
     request: LinkGraphSuggestedLinkDecisionRequest,
 ) -> Result<(String, LinkGraphSuggestedLinkState, String, String, f64), String> {
-    let LinkGraphSuggestedLinkDecisionRequest {
-        suggestion_id,
-        target_state,
-        decided_by,
-        reason,
-        decided_at_unix,
-    } = request;
-
-    let suggestion_id = suggestion_id.trim().to_string();
+    let suggestion_id = request.suggestion_id.trim().to_string();
     if suggestion_id.is_empty() {
         return Err("suggested_link decision suggestion_id must be non-empty".to_string());
     }
 
+    let target_state = request.target_state;
     if target_state == LinkGraphSuggestedLinkState::Provisional {
         return Err(
             "suggested_link decision target_state must be promoted or rejected".to_string(),
         );
     }
 
-    let decided_by = decided_by.trim().to_string();
+    let decided_by = request.decided_by.trim().to_string();
     if decided_by.is_empty() {
         return Err("suggested_link decision decided_by must be non-empty".to_string());
     }
 
-    let reason = reason.trim().to_string();
+    let reason = request.reason.trim().to_string();
     if reason.is_empty() {
         return Err("suggested_link decision reason must be non-empty".to_string());
     }
 
-    let decided_at_unix = decided_at_unix.unwrap_or_else(now_unix_f64);
+    let decided_at_unix = request.decided_at_unix.unwrap_or_else(now_unix_f64);
     if !decided_at_unix.is_finite() || decided_at_unix < 0.0 {
         return Err(
             "suggested_link decision decided_at_unix must be finite and non-negative".to_string(),

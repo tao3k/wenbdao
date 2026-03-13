@@ -77,29 +77,13 @@ impl LinkGraphIndex {
         horizon_distances: &HashMap<String, usize>,
         restrict_to_horizon: bool,
     ) -> Vec<String> {
-        let mut graph_nodes: HashSet<String> = if restrict_to_horizon {
+        let mut graph_nodes: Vec<String> = if restrict_to_horizon {
             horizon_distances.keys().cloned().collect()
         } else {
             self.docs_by_id.keys().cloned().collect()
         };
-
-        // 2026 Refinement: Include Passage Nodes in the PPR graph (HippoRAG 2)
-        // For each Entity node in the horizon, add all its related Passage nodes.
-        let mut passages_to_add = Vec::new();
-        for doc_id in &graph_nodes {
-            for (p_id, passage) in &self.passages_by_id {
-                if passage.parent_doc_id == *doc_id || passage.entities.contains(doc_id) {
-                    passages_to_add.push(p_id.clone());
-                }
-            }
-        }
-        for p_id in passages_to_add {
-            graph_nodes.insert(p_id);
-        }
-
-        let mut sorted_nodes: Vec<String> = graph_nodes.into_iter().collect();
-        self.sort_doc_ids_for_runtime(&mut sorted_nodes);
-        sorted_nodes
+        self.sort_doc_ids_for_runtime(&mut graph_nodes);
+        graph_nodes
     }
 
     pub(in crate::link_graph::index) fn candidate_count_from_horizon(

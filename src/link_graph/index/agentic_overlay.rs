@@ -33,6 +33,7 @@ impl LinkGraphIndex {
     ///
     /// Returns `None` when runtime config is unavailable, no promoted rows exist,
     /// or no new edges are introduced.
+    #[allow(dead_code)]
     pub(super) fn with_promoted_edges_overlay(&self) -> Option<Self> {
         let (overlay, _) = self.with_promoted_edges_overlay_with_stats();
         overlay
@@ -51,13 +52,15 @@ impl LinkGraphIndex {
             .execution_idempotency_scan_limit
             .max(agentic_runtime.suggested_link_max_entries)
             .max(1);
-        let Ok(rows) = valkey_suggested_link_recent_latest_with_valkey(
-            scan_limit,
-            &cache_runtime.valkey_url,
-            Some(&cache_runtime.key_prefix),
-            Some(LinkGraphSuggestedLinkState::Promoted),
-            Some(scan_limit),
-        ) else {
+        let rows_result: Result<Vec<LinkGraphSuggestedLink>, String> =
+            valkey_suggested_link_recent_latest_with_valkey(
+                scan_limit,
+                &cache_runtime.valkey_url,
+                Some(&cache_runtime.key_prefix),
+                Some(LinkGraphSuggestedLinkState::Promoted),
+                Some(scan_limit),
+            );
+        let Ok(rows) = rows_result else {
             return (None, stats);
         };
         stats.scanned_rows = rows.len();

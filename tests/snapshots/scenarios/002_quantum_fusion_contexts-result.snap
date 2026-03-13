@@ -1,0 +1,12 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/support/scenario_framework.rs
+expression: result
+---
+{
+  "category": "quantum_fusion",
+  "files": [
+    "contexts.json"
+  ],
+  "scenario_id": "002_quantum_fusion_contexts",
+  "status": "validated"
+}

@@ -6,118 +6,111 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct LinkGraphTagFilter {
-    /// Tags that must all be present.
+    /// Note must contain ALL tags in this list.
     #[serde(default)]
     pub all: Vec<String>,
-    /// At least one of these tags must be present.
+    /// Note must contain AT LEAST ONE tag in this list.
     #[serde(default)]
     pub any: Vec<String>,
-    /// Tags that must not be present.
-    #[serde(default, rename = "not")]
+    /// Note must NOT contain any tag in this list.
+    #[serde(default)]
     pub not_tags: Vec<String>,
 }
 
-/// Link filter for `link_to`/`linked_by`.
+/// Link-traversal filter (used for `link_to` and `linked_by` constraints).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct LinkGraphLinkFilter {
-    /// Seed note ids/stems/paths.
+    /// One or more seed note stems or identifiers.
     #[serde(default)]
     pub seeds: Vec<String>,
-    /// Negate match semantics.
+    /// Whether to negate the match (exclude notes matching this filter).
     #[serde(default)]
     pub negate: bool,
-    /// Traverse recursively from seeds.
+    /// Whether to allow recursive traversal (multi-hop).
     #[serde(default)]
     pub recursive: bool,
-    /// Optional traversal distance cap.
+    /// Maximum distance (hops) for recursive traversal.
     #[serde(default)]
     pub max_distance: Option<usize>,
 }
 
-/// PPR tuning options for related retrieval.
+/// Personalized PageRank (PPR) options for related-note discovery.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct LinkGraphRelatedPprOptions {
-    /// Teleport probability parameter in `[0, 1]`.
-    #[serde(default)]
+    /// PPR teleport probability (restart probability).
+    /// Typically `0.15` (equivalent to alpha `0.85`).
     pub alpha: Option<f64>,
-    /// Maximum power-iteration count.
-    #[serde(default)]
+    /// Maximum number of power iterations.
     pub max_iter: Option<usize>,
     /// Convergence tolerance.
-    #[serde(default)]
     pub tol: Option<f64>,
-    /// Subgraph partitioning mode.
-    #[serde(default)]
+    /// Large-graph subgraph computation strategy.
     pub subgraph_mode: Option<LinkGraphPprSubgraphMode>,
 }
 
-/// Related filter.
+/// Related-note discovery filter.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct LinkGraphRelatedFilter {
-    /// Seed note ids/stems/paths.
+    /// One or more seed note stems or identifiers.
     #[serde(default)]
     pub seeds: Vec<String>,
-    /// Optional traversal distance cap.
+    /// Maximum hop distance for discovery.
     #[serde(default)]
     pub max_distance: Option<usize>,
-    /// Optional PPR tuning block.
+    /// Optional PPR refinement parameters.
     #[serde(default)]
     pub ppr: Option<LinkGraphRelatedPprOptions>,
 }
 
-/// Structured search filters.
+/// Structured search filters for link-graph retrieval.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct LinkGraphSearchFilters {
-    /// Path prefixes/files to include.
+    /// Search scope (mixed/doc/section).
+    pub scope: Option<LinkGraphScope>,
+    /// Max heading level for section matches (1-6).
+    pub max_heading_level: Option<usize>,
+    /// Max hops allowed for recursive tree matching.
+    pub max_tree_hops: Option<usize>,
+    /// Whether to collapse multiple section matches into a single document hit.
+    pub collapse_to_doc: Option<bool>,
+    /// Note must be in one of these subdirectories.
     #[serde(default)]
     pub include_paths: Vec<String>,
-    /// Path prefixes/files to exclude.
+    /// Note must NOT be in any of these subdirectories.
     #[serde(default)]
     pub exclude_paths: Vec<String>,
-    /// Optional boolean tag filter.
-    #[serde(default)]
-    pub tags: Option<LinkGraphTagFilter>,
-    /// Optional outgoing-link filter.
+    /// Note must contain a direct wikilink/reference to these documents.
     #[serde(default)]
     pub link_to: Option<LinkGraphLinkFilter>,
-    /// Optional incoming-link filter.
+    /// Note must be referenced by these documents.
     #[serde(default)]
     pub linked_by: Option<LinkGraphLinkFilter>,
-    /// Optional related-note filter.
+    /// Discovery of semantically related notes via graph traversal (PPR).
     #[serde(default)]
     pub related: Option<LinkGraphRelatedFilter>,
-    /// Content phrases that must be mentioned.
+    /// Boolean tag filter.
+    #[serde(default)]
+    pub tags: Option<LinkGraphTagFilter>,
+    /// Note must contain these explicit mentions (phrases).
     #[serde(default)]
     pub mentions_of: Vec<String>,
-    /// Notes that must mention the current note.
+    /// Note must be mentioned by these explicit documents.
     #[serde(default)]
     pub mentioned_by_notes: Vec<String>,
-    /// Keep only orphan notes.
+    /// Filter for notes with no incoming or outgoing links.
     #[serde(default)]
     pub orphan: bool,
-    /// Keep only notes without tags.
+    /// Filter for notes with no tags.
     #[serde(default)]
     pub tagless: bool,
-    /// Keep only notes missing backlinks.
+    /// Filter for documents with missing backlink metadata.
     #[serde(default)]
     pub missing_backlink: bool,
-    /// Optional hit scope override.
-    #[serde(default)]
-    pub scope: Option<LinkGraphScope>,
-    /// Optional heading depth cap (1..=6).
-    #[serde(default)]
-    pub max_heading_level: Option<usize>,
-    /// Optional section tree-hop cap.
-    #[serde(default)]
-    pub max_tree_hops: Option<usize>,
-    /// Collapse multiple section hits per doc.
-    #[serde(default)]
-    pub collapse_to_doc: Option<bool>,
-    /// Allowed edge types for traversal/ranking.
+    /// Allowed edge types for structural/semantic traversal.
     #[serde(default)]
     pub edge_types: Vec<LinkGraphEdgeType>,
     /// Optional section cap per document.

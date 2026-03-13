@@ -1,4 +1,5 @@
-mod fixture_contract_support;
+use super::*;
+
 mod search_query_directives_apply_without_cli_flags;
 mod search_query_limit_directive_overrides_cli_limit;
 mod search_rejects_legacy_sort_flag;

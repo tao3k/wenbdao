@@ -3,9 +3,6 @@ use thiserror::Error;
 /// Graph errors.
 #[derive(Debug, Error)]
 pub enum GraphError {
-    /// The entity payload is invalid.
-    #[error("Invalid entity: {0}")]
-    InvalidEntity(String),
     /// The requested entity was not found.
     #[error("Entity not found: {0}")]
     EntityNotFound(String),

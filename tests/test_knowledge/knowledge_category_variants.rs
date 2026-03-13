@@ -1,4 +1,4 @@
-use xiuxian_wendao::KnowledgeCategory;
+use super::*;
 
 #[test]
 fn test_knowledge_category_variants() {

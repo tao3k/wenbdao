@@ -1,6 +1,6 @@
 {
   "discovered_paths": 2,
-  "tool_names": ["agenda.add"],
+  "first_issue_contains_invalid_description": true,
   "issue_count": 1,
-  "first_issue_contains_invalid_description": true
+  "tool_names": ["agenda.add"]
 }

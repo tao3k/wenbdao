@@ -1,5 +1,44 @@
 use serde::{Deserialize, Serialize};
 
+/// Vision annotation payload from multimodal analysis.
+///
+/// Contains OCR-extracted text, LLM-generated descriptions,
+/// and recognized entities from image analysis.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct VisionAnnotation {
+    /// OCR/LLM-generated text description of image content.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub description: String,
+    /// Confidence score (0.0-1.0) from multimodal analysis.
+    #[serde(default)]
+    pub confidence: f64,
+    /// Extracted text entities (optional).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub entities: Vec<String>,
+    /// Timestamp of annotation creation (Unix seconds since epoch).
+    #[serde(default)]
+    pub annotated_at: i64,
+}
+
+impl VisionAnnotation {
+    /// Create a new vision annotation with description.
+    #[must_use]
+    pub fn new(description: impl Into<String>) -> Self {
+        Self {
+            description: description.into(),
+            confidence: 0.8,
+            entities: Vec::new(),
+            annotated_at: 0,
+        }
+    }
+
+    /// Create empty annotation.
+    #[must_use]
+    pub fn empty() -> Self {
+        Self::default()
+    }
+}
+
 /// Attachment kind classification inferred from file extension.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -76,6 +115,9 @@ pub struct LinkGraphAttachment {
     pub attachment_ext: String,
     /// Attachment kind inferred from extension.
     pub kind: LinkGraphAttachmentKind,
+    /// Vision annotation (optional, injected by VisionIngress).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub vision_annotation: Option<VisionAnnotation>,
 }
 
 /// Attachment search hit.
@@ -97,4 +139,7 @@ pub struct LinkGraphAttachmentHit {
     pub kind: LinkGraphAttachmentKind,
     /// Search relevance score (0-1).
     pub score: f64,
+    /// Vision annotation snippet for search display (optional).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub vision_snippet: Option<String>,
 }

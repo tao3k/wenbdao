@@ -10,12 +10,12 @@ pub(super) fn doc_sort_key(doc: &LinkGraphDocument) -> (&str, &str) {
 }
 
 #[derive(Debug, Clone)]
-pub(super) struct ScoredSearchRow {
-    pub(super) hit: LinkGraphHit,
-    pub(super) created_ts: Option<i64>,
-    pub(super) modified_ts: Option<i64>,
-    pub(super) word_count: usize,
-    pub(super) random_key: u64,
+pub struct ScoredSearchRow {
+    pub hit: LinkGraphHit,
+    pub created_ts: Option<i64>,
+    pub modified_ts: Option<i64>,
+    pub word_count: usize,
+    pub random_key: u64,
 }
 
 fn cmp_optional_ts_asc(left: Option<i64>, right: Option<i64>) -> Ordering {
@@ -52,7 +52,7 @@ fn compare_by_sort_term(
     }
 }
 
-pub(super) fn sort_hits(rows: &mut [ScoredSearchRow], sort_terms: &[LinkGraphSortTerm]) {
+pub fn sort_hits(rows: &mut [ScoredSearchRow], sort_terms: &[LinkGraphSortTerm]) {
     let terms = if sort_terms.is_empty() {
         vec![LinkGraphSortTerm::default()]
     } else {
@@ -75,21 +75,21 @@ pub(super) fn sort_hits(rows: &mut [ScoredSearchRow], sort_terms: &[LinkGraphSor
     });
 }
 
-pub(super) fn deterministic_random_key(stem: &str, path: &str) -> u64 {
+pub fn deterministic_random_key(stem: &str, path: &str) -> u64 {
     let mut hasher = DefaultHasher::new();
     stem.hash(&mut hasher);
     path.hash(&mut hasher);
     hasher.finish()
 }
 
-pub(super) fn normalize_path_filter(path: &str) -> String {
+pub fn normalize_path_filter(path: &str) -> String {
     path.trim()
         .replace('\\', "/")
         .trim_matches('/')
         .to_lowercase()
 }
 
-pub(super) fn path_matches_filter(path: &str, filter: &str) -> bool {
+pub fn path_matches_filter(path: &str, filter: &str) -> bool {
     if filter.is_empty() {
         return false;
     }
@@ -97,11 +97,7 @@ pub(super) fn path_matches_filter(path: &str, filter: &str) -> bool {
     normalized_path == filter || normalized_path.starts_with(&format!("{filter}/"))
 }
 
-pub(super) fn doc_contains_phrase(
-    doc: &LinkGraphDocument,
-    phrase: &str,
-    case_sensitive: bool,
-) -> bool {
+pub fn doc_contains_phrase(doc: &LinkGraphDocument, phrase: &str, case_sensitive: bool) -> bool {
     if phrase.trim().is_empty() {
         return false;
     }

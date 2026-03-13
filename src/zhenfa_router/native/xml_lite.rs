@@ -1,134 +1,39 @@
 use std::fmt::Write;
 
-use crate::link_graph::{LinkGraphDisplayHit, LinkGraphPlannedSearchPayload};
+use crate::link_graph::LinkGraphPlannedSearchPayload;
 
-/// Render planned search payload into lean XML-Lite consumed by LLM tool context.
-pub(super) fn render_xml_lite(payload: &LinkGraphPlannedSearchPayload) -> String {
-    let mut output = String::new();
-    for hit in &payload.hits {
-        render_hit(&mut output, hit);
-    }
-    output
-}
+pub(crate) fn render_xml_lite(payload: &LinkGraphPlannedSearchPayload) -> String {
+    let mut rendered = String::new();
 
-fn render_hit(output: &mut String, hit: &LinkGraphDisplayHit) {
-    let title = select_title(hit);
-    let content = if hit.best_section.trim().is_empty() {
-        title.to_string()
-    } else {
-        format!("{title} | section: {}", hit.best_section.trim())
-    };
-    let hit_type = infer_hit_type(hit);
-    let _ = writeln!(
-        output,
-        "  <hit id=\"{}\" score=\"{:.4}\" type=\"{}\">{}</hit>",
-        escape_xml_attr(&hit.path),
-        hit.score,
-        hit_type,
-        escape_xml_text(content.trim())
-    );
-}
-
-fn infer_hit_type(hit: &LinkGraphDisplayHit) -> &'static str {
-    if let Some(mapped) = hit
-        .doc_type
-        .as_deref()
-        .and_then(infer_hit_type_from_kind_value)
-    {
-        return mapped;
+    // Add CCS audit telemetry header if present
+    if let Some(ref audit) = payload.ccs_audit {
+        let status = if audit.compensated {
+            "COMPENSATED"
+        } else if audit.passed {
+            "PASS"
+        } else {
+            "FAIL"
+        };
+        let _ = writeln!(
+            rendered,
+            "<ccs score=\"{:.2}\" status=\"{}\" missing=\"{}\"/>",
+            audit.ccs_score,
+            status,
+            audit.missing_anchors.len()
+        );
     }
 
-    if let Some(mapped) = infer_hit_type_from_tags(&hit.tags) {
-        return mapped;
+    for hit in &payload.results {
+        let _ = writeln!(
+            rendered,
+            "  <hit id=\"{}\" path=\"{}\" score=\"{:.4}\" type=\"graph\">{}</hit>",
+            escape_xml_attr(&hit.stem),
+            escape_xml_attr(&hit.path),
+            hit.score,
+            escape_xml_text(&hit.title),
+        );
     }
-
-    let path = hit.path.to_ascii_lowercase();
-    let title = hit.title.to_ascii_lowercase();
-    if path.contains("/agenda/") || path.contains("agenda") || title.contains("agenda") {
-        return "agenda";
-    }
-    if path.contains("/journal/") || path.contains("journal") || title.contains("journal") {
-        return "journal";
-    }
-    if path.contains("/tasks/")
-        || path.contains("/task/")
-        || path.contains("todo")
-        || title.contains("task")
-    {
-        return "task";
-    }
-    if !has_markdown_extension(&hit.path) {
-        return "attachment";
-    }
-    "note"
-}
-
-fn has_markdown_extension(path: &str) -> bool {
-    std::path::Path::new(path)
-        .extension()
-        .and_then(std::ffi::OsStr::to_str)
-        .is_some_and(|ext| ext.eq_ignore_ascii_case("md") || ext.eq_ignore_ascii_case("markdown"))
-}
-
-fn infer_hit_type_from_tags(tags: &[String]) -> Option<&'static str> {
-    for raw in tags {
-        if let Some(mapped) = infer_hit_type_from_kind_value(raw) {
-            return Some(mapped);
-        }
-    }
-    None
-}
-
-fn infer_hit_type_from_kind_value(raw: &str) -> Option<&'static str> {
-    let normalized = raw.trim().to_ascii_lowercase();
-    match normalized.as_str() {
-        "agenda" | "schedule" | "calendar" => Some("agenda"),
-        "journal" | "diary" | "reflection" => Some("journal"),
-        "task" | "tasks" | "todo" => Some("task"),
-        "attachment" | "asset" | "image" | "pdf" | "file" => Some("attachment"),
-        "doc" | "note" | "knowledge" => Some("note"),
-        _ => {
-            if normalized.contains("agenda")
-                || normalized.contains("schedule")
-                || normalized.contains("calendar")
-            {
-                return Some("agenda");
-            }
-            if normalized.contains("journal")
-                || normalized.contains("diary")
-                || normalized.contains("reflection")
-            {
-                return Some("journal");
-            }
-            if normalized.contains("task") || normalized.contains("todo") {
-                return Some("task");
-            }
-            if normalized.contains("attachment")
-                || normalized.contains("asset")
-                || normalized.contains("image")
-                || normalized.contains("pdf")
-                || normalized.contains("file")
-            {
-                return Some("attachment");
-            }
-            if normalized.contains("doc")
-                || normalized.contains("note")
-                || normalized.contains("knowledge")
-            {
-                return Some("note");
-            }
-            None
-        }
-    }
-}
-
-fn select_title(hit: &LinkGraphDisplayHit) -> &str {
-    let title = hit.title.trim();
-    if title.is_empty() {
-        hit.stem.trim()
-    } else {
-        title
-    }
+    rendered
 }
 
 fn escape_xml_attr(input: &str) -> String {

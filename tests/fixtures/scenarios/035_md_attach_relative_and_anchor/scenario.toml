@@ -1,0 +1,17 @@
+[scenario]
+id = "035_md_attach_relative_and_anchor"
+name = "relative and anchor"
+description = "markdown_attachments scenario"
+category = "markdown_attachments"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+
+[expected]
+type = "json_snapshot"
+files = ["result.json"]
+
+[runner]
+build_page_index = true
+collect_links = true

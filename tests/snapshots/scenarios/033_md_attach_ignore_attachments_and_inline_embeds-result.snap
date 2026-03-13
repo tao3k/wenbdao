@@ -1,0 +1,12 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/support/scenario_framework.rs
+expression: result
+---
+{
+  "category": "markdown_attachments",
+  "files": [
+    "result.json"
+  ],
+  "scenario_id": "033_md_attach_ignore_attachments_and_inline_embeds",
+  "status": "validated"
+}

@@ -1,17 +1,16 @@
 //! Markdown link graph index + retrieval algorithms.
 
 pub mod agentic;
+mod context_snapshot;
 mod index;
 mod models;
-/// Subgraph narration helpers for relationship summaries.
-pub mod narrator;
+mod narrator;
 mod page_index;
 mod parser;
-/// Advanced hybrid PPR implementation.
 pub mod ppr_hybrid;
 mod query;
 mod runtime_config;
-/// `GraphMem` saliency models, scoring, and `Valkey` persistence adapters.
+/// GraphMem saliency models, scoring, and Valkey persistence adapters.
 pub mod saliency;
 mod stats_cache;
 
@@ -29,9 +28,19 @@ pub use agentic::{
     valkey_suggested_link_recent_latest, valkey_suggested_link_recent_latest_with_valkey,
     valkey_suggested_link_recent_with_valkey,
 };
+pub use context_snapshot::{
+    LINK_GRAPH_QUANTUM_CONTEXT_SNAPSHOT_SCHEMA_VERSION, QuantumContextSnapshot,
+    quantum_context_snapshot_id, valkey_quantum_context_snapshot_drop,
+    valkey_quantum_context_snapshot_get, valkey_quantum_context_snapshot_get_with_valkey,
+    valkey_quantum_context_snapshot_rollback, valkey_quantum_context_snapshot_rollback_with_valkey,
+    valkey_quantum_context_snapshot_save, valkey_quantum_context_snapshot_save_with_valkey,
+};
+pub use index::search::quantum_fusion::scoring::{
+    BatchQuantumScorer, BatchQuantumScorerError, QUANTUM_SALIENCY_COLUMN,
+};
+pub use index::search::quantum_fusion::vector_ignition::VectorStoreSemanticIgnition;
 pub use index::{
-    BatchQuantumScorer, BatchQuantumScorerError, LinkGraphCacheBuildMeta, LinkGraphIndex,
-    LinkGraphRefreshMode, QUANTUM_SALIENCY_COLUMN, QuantumContextBuildError,
+    LinkGraphCacheBuildMeta, LinkGraphIndex, LinkGraphRefreshMode, QuantumContextBuildError,
     QuantumSemanticIgnition, QuantumSemanticIgnitionError, QuantumSemanticIgnitionFuture,
 };
 pub use models::{
@@ -43,18 +52,18 @@ pub use models::{
     LINK_GRAPH_REASON_GRAPH_POLICY_MODE_CONFLICT, LINK_GRAPH_REASON_GRAPH_SEARCH_TIMEOUT,
     LINK_GRAPH_REASON_GRAPH_SUFFICIENT, LINK_GRAPH_REASON_HYBRID_SELECTED,
     LINK_GRAPH_REASON_VECTOR_ONLY_REQUESTED, LINK_GRAPH_RETRIEVAL_PLAN_SCHEMA_VERSION,
-    LinkGraphAttachment, LinkGraphAttachmentHit, LinkGraphAttachmentKind, LinkGraphConfidenceLevel,
-    LinkGraphDirection, LinkGraphDisplayHit, LinkGraphDocument, LinkGraphEdgeType, LinkGraphHit,
-    LinkGraphLinkFilter, LinkGraphMatchStrategy, LinkGraphMetadata, LinkGraphNeighbor,
-    LinkGraphPassage, LinkGraphPlannedSearchPayload, LinkGraphPprSubgraphMode,
-    LinkGraphPromotedOverlayTelemetry, LinkGraphRelatedFilter, LinkGraphRelatedPprDiagnostics,
-    LinkGraphRelatedPprOptions, LinkGraphRetrievalBudget, LinkGraphRetrievalMode,
-    LinkGraphRetrievalPlanInput, LinkGraphRetrievalPlanRecord, LinkGraphScope,
-    LinkGraphSearchFilters, LinkGraphSearchOptions, LinkGraphSemanticDocument,
+    LinkGraphAttachment, LinkGraphAttachmentHit, LinkGraphAttachmentKind, LinkGraphCcsAudit,
+    LinkGraphConfidenceLevel, LinkGraphDirection, LinkGraphDisplayHit, LinkGraphDocument,
+    LinkGraphEdgeType, LinkGraphHit, LinkGraphLinkFilter, LinkGraphMatchStrategy,
+    LinkGraphMetadata, LinkGraphNeighbor, LinkGraphPassage, LinkGraphPlannedSearchPayload,
+    LinkGraphPprSubgraphMode, LinkGraphPromotedOverlayTelemetry, LinkGraphRelatedFilter,
+    LinkGraphRelatedPprDiagnostics, LinkGraphRelatedPprOptions, LinkGraphRetrievalBudget,
+    LinkGraphRetrievalMode, LinkGraphRetrievalPlanInput, LinkGraphRetrievalPlanRecord,
+    LinkGraphScope, LinkGraphSearchFilters, LinkGraphSearchOptions, LinkGraphSemanticDocument,
     LinkGraphSemanticDocumentKind, LinkGraphSemanticDocumentScope, LinkGraphSemanticSearchPolicy,
     LinkGraphSortField, LinkGraphSortOrder, LinkGraphSortTerm, LinkGraphStats, LinkGraphTagFilter,
     PageIndexMeta, PageIndexNode, QuantumAnchorHit, QuantumContext, QuantumFusionOptions,
-    QuantumSemanticSearchRequest,
+    QuantumFusionTelemetry, QuantumSemanticSearchRequest,
 };
 pub use narrator::narrate_subgraph;
 pub use query::{ParsedLinkGraphQuery, parse_search_query};
@@ -65,8 +74,8 @@ pub use runtime_config::{
 pub use saliency::{
     LINK_GRAPH_SALIENCY_SCHEMA_VERSION, LinkGraphSaliencyPolicy, LinkGraphSaliencyState,
     LinkGraphSaliencyTouchRequest, compute_link_graph_saliency, valkey_saliency_del,
-    valkey_saliency_get, valkey_saliency_get_with_valkey, valkey_saliency_touch,
-    valkey_saliency_touch_with_valkey,
+    valkey_saliency_get, valkey_saliency_get_many, valkey_saliency_get_many_with_valkey,
+    valkey_saliency_get_with_valkey, valkey_saliency_touch, valkey_saliency_touch_with_valkey,
 };
 pub use stats_cache::{
     LINK_GRAPH_STATS_CACHE_SCHEMA_VERSION, valkey_stats_cache_del, valkey_stats_cache_get,

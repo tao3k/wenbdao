@@ -1,0 +1,12 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/support/scenario_framework.rs
+expression: result
+---
+{
+  "category": "agentic_expansion",
+  "files": [
+    "result.json"
+  ],
+  "scenario_id": "017_agentic_query_narrows_candidates",
+  "status": "validated"
+}

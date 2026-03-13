@@ -1,13 +1,12 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use arrow::array::{Array, Float64Array};
+use arrow::array::{Array, Float64Array, StringArray};
 use arrow::datatypes::{DataType, Field, Schema};
 use arrow::error::ArrowError;
 use arrow::record_batch::RecordBatch;
 use thiserror::Error;
 
-use super::anchor_batch::{QuantumAnchorBatchError, QuantumAnchorBatchView};
 use crate::link_graph::models::QuantumFusionOptions;
 
 /// Output column appended by [`BatchQuantumScorer`].
@@ -45,28 +44,60 @@ impl BatchQuantumScorer {
         id_col: &str,
         sim_col: &str,
     ) -> Result<RecordBatch, BatchQuantumScorerError> {
-        let batch_view = QuantumAnchorBatchView::new(batch, id_col, sim_col)?;
-        self.score_anchor_batch_view(&batch_view, ppr_map)
-    }
+        let ids_column =
+            batch
+                .column_by_name(id_col)
+                .ok_or_else(|| BatchQuantumScorerError::MissingColumn {
+                    column: id_col.to_string(),
+                })?;
+        let ids = ids_column
+            .as_any()
+            .downcast_ref::<StringArray>()
+            .ok_or_else(|| BatchQuantumScorerError::InvalidUtf8Column {
+                column: id_col.to_string(),
+                data_type: ids_column.data_type().clone(),
+            })?;
 
-    pub(in crate::link_graph::index::search::quantum_fusion) fn score_anchor_batch_view(
-        &self,
-        batch_view: &QuantumAnchorBatchView<'_>,
-        ppr_map: &HashMap<String, f64>,
-    ) -> Result<RecordBatch, BatchQuantumScorerError> {
-        let mut fused_scores = Vec::with_capacity(batch_view.batch().num_rows());
-        for row in batch_view.rows() {
-            let topology_score = ppr_map.get(row.anchor_id).copied().unwrap_or(0.0);
+        let similarity_column = batch.column_by_name(sim_col).ok_or_else(|| {
+            BatchQuantumScorerError::MissingColumn {
+                column: sim_col.to_string(),
+            }
+        })?;
+        let similarities = similarity_column
+            .as_any()
+            .downcast_ref::<Float64Array>()
+            .ok_or_else(|| BatchQuantumScorerError::InvalidFloat64Column {
+                column: sim_col.to_string(),
+                data_type: similarity_column.data_type().clone(),
+            })?;
+
+        let mut fused_scores = Vec::with_capacity(batch.num_rows());
+        for row in 0..batch.num_rows() {
+            if ids.is_null(row) {
+                return Err(BatchQuantumScorerError::NullValue {
+                    column: id_col.to_string(),
+                    row,
+                });
+            }
+            if similarities.is_null(row) {
+                return Err(BatchQuantumScorerError::NullValue {
+                    column: sim_col.to_string(),
+                    row,
+                });
+            }
+
+            let doc_id = ids.value(row);
+            let semantic_score = similarities.value(row);
+            let topology_score = ppr_map.get(doc_id).copied().unwrap_or(0.0);
             fused_scores.push(fuse_saliency_score(
-                row.vector_score,
+                semantic_score,
                 topology_score,
                 &self.options,
             ));
         }
 
         let fused_array: Arc<dyn Array> = Arc::new(Float64Array::from(fused_scores));
-        let mut fields = batch_view
-            .batch()
+        let mut fields = batch
             .schema_ref()
             .fields()
             .iter()
@@ -79,10 +110,10 @@ impl BatchQuantumScorer {
         )));
         let schema = Arc::new(Schema::new_with_metadata(
             fields,
-            batch_view.batch().schema_ref().metadata().clone(),
+            batch.schema_ref().metadata().clone(),
         ));
 
-        let mut columns = batch_view.batch().columns().to_vec();
+        let mut columns = batch.columns().to_vec();
         columns.push(fused_array);
         RecordBatch::try_new(schema, columns).map_err(BatchQuantumScorerError::Arrow)
     }
@@ -124,21 +155,6 @@ pub enum BatchQuantumScorerError {
     /// Arrow failed to construct the fused batch.
     #[error("failed to construct fused RecordBatch: {0}")]
     Arrow(ArrowError),
-}
-
-impl From<QuantumAnchorBatchError> for BatchQuantumScorerError {
-    fn from(value: QuantumAnchorBatchError) -> Self {
-        match value {
-            QuantumAnchorBatchError::MissingColumn { column } => Self::MissingColumn { column },
-            QuantumAnchorBatchError::InvalidUtf8Column { column, data_type } => {
-                Self::InvalidUtf8Column { column, data_type }
-            }
-            QuantumAnchorBatchError::InvalidFloat64Column { column, data_type } => {
-                Self::InvalidFloat64Column { column, data_type }
-            }
-            QuantumAnchorBatchError::NullValue { column, row } => Self::NullValue { column, row },
-        }
-    }
 }
 
 pub(in crate::link_graph::index::search::quantum_fusion) fn fuse_saliency_score(

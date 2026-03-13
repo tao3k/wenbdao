@@ -1,0 +1,12 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/support/scenario_framework.rs
+expression: result
+---
+{
+  "category": "search_match_strategies",
+  "files": [
+    "result.json"
+  ],
+  "scenario_id": "046_search_strat_exact_strategy",
+  "status": "validated"
+}

@@ -1,8 +1,8 @@
 id = "xiuxian.zhixing.agenda.view"
+description = "invalid"
 
 [mcp_contract]
 name = "agenda.view"
-description = "missing structure"
 
 [workflow]
 type = "native_dispatch"

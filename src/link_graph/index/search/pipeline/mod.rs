@@ -1,2 +1,1 @@
-mod collect;
-mod finalize;
+pub mod finalize;

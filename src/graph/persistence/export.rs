@@ -9,8 +9,11 @@ impl KnowledgeGraph {
     ///
     /// Returns [`GraphError::InvalidRelation`] when serialization fails.
     pub fn export_as_json(&self) -> Result<String, GraphError> {
-        let entities = read_lock(&self.entities);
-        let relations = read_lock(&self.relations);
+        let entities =
+            read_lock::<std::collections::HashMap<String, crate::entity::Entity>>(&self.entities);
+        let relations = read_lock::<std::collections::HashMap<String, crate::entity::Relation>>(
+            &self.relations,
+        );
 
         let entities_json: Vec<Value> = entities
             .values()

@@ -8,8 +8,26 @@ use xiuxian_wendao::{
     valkey_suggested_link_recent, valkey_suggested_link_recent_latest,
 };
 
-pub(super) fn handle_log(cli: &Cli, request: LinkGraphSuggestedLinkRequest) -> Result<()> {
-    let row = valkey_suggested_link_log(request).map_err(anyhow::Error::msg)?;
+pub(super) fn handle_log(
+    cli: &Cli,
+    source_id: &str,
+    target_id: &str,
+    relation: &str,
+    confidence: f64,
+    evidence: &str,
+    agent_id: &str,
+    created_at_unix: Option<f64>,
+) -> Result<()> {
+    let row = valkey_suggested_link_log(LinkGraphSuggestedLinkRequest {
+        source_id: source_id.to_string(),
+        target_id: target_id.to_string(),
+        relation: relation.to_string(),
+        confidence,
+        evidence: evidence.to_string(),
+        agent_id: agent_id.to_string(),
+        created_at_unix,
+    })
+    .map_err(anyhow::Error::msg)?;
     emit(&row, cli.output)
 }
 
@@ -19,7 +37,7 @@ pub(super) fn handle_recent(
     latest: bool,
     state: Option<LinkGraphSuggestedLinkState>,
 ) -> Result<()> {
-    let state_filter = state;
+    let state_filter = state.map(Into::into);
     let rows = if latest {
         valkey_suggested_link_recent_latest(limit, state_filter)
     } else {

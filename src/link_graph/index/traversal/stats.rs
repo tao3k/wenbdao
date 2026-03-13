@@ -12,11 +12,13 @@ impl LinkGraphIndex {
                 let out_empty = self
                     .outgoing
                     .get(*doc_id)
-                    .is_none_or(std::collections::HashSet::is_empty);
+                    .map(|v| v.is_empty())
+                    .unwrap_or(true);
                 let in_empty = self
                     .incoming
                     .get(*doc_id)
-                    .is_none_or(std::collections::HashSet::is_empty);
+                    .map(|v| v.is_empty())
+                    .unwrap_or(true);
                 out_empty && in_empty
             })
             .count();

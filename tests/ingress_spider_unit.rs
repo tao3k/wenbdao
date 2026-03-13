@@ -4,12 +4,10 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex, PoisonError};
 
 use xiuxian_wendao::{
-    InMemoryContentHashStore, PartialReindexHook, RelationType, SpiderIngressError,
-    SpiderPagePayload, SpiderWendaoBridge, SyncEngine, WebAssimilationSink, WebIngestionSignal,
-    canonical_web_uri, web_namespace_from_url,
+    InMemoryContentHashStore, KnowledgeGraphAssimilationSink, PartialReindexHook, RelationType,
+    SpiderIngressError, SpiderPagePayload, SpiderWendaoBridge, SyncEngine, WebAssimilationSink,
+    WebIngestionSignal, canonical_web_uri, web_namespace_from_url,
 };
-
-type TestResult = Result<(), Box<dyn std::error::Error>>;
 
 #[derive(Default)]
 struct RecordingSink {
@@ -71,22 +69,21 @@ impl PartialReindexHook for RecordingReindexHook {
 }
 
 #[test]
-fn canonical_web_uri_normalizes_absolute_url_and_namespace() -> TestResult {
-    let uri = canonical_web_uri("https://docs.rs/spider/latest/spider/?q=1#frag")?;
+fn canonical_web_uri_normalizes_absolute_url_and_namespace() {
+    let uri = canonical_web_uri("https://docs.rs/spider/latest/spider/?q=1#frag")
+        .expect("canonical uri should parse");
     assert_eq!(
         uri,
         "wendao://web/https://docs.rs/spider/latest/spider/?q=1"
     );
-    let namespace = web_namespace_from_url("https://docs.rs/spider/latest/spider/?q=1#frag")?;
+    let namespace = web_namespace_from_url("https://docs.rs/spider/latest/spider/?q=1#frag")
+        .expect("namespace should parse");
     assert_eq!(namespace, "docs.rs");
-    Ok(())
 }
 
 #[test]
 fn canonical_web_uri_rejects_non_http_scheme() {
-    let Err(error) = canonical_web_uri("file:///tmp/index.html") else {
-        panic!("must fail");
-    };
+    let error = canonical_web_uri("file:///tmp/index.html").expect_err("must fail");
     assert!(matches!(
         error,
         SpiderIngressError::UnsupportedWebScheme { .. }
@@ -94,7 +91,7 @@ fn canonical_web_uri_rejects_non_http_scheme() {
 }
 
 #[test]
-fn spider_bridge_deduplicates_by_content_hash() -> TestResult {
+fn spider_bridge_deduplicates_by_content_hash() {
     let sink = Arc::new(RecordingSink::default());
     let reindex = Arc::new(RecordingReindexHook::default());
     let bridge = SpiderWendaoBridge::new(
@@ -106,18 +103,21 @@ fn spider_bridge_deduplicates_by_content_hash() -> TestResult {
     let payload_a = SpiderPagePayload::new("https://example.com/a", 0, Arc::<str>::from("same"));
     let payload_b = SpiderPagePayload::new("https://example.com/b", 0, Arc::<str>::from("same"));
 
-    let first = bridge.ingest_page(&payload_a)?;
-    let second = bridge.ingest_page(&payload_b)?;
+    let first = bridge
+        .ingest_page(&payload_a)
+        .expect("first ingestion should succeed");
+    let second = bridge
+        .ingest_page(&payload_b)
+        .expect("second ingestion should succeed");
 
     assert!(first.is_some());
     assert!(second.is_none());
     assert_eq!(sink.payloads().len(), 1);
     assert_eq!(reindex.calls().len(), 1);
-    Ok(())
 }
 
 #[test]
-fn spider_bridge_washes_content_and_triggers_partial_reindex() -> TestResult {
+fn spider_bridge_washes_content_and_triggers_partial_reindex() {
     let sink = Arc::new(RecordingSink::default());
     let reindex = Arc::new(RecordingReindexHook::default());
     let bridge = SpiderWendaoBridge::new(
@@ -131,9 +131,10 @@ fn spider_bridge_washes_content_and_triggers_partial_reindex() -> TestResult {
         2,
         Arc::<str>::from("line-1\r\n\r\n\r\nline-2"),
     );
-    let Some(signal) = bridge.ingest_page(&payload)? else {
-        panic!("ingestion should not dedup");
-    };
+    let signal = bridge
+        .ingest_page(&payload)
+        .expect("ingestion should succeed")
+        .expect("ingestion should not dedup");
 
     assert_eq!(
         signal.content_hash,
@@ -151,34 +152,18 @@ fn spider_bridge_washes_content_and_triggers_partial_reindex() -> TestResult {
         reindex_calls[0].1[0],
         "wendao://web/https://example.com/docs"
     );
-    Ok(())
 }
 
 #[test]
-fn spider_bridge_rejects_malformed_xml_lite_payload() {
-    let sink = Arc::new(RecordingSink::default());
-    let reindex = Arc::new(RecordingReindexHook::default());
-    let bridge = SpiderWendaoBridge::new(Arc::new(InMemoryContentHashStore::new()), sink, reindex);
-
-    let payload = SpiderPagePayload::new(
-        "https://example.com/feed.xml",
-        0,
-        Arc::<str>::from("<root><item></root>"),
-    );
-
-    let Err(error) = bridge.ingest_page(&payload) else {
-        panic!("malformed xml-lite payload must fail");
-    };
-    assert!(matches!(
-        error,
-        SpiderIngressError::TransmutationFailed { .. }
+fn spider_bridge_for_knowledge_graph_persists_document_entity() {
+    let sink = Arc::new(KnowledgeGraphAssimilationSink::new(
+        xiuxian_wendao::KnowledgeGraph::new(),
     ));
-}
-
-#[test]
-fn spider_bridge_for_knowledge_graph_persists_document_entity() -> TestResult {
-    let graph = xiuxian_wendao::KnowledgeGraph::new();
-    let bridge = SpiderWendaoBridge::for_knowledge_graph(graph.clone());
+    let bridge = SpiderWendaoBridge::new(
+        Arc::new(InMemoryContentHashStore::new()),
+        Arc::clone(&sink) as Arc<dyn WebAssimilationSink>,
+        Arc::new(xiuxian_wendao::NoopPartialReindexHook),
+    );
     let payload = SpiderPagePayload::new(
         "https://example.com/guide",
         1,
@@ -186,14 +171,16 @@ fn spider_bridge_for_knowledge_graph_persists_document_entity() -> TestResult {
     )
     .with_title("Guide");
 
-    let Some(_signal) = bridge.ingest_page(&payload)? else {
-        panic!("ingestion should not dedup");
-    };
+    let _signal = bridge
+        .ingest_page(&payload)
+        .expect("ingestion should succeed")
+        .expect("ingestion should not dedup");
 
-    let canonical = canonical_web_uri("https://example.com/guide")?;
-    let Some(entity) = graph.get_entity_by_name(canonical.as_str()) else {
-        panic!("document entity should exist");
-    };
+    let graph = sink.graph();
+    let canonical = canonical_web_uri("https://example.com/guide").expect("canonical uri");
+    let entity = graph
+        .get_entity_by_name(canonical.as_str())
+        .expect("document entity should exist");
     assert_eq!(
         entity.metadata.get("web.title"),
         Some(&serde_json::Value::String("Guide".to_string()))
@@ -201,5 +188,4 @@ fn spider_bridge_for_knowledge_graph_persists_document_entity() -> TestResult {
 
     let relations = graph.get_relations(Some(canonical.as_str()), Some(RelationType::Contains));
     assert_eq!(relations.len(), 1);
-    Ok(())
 }

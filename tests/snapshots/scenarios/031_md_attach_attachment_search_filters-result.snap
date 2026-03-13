@@ -1,0 +1,12 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/support/scenario_framework.rs
+expression: result
+---
+{
+  "category": "markdown_attachments",
+  "files": [
+    "result.json"
+  ],
+  "scenario_id": "031_md_attach_attachment_search_filters",
+  "status": "validated"
+}

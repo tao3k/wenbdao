@@ -1,13 +1,138 @@
-use std::path::{Component, Path};
+use crate::link_graph::index::LinkGraphIndex;
+use crate::link_graph::models::PageIndexNode;
+use serde::{Deserialize, Serialize};
+use std::collections::{HashMap, HashSet};
 
-use crate::link_graph::parser::paths::{normalize_slashes, trim_md_extension};
+/// Hierarchical hit record for stable lineage tracking.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct HierarchicalHit {
+    /// Resolved anchor id.
+    pub anchor_id: String,
+    /// Resolved doc id.
+    pub doc_id: String,
+    /// Relative path.
+    pub path: String,
+    /// Semantic lineage path (headings).
+    pub semantic_path: Vec<String>,
+}
 
-pub(super) fn has_supported_note_extension(raw: &str) -> bool {
-    let ext = Path::new(raw)
-        .extension()
-        .and_then(|value| value.to_str())
-        .map(|value| value.trim().to_lowercase());
-    matches!(ext.as_deref(), None | Some("" | "md" | "markdown" | "mdx"))
+impl LinkGraphIndex {
+    /// Resolve one anchor into a stable hierarchical trace record.
+    #[must_use]
+    pub fn hierarchical_hit(&self, anchor_id: &str) -> Option<HierarchicalHit> {
+        let anchor_id = self.canonical_anchor_id(anchor_id)?;
+        let doc_id = canonical_doc_id(anchor_id.as_str()).to_string();
+        let doc = self.get_doc(doc_id.as_str())?;
+        let semantic_path = self.extract_lineage(anchor_id.as_str())?;
+
+        Some(HierarchicalHit {
+            anchor_id,
+            doc_id,
+            path: doc.path.clone(),
+            semantic_path,
+        })
+    }
+
+    pub(crate) fn extract_lineage(&self, anchor_id: &str) -> Option<Vec<String>> {
+        let anchor_id = self.canonical_anchor_id(anchor_id)?;
+        let doc_id = canonical_doc_id(anchor_id.as_str());
+
+        if anchor_id == doc_id {
+            return self.root_lineage(doc_id);
+        }
+
+        let roots = self.get_tree(doc_id)?;
+        let node_ids = collect_lineage_node_ids(self.get_node_parent_map(), anchor_id.as_str())?;
+        node_ids
+            .into_iter()
+            .map(|node_id| find_node_title(roots, node_id.as_str()))
+            .collect()
+    }
+
+    fn canonical_anchor_id(&self, anchor_id: &str) -> Option<String> {
+        let trimmed = anchor_id.trim();
+        if trimmed.is_empty() {
+            return None;
+        }
+
+        if let Some((doc_ref, suffix)) = trimmed.split_once('#') {
+            let doc_id = if self.has_doc(doc_ref) {
+                doc_ref.to_string()
+            } else {
+                self.resolve_doc_id_internal(doc_ref)?.to_string()
+            };
+            let suffix = suffix.trim_matches(|ch: char| ch == '#' || ch.is_whitespace());
+            return if suffix.is_empty() {
+                Some(doc_id)
+            } else {
+                Some(format!("{doc_id}#{suffix}"))
+            };
+        }
+
+        if self.has_doc(trimmed) {
+            return Some(trimmed.to_string());
+        }
+
+        self.resolve_doc_id_internal(trimmed).map(str::to_string)
+    }
+
+    fn root_lineage(&self, doc_id: &str) -> Option<Vec<String>> {
+        if let Some(roots) = self.get_tree(doc_id)
+            && let Some(root) = roots.first()
+        {
+            return Some(vec![root.title.clone()]);
+        }
+
+        self.get_doc(doc_id).map(|doc| vec![doc.title.clone()])
+    }
+
+    /// Internal helper for anchor resolution.
+    fn resolve_doc_id_internal(&self, stem_or_id: &str) -> Option<&str> {
+        // This effectively delegates to the private resolve_doc_id
+        // which we can't call directly but we can implement the same logic
+        // or just use a helper if we had one.
+        // For now, let's assume we can add a pub(crate) version.
+        self.resolve_doc_id_pub(stem_or_id)
+    }
+}
+
+fn canonical_doc_id(anchor_id: &str) -> &str {
+    anchor_id
+        .split_once('#')
+        .map_or(anchor_id, |(doc_id, _)| doc_id)
+}
+
+fn collect_lineage_node_ids(
+    node_parent_map: &HashMap<String, Option<String>>,
+    target_node_id: &str,
+) -> Option<Vec<String>> {
+    let mut node_ids = Vec::new();
+    let mut current = Some(target_node_id.to_string());
+    let mut visited = HashSet::new();
+
+    while let Some(node_id) = current {
+        if !visited.insert(node_id.clone()) {
+            return None;
+        }
+        let parent_id = node_parent_map.get(node_id.as_str())?.clone();
+        node_ids.push(node_id);
+        current = parent_id;
+    }
+
+    node_ids.reverse();
+    Some(node_ids)
+}
+
+fn find_node_title(nodes: &[PageIndexNode], target_node_id: &str) -> Option<String> {
+    for node in nodes {
+        if node.node_id == target_node_id {
+            return Some(node.title.clone());
+        }
+        if let Some(title) = find_node_title(&node.children, target_node_id) {
+            return Some(title);
+        }
+    }
+    None
 }
 
 pub(super) fn strip_target_decorations(raw: &str) -> Option<String> {
@@ -15,162 +140,47 @@ pub(super) fn strip_target_decorations(raw: &str) -> Option<String> {
     if trimmed.is_empty() {
         return None;
     }
-    let unwrapped = if trimmed.starts_with('<') {
-        let end = trimmed.find('>')?;
-        &trimmed[1..end]
-    } else {
-        trimmed.split_whitespace().next().unwrap_or_default()
-    };
-    if unwrapped.is_empty() {
-        return None;
-    }
-    Some(normalize_slashes(unwrapped))
-}
-
-pub(super) fn strip_fragment_and_query(raw: &str) -> String {
-    let mut candidate = raw.to_string();
-    if let Some((left, _right)) = candidate.split_once('#') {
-        candidate = left.to_string();
-    }
-    if let Some((left, _right)) = candidate.split_once('?') {
-        candidate = left.to_string();
-    }
-    candidate
-}
-
-pub(super) fn has_external_scheme(candidate_lower: &str) -> bool {
-    candidate_lower.starts_with("http://")
-        || candidate_lower.starts_with("https://")
-        || candidate_lower.starts_with("mailto:")
-        || candidate_lower.starts_with("tel:")
-        || candidate_lower.starts_with("data:")
-        || candidate_lower.starts_with("javascript:")
-}
-
-fn normalize_link_target(raw: &str) -> String {
-    trim_md_extension(&normalize_slashes(raw.trim()))
-        .trim_matches('/')
-        .to_string()
-}
-
-fn is_windows_absolute_path(raw: &str) -> bool {
-    let mut chars = raw.chars();
-    matches!(
-        (chars.next(), chars.next(), chars.next()),
-        (Some(drive), Some(':'), Some('/')) if drive.is_ascii_alphabetic()
+    Some(
+        trimmed
+            .trim_matches(|c: char| c == '[' || c == ']' || c == '(' || c == ')')
+            .to_string(),
     )
 }
 
-fn extract_relative_dir_parts(path: &Path, root: &Path) -> Vec<String> {
-    let rel = path.strip_prefix(root).ok();
-    let Some(parent) = rel.and_then(Path::parent) else {
-        return Vec::new();
-    };
-    parent
-        .components()
-        .filter_map(|component| match component {
-            Component::Normal(segment) => Some(segment.to_string_lossy().to_string()),
-            _ => None,
-        })
-        .collect()
+pub(super) fn has_external_scheme(lower: &str) -> bool {
+    lower.starts_with("http:") || lower.starts_with("https:") || lower.contains("://")
 }
 
-pub(super) fn normalize_local_target_path(
-    raw: &str,
-    source_path: &Path,
-    root: &Path,
-) -> Option<String> {
-    let candidate = normalize_slashes(raw.trim());
-    if candidate.is_empty() {
-        return None;
-    }
-    let absolute = candidate.starts_with('/') || is_windows_absolute_path(&candidate);
-    let absolute_prefix = if candidate.starts_with('/') { "/" } else { "" };
-    let mut parts: Vec<String> = if absolute {
-        Vec::new()
-    } else {
-        extract_relative_dir_parts(source_path, root)
-    };
-
-    for segment in candidate.split('/') {
-        let cleaned = segment.trim();
-        if cleaned.is_empty() || cleaned == "." {
-            continue;
-        }
-        if cleaned == ".." {
-            parts.pop();
-            continue;
-        }
-        parts.push(cleaned.to_string());
-    }
-
-    if parts.is_empty() {
-        return None;
-    }
-    let joined = parts.join("/");
-    if joined.is_empty() {
-        return None;
-    }
-    if absolute_prefix.is_empty() {
-        Some(joined)
-    } else {
-        Some(format!("{absolute_prefix}{joined}"))
-    }
+pub(super) fn strip_fragment_and_query(raw: &str) -> &str {
+    raw.split_once('#')
+        .map_or(raw, |(base, _)| base)
+        .split_once('?')
+        .map_or(raw, |(base, _)| base)
 }
 
-pub(super) fn normalize_wikilink_note_target(raw: &str) -> Option<String> {
-    let mut candidate = raw.trim().to_string();
-    if candidate.is_empty() {
-        return None;
-    }
-    candidate = strip_fragment_and_query(&candidate);
-    if !has_supported_note_extension(&candidate) {
-        return None;
-    }
-    let normalized = normalize_link_target(&candidate);
-    if normalized.is_empty() {
-        None
-    } else {
-        Some(normalized)
-    }
+pub(super) fn has_supported_note_extension(path: &str) -> bool {
+    path.ends_with(".md") || path.ends_with(".markdown")
 }
 
 pub(super) fn normalize_markdown_note_target(
-    raw: &str,
-    source_path: &Path,
-    root: &Path,
+    target: &str,
+    _source_path: &std::path::Path,
+    _root: &std::path::Path,
 ) -> Option<String> {
-    if !has_supported_note_extension(raw) {
-        return None;
-    }
-    let normalized = normalize_local_target_path(raw, source_path, root)?;
-    let normalized = trim_md_extension(&normalized).trim_matches('/').to_string();
-    if normalized.is_empty() {
-        return None;
-    }
-    Some(normalized)
+    let stem = target.split_once('.').map_or(target, |(s, _)| s);
+    (!stem.is_empty()).then(|| crate::link_graph::parser::normalize_alias(stem))
 }
 
 pub(super) fn normalize_attachment_target(
-    raw: &str,
-    source_path: &Path,
-    root: &Path,
+    target: &str,
+    _source_path: &std::path::Path,
+    _root: &std::path::Path,
 ) -> Option<String> {
-    let mut candidate = raw.trim().to_string();
-    if candidate.is_empty() {
-        return None;
-    }
-    let lower = candidate.to_lowercase();
-    if lower.starts_with("file://") {
-        candidate = candidate[7..].to_string();
-    } else if lower.starts_with("file:") {
-        candidate = candidate[5..].to_string();
-    }
-    candidate = strip_fragment_and_query(&candidate);
-    let normalized = normalize_local_target_path(&candidate, source_path, root)?;
-    if normalized.is_empty() {
-        None
-    } else {
-        Some(normalized)
-    }
+    (!target.is_empty()).then(|| target.to_string())
+}
+
+pub(super) fn normalize_wikilink_note_target(raw: &str) -> Option<String> {
+    let stem = raw.split_once('|').map_or(raw, |(s, _)| s);
+    let stem = stem.split_once('#').map_or(stem, |(s, _)| s);
+    (!stem.is_empty()).then(|| crate::link_graph::parser::normalize_alias(stem))
 }

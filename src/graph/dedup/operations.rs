@@ -1,25 +1,71 @@
-use super::super::core::read_lock;
-use super::super::{GraphError, KnowledgeGraph};
-use super::DeduplicationResult;
+//! Entity deduplication, normalization, and similarity scoring.
+
 use crate::entity::Entity;
+use crate::graph::{GraphError, KnowledgeGraph, read_lock};
 use serde_json::json;
 use std::collections::HashSet;
+use unicode_normalization::UnicodeNormalization;
+
+/// Result of deduplication operation.
+#[derive(Debug, Clone, Default)]
+pub struct DeduplicationResult {
+    /// Number of duplicate groups found
+    pub duplicate_groups_found: usize,
+    /// Number of entities merged (removed)
+    pub entities_merged: usize,
+}
 
 impl KnowledgeGraph {
+    /// Calculate similarity between two entity names (0.0 to 1.0).
+    pub fn name_similarity(name1: &str, name2: &str) -> f32 {
+        let n1 = normalize_name(name1);
+        let n2 = normalize_name(name2);
+
+        if n1 == n2 {
+            return 1.0;
+        }
+
+        // Exact substring match
+        if n1.contains(&n2) || n2.contains(&n1) {
+            return 0.9;
+        }
+
+        // Levenshtein-based similarity
+        let max_len = std::cmp::max(n1.len(), n2.len());
+        if max_len == 0 {
+            return 1.0;
+        }
+
+        let distance = levenshtein_distance(&n1, &n2);
+        let similarity = 1.0 - (distance as f32 / max_len as f32);
+
+        // Apply bonus for word overlap
+        let words1: HashSet<&str> = n1.split_whitespace().collect();
+        let words2: HashSet<&str> = n2.split_whitespace().collect();
+        let overlap = words1.intersection(&words2).count() as f32;
+        let word_bonus = if !words1.is_empty() && !words2.is_empty() {
+            overlap / (words1.len() + words2.len()) as f32 * 0.2
+        } else {
+            0.0
+        };
+
+        (similarity + word_bonus).min(1.0).max(0.0)
+    }
+
     /// Find potential duplicate entities.
-    #[must_use]
     pub fn find_duplicates(&self, threshold: f32) -> Vec<Vec<String>> {
         let entities = read_lock(&self.entities);
         let names: Vec<(String, String)> = entities
             .values()
-            .map(|entity| (entity.name.clone(), entity.id.clone()))
+            .map(|e: &Entity| (e.name.clone(), e.id.clone()))
             .collect();
 
         let mut groups: Vec<Vec<String>> = Vec::new();
         let mut visited: HashSet<String> = HashSet::new();
 
         for (name, id) in &names {
-            if visited.contains(id) {
+            let id_str: &str = id.as_str();
+            if visited.contains(id_str) {
                 continue;
             }
 
@@ -27,7 +73,7 @@ impl KnowledgeGraph {
             visited.insert(id.clone());
 
             for (other_name, other_id) in &names {
-                if id == other_id || visited.contains(other_id) {
+                if id == other_id || visited.contains(other_id.as_str()) {
                     continue;
                 }
 
@@ -46,10 +92,6 @@ impl KnowledgeGraph {
     }
 
     /// Merge multiple entities into a single canonical entity.
-    ///
-    /// # Errors
-    ///
-    /// Returns [`GraphError::EntityNotFound`] when no IDs can be resolved.
     pub fn merge_entities(
         &self,
         entity_ids: &[String],
@@ -57,13 +99,14 @@ impl KnowledgeGraph {
     ) -> Result<Entity, GraphError> {
         let entities = read_lock(&self.entities);
 
-        let mut merged = None;
+        let mut merged: Option<Entity> = None;
         let mut all_aliases: Vec<String> = Vec::new();
         let mut sources: Vec<String> = Vec::new();
         let mut max_confidence: f32 = 0.0;
 
         for id in entity_ids {
             if let Some(entity) = entities.get(id) {
+                let entity: &Entity = entity;
                 if merged.is_none() {
                     merged = Some(entity.clone());
                 } else if let Some(current) = &mut merged {
@@ -76,10 +119,10 @@ impl KnowledgeGraph {
                         all_aliases.push(entity.name.clone());
                     }
 
-                    if let Some(ref src) = entity.source
-                        && !sources.contains(src)
-                    {
-                        sources.push(src.clone());
+                    if let Some(ref src) = entity.source {
+                        if !sources.contains(src) {
+                            sources.push(src.clone());
+                        }
                     }
 
                     max_confidence = max_confidence.max(entity.confidence);
@@ -122,7 +165,6 @@ impl KnowledgeGraph {
     }
 
     /// Auto-deduplicate the graph based on similarity threshold.
-    #[must_use]
     pub fn deduplicate(&self, threshold: f32) -> DeduplicationResult {
         let duplicates = self.find_duplicates(threshold);
 
@@ -163,9 +205,56 @@ impl KnowledgeGraph {
             }
         }
 
-        best.map_or_else(
-            || entity_ids.first().cloned().unwrap_or_default(),
-            |(_, name)| name,
-        )
+        best.map(|(_, name)| name)
+            .unwrap_or_else(|| entity_ids.first().cloned().unwrap_or_default())
     }
+}
+
+// ---------------------------------------------------------------------------
+// Internal helpers
+// ---------------------------------------------------------------------------
+
+/// Normalize entity name for comparison (Unicode NFKC + lowercase).
+fn normalize_name(name: &str) -> String {
+    let normalized: String = name.nfkc().collect();
+    normalized
+        .to_lowercase()
+        .trim()
+        .replace(|c: char| !c.is_alphanumeric() && c != ' ', "")
+}
+
+/// Calculate Levenshtein distance between two strings.
+fn levenshtein_distance(a: &str, b: &str) -> usize {
+    let a_chars: Vec<char> = a.chars().collect();
+    let b_chars: Vec<char> = b.chars().collect();
+
+    let (m, n) = (a_chars.len(), b_chars.len());
+
+    if m == 0 {
+        return n;
+    }
+    if n == 0 {
+        return m;
+    }
+
+    let mut prev = (0..=n).collect::<Vec<_>>();
+    let mut curr = vec![0; n + 1];
+
+    for i in 1..=m {
+        curr[0] = i;
+        for j in 1..=n {
+            let cost = if a_chars[i - 1] == b_chars[j - 1] {
+                0
+            } else {
+                1
+            };
+            let deletion = prev[j] + 1;
+            let insertion = curr[j - 1] + 1;
+            let substitution = prev[j - 1] + cost;
+            curr[j] = deletion.min(insertion).min(substitution);
+        }
+        std::mem::swap(&mut prev, &mut curr);
+    }
+
+    prev[n]
 }

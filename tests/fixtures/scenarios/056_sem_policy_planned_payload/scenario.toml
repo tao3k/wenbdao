@@ -1,0 +1,17 @@
+[scenario]
+id = "056_sem_policy_planned_payload"
+name = "planned payload"
+description = "semantic_policy scenario"
+category = "semantic_policy"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+
+[expected]
+type = "json_snapshot"
+files = ["result.json"]
+
+[runner]
+build_page_index = true
+collect_links = true

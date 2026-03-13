@@ -4,7 +4,7 @@ use crate::link_graph::{
     LINK_GRAPH_REASON_GRAPH_ONLY_REQUESTED_EMPTY, LINK_GRAPH_REASON_GRAPH_SUFFICIENT,
     LINK_GRAPH_REASON_VECTOR_ONLY_REQUESTED, LinkGraphConfidenceLevel, LinkGraphHit,
     LinkGraphRetrievalBudget, LinkGraphRetrievalMode, LinkGraphRetrievalPlanInput,
-    LinkGraphRetrievalPlanRecord, LinkGraphSearchOptions,
+    LinkGraphRetrievalPlanRecord,
 };
 use std::collections::HashSet;
 
@@ -94,30 +94,26 @@ fn count_source_hints(hits: &[LinkGraphHit], cap: usize) -> usize {
 pub(super) fn evaluate_link_graph_policy(
     hits: &[LinkGraphHit],
     effective_limit: usize,
-    options: &LinkGraphSearchOptions,
 ) -> LinkGraphPolicyDecision {
     let runtime = resolve_link_graph_retrieval_policy_runtime();
     let requested_mode = runtime.mode;
-    let semantic_policy = options
-        .semantic_policy
-        .merged_with_defaults(&runtime.semantic_policy);
     let graph_hit_count = hits.len();
     let source_hint_count = count_source_hints(hits, runtime.max_sources);
     let (graph_confidence_score, graph_confidence_level) =
         compute_graph_confidence(hits, runtime.hybrid_min_hits, runtime.hybrid_min_top_score);
 
-    let (selected_mode, reason) = match requested_mode {
+    let (selected_mode, reason): (LinkGraphRetrievalMode, String) = match requested_mode {
         LinkGraphRetrievalMode::VectorOnly => (
             LinkGraphRetrievalMode::VectorOnly,
             LINK_GRAPH_REASON_VECTOR_ONLY_REQUESTED.to_string(),
         ),
         LinkGraphRetrievalMode::GraphOnly => {
-            let reason = if hits.is_empty() {
+            let reason_str = if hits.is_empty() {
                 LINK_GRAPH_REASON_GRAPH_ONLY_REQUESTED_EMPTY
             } else {
                 LINK_GRAPH_REASON_GRAPH_ONLY_REQUESTED
             };
-            (LinkGraphRetrievalMode::GraphOnly, reason.to_string())
+            (LinkGraphRetrievalMode::GraphOnly, reason_str.to_string())
         }
         LinkGraphRetrievalMode::Hybrid => {
             if graph_is_sufficient(hits, runtime.hybrid_min_hits, runtime.hybrid_min_top_score) {
@@ -150,7 +146,6 @@ pub(super) fn evaluate_link_graph_policy(
         source_hint_count,
         graph_confidence_score,
         graph_confidence_level,
-        semantic_policy,
         budget,
     });
 

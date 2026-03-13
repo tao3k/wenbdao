@@ -48,29 +48,11 @@
       "type": "object",
       "additionalProperties": { "$ref": "#/$defs/document" }
     },
-    "passages_by_id": {
-      "type": "object",
-      "additionalProperties": { "$ref": "#/$defs/passage" }
-    },
     "sections_by_doc": {
       "type": "object",
       "additionalProperties": {
         "type": "array",
         "items": { "$ref": "#/$defs/indexed_section" }
-      }
-    },
-    "trees_by_doc": {
-      "type": "object",
-      "additionalProperties": {
-        "type": "array",
-        "items": { "$ref": "#/$defs/page_index_node" }
-      }
-    },
-    "attachments_by_doc": {
-      "type": "object",
-      "additionalProperties": {
-        "type": "array",
-        "items": { "$ref": "#/$defs/attachment" }
       }
     },
     "alias_to_doc_id": {
@@ -137,8 +119,6 @@
         "word_count",
         "search_text",
         "search_text_lower",
-        "saliency_base",
-        "decay_rate",
         "created_ts",
         "modified_ts"
       ],
@@ -160,15 +140,12 @@
           "items": { "type": "string" }
         },
         "lead": { "type": "string" },
-        "doc_type": { "type": ["string", "null"] },
         "word_count": {
           "type": "integer",
           "minimum": 0
         },
         "search_text": { "type": "string" },
         "search_text_lower": { "type": "string" },
-        "saliency_base": { "type": "number" },
-        "decay_rate": { "type": "number" },
         "created_ts": { "type": ["integer", "null"] },
         "modified_ts": { "type": ["integer", "null"] }
       }
@@ -177,136 +154,21 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "heading_title",
         "heading_path",
         "heading_path_lower",
         "heading_level",
-        "line_start",
-        "line_end",
         "section_text",
         "section_text_lower"
       ],
       "properties": {
-        "heading_title": { "type": "string" },
         "heading_path": { "type": "string" },
         "heading_path_lower": { "type": "string" },
         "heading_level": {
           "type": "integer",
           "minimum": 0
         },
-        "line_start": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "line_end": {
-          "type": "integer",
-          "minimum": 1
-        },
         "section_text": { "type": "string" },
-        "section_text_lower": { "type": "string" },
-        "entities": {
-          "type": "array",
-          "items": { "type": "string" }
-        }
-      }
-    },
-    "passage": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "parent_doc_id",
-        "content",
-        "content_lower",
-        "entities"
-      ],
-      "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "parent_doc_id": { "type": "string", "minLength": 1 },
-        "content": { "type": "string" },
-        "content_lower": { "type": "string" },
-        "entities": {
-          "type": "array",
-          "items": { "type": "string" }
-        }
-      }
-    },
-    "attachment": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "source_id",
-        "source_stem",
-        "source_path",
-        "source_title",
-        "attachment_path",
-        "attachment_name",
-        "attachment_ext",
-        "kind"
-      ],
-      "properties": {
-        "source_id": { "type": "string", "minLength": 1 },
-        "source_stem": { "type": "string", "minLength": 1 },
-        "source_path": { "type": "string", "minLength": 1 },
-        "source_title": { "type": "string" },
-        "attachment_path": { "type": "string", "minLength": 1 },
-        "attachment_name": { "type": "string", "minLength": 1 },
-        "attachment_ext": { "type": "string" },
-        "kind": {
-          "type": "string",
-          "enum": [
-            "image",
-            "pdf",
-            "gpg",
-            "document",
-            "archive",
-            "audio",
-            "video",
-            "other"
-          ]
-        }
-      }
-    },
-    "page_index_meta": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["line_range", "token_count", "is_thinned"],
-      "properties": {
-        "line_range": {
-          "type": "array",
-          "prefixItems": [
-            { "type": "integer", "minimum": 1 },
-            { "type": "integer", "minimum": 1 }
-          ],
-          "minItems": 2,
-          "maxItems": 2
-        },
-        "token_count": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "is_thinned": { "type": "boolean" }
-      }
-    },
-    "page_index_node": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["node_id", "title", "level", "text", "children", "metadata"],
-      "properties": {
-        "node_id": { "type": "string", "minLength": 1 },
-        "title": { "type": "string" },
-        "level": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 6
-        },
-        "text": { "type": "string" },
-        "summary": { "type": ["string", "null"] },
-        "children": {
-          "type": "array",
-          "items": { "$ref": "#/$defs/page_index_node" }
-        },
-        "metadata": { "$ref": "#/$defs/page_index_meta" }
+        "section_text_lower": { "type": "string" }
       }
     }
   }

@@ -1,0 +1,15 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/support/scenario_framework.rs
+expression: result
+---
+{
+  "category": "hybrid",
+  "files": [
+    "arrow_zero_copy.json",
+    "contexts_from_anchors.json",
+    "duplicate_anchor_rows.json",
+    "page_index_doc_fallback.json"
+  ],
+  "scenario_id": "030_hybrid_quantum_fusion",
+  "status": "validated"
+}

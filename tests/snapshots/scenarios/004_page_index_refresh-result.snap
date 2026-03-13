@@ -1,0 +1,22 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/support/scenario_framework.rs
+expression: result
+---
+{
+  "nodes": [
+    {
+      "children": [],
+      "is_thinned": false,
+      "level": 1,
+      "line_range": [
+        1,
+        3
+      ],
+      "node_id": "docs/refresh#refresh",
+      "summary": null,
+      "text": "refresh root body carries enough words to avoid thinning before incremental updates arrive.",
+      "title": "Refresh",
+      "token_count": 13
+    }
+  ]
+}

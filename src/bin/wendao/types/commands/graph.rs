@@ -45,11 +45,6 @@ pub(crate) struct MetadataArgs {
 }
 
 #[derive(Args, Debug)]
-pub(crate) struct PageIndexArgs {
-    pub stem: String,
-}
-
-#[derive(Args, Debug)]
 pub(crate) struct ResolveArgs {
     pub alias: String,
     #[arg(short, long, default_value_t = 50)]

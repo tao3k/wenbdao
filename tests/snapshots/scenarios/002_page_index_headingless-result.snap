@@ -1,0 +1,22 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/support/scenario_framework.rs
+expression: result
+---
+{
+  "nodes": [
+    {
+      "children": [],
+      "is_thinned": false,
+      "level": 1,
+      "line_range": [
+        1,
+        2
+      ],
+      "node_id": "notes/plain#plain",
+      "summary": null,
+      "text": "Just body text without headings.\nStill part of the same section.",
+      "title": "plain",
+      "token_count": 11
+    }
+  ]
+}

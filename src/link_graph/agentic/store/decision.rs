@@ -12,11 +12,6 @@ use crate::link_graph::runtime_config::{
 };
 
 /// Apply one suggested-link decision transition (`provisional -> promoted/rejected`).
-///
-/// # Errors
-///
-/// Returns an error when runtime configuration is invalid, Valkey operations fail, the target
-/// suggestion does not exist, or the transition is not allowed.
 pub fn valkey_suggested_link_decide(
     request: LinkGraphSuggestedLinkDecisionRequest,
 ) -> Result<LinkGraphSuggestedLinkDecisionResult, String> {
@@ -32,11 +27,6 @@ pub fn valkey_suggested_link_decide(
 }
 
 /// Apply one suggested-link decision transition on explicit Valkey endpoint.
-///
-/// # Errors
-///
-/// Returns an error when inputs are invalid, serialization fails, Valkey operations fail, the
-/// target suggestion does not exist, or the transition is not allowed.
 pub fn valkey_suggested_link_decide_with_valkey(
     request: LinkGraphSuggestedLinkDecisionRequest,
     valkey_url: &str,
@@ -66,7 +56,7 @@ pub fn valkey_suggested_link_decide_with_valkey(
     let rows = redis::cmd("LRANGE")
         .arg(&stream_key)
         .arg(0)
-        .arg(i64::try_from(bounded_max_entries.saturating_sub(1)).unwrap_or(i64::MAX))
+        .arg((bounded_max_entries - 1) as i64)
         .query::<Vec<String>>(&mut conn)
         .map_err(|err| format!("failed to LRANGE suggested_link stream: {err}"))?;
 
@@ -146,10 +136,6 @@ pub fn valkey_suggested_link_decide_with_valkey(
 }
 
 /// Read recent suggested-link decision audit rows.
-///
-/// # Errors
-///
-/// Returns an error when runtime configuration is invalid or Valkey operations fail.
 pub fn valkey_suggested_link_decisions_recent(
     limit: usize,
 ) -> Result<Vec<LinkGraphSuggestedLinkDecision>, String> {
@@ -162,10 +148,6 @@ pub fn valkey_suggested_link_decisions_recent(
 }
 
 /// Read recent suggested-link decision audit rows from explicit Valkey endpoint.
-///
-/// # Errors
-///
-/// Returns an error when inputs are invalid or Valkey operations fail.
 pub fn valkey_suggested_link_decisions_recent_with_valkey(
     limit: usize,
     valkey_url: &str,
@@ -188,7 +170,7 @@ pub fn valkey_suggested_link_decisions_recent_with_valkey(
     let rows = redis::cmd("LRANGE")
         .arg(&stream_key)
         .arg(0)
-        .arg(i64::try_from(bounded_limit.saturating_sub(1)).unwrap_or(i64::MAX))
+        .arg((bounded_limit - 1) as i64)
         .query::<Vec<String>>(&mut conn)
         .map_err(|err| format!("failed to LRANGE suggested_link decision stream: {err}"))?;
 

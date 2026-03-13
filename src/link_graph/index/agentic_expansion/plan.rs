@@ -16,6 +16,7 @@ use workers::partition_expansion_workers;
 struct ExpansionCandidateDoc {
     doc_id: String,
     rank: f64,
+    saliency_signal: f64,
     tags: HashSet<String>,
 }
 

@@ -1,49 +1,57 @@
 use crate::entity::{Entity, Relation};
 use std::collections::{HashMap, HashSet};
-use std::sync::{Arc, PoisonError, RwLock, RwLockReadGuard, RwLockWriteGuard};
+use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 
-pub(super) fn read_lock<T>(lock: &RwLock<T>) -> RwLockReadGuard<'_, T> {
-    lock.read().unwrap_or_else(PoisonError::into_inner)
+/// Acquire a read lock on a [`RwLock`].
+///
+/// Returns the inner guard even if the lock is poisoned.
+pub fn read_lock<T>(lock: &RwLock<T>) -> RwLockReadGuard<'_, T> {
+    lock.read().unwrap_or_else(|poisoned| poisoned.into_inner())
 }
 
-pub(super) fn write_lock<T>(lock: &RwLock<T>) -> RwLockWriteGuard<'_, T> {
-    lock.write().unwrap_or_else(PoisonError::into_inner)
+/// Acquire a write lock on a [`RwLock`].
+///
+/// Returns the inner guard even if the lock is poisoned.
+pub fn write_lock<T>(lock: &RwLock<T>) -> RwLockWriteGuard<'_, T> {
+    lock.write()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
 }
 
-/// Knowledge graph storage.
-#[derive(Debug, Clone)]
+/// In-memory knowledge graph state.
+#[derive(Debug, Default)]
 pub struct KnowledgeGraph {
-    /// Entities by ID
-    pub(crate) entities: Arc<RwLock<HashMap<String, Entity>>>,
-    /// Entities by name (for quick lookup)
-    pub(crate) entities_by_name: Arc<RwLock<HashMap<String, String>>>,
-    /// Relations by ID
-    pub(crate) relations: Arc<RwLock<HashMap<String, Relation>>>,
-    /// Outgoing relations (entity name -> set of relation IDs)
-    pub(crate) outgoing_relations: Arc<RwLock<HashMap<String, HashSet<String>>>>,
-    /// Incoming relations (entity name -> set of relation IDs)
-    pub(crate) incoming_relations: Arc<RwLock<HashMap<String, HashSet<String>>>>,
-    /// Entities by type
-    pub(crate) entities_by_type: Arc<RwLock<HashMap<String, Vec<String>>>>,
+    pub(crate) entities: RwLock<HashMap<String, Entity>>,
+    pub(crate) entities_by_name: RwLock<HashMap<String, String>>,
+    pub(crate) entities_by_type: RwLock<HashMap<String, Vec<String>>>,
+    pub(crate) relations: RwLock<HashMap<String, Relation>>,
+    pub(crate) outgoing_relations: RwLock<HashMap<String, HashSet<String>>>,
+    pub(crate) incoming_relations: RwLock<HashMap<String, HashSet<String>>>,
 }
 
-impl Default for KnowledgeGraph {
-    fn default() -> Self {
-        Self::new()
+impl Clone for KnowledgeGraph {
+    fn clone(&self) -> Self {
+        let entities = read_lock(&self.entities).clone();
+        let entities_by_name = read_lock(&self.entities_by_name).clone();
+        let entities_by_type = read_lock(&self.entities_by_type).clone();
+        let relations = read_lock(&self.relations).clone();
+        let outgoing_relations = read_lock(&self.outgoing_relations).clone();
+        let incoming_relations = read_lock(&self.incoming_relations).clone();
+
+        Self {
+            entities: RwLock::new(entities),
+            entities_by_name: RwLock::new(entities_by_name),
+            entities_by_type: RwLock::new(entities_by_type),
+            relations: RwLock::new(relations),
+            outgoing_relations: RwLock::new(outgoing_relations),
+            incoming_relations: RwLock::new(incoming_relations),
+        }
     }
 }
 
 impl KnowledgeGraph {
-    /// Create a new knowledge graph.
+    /// Create a new empty knowledge graph.
     #[must_use]
     pub fn new() -> Self {
-        Self {
-            entities: Arc::new(RwLock::new(HashMap::new())),
-            entities_by_name: Arc::new(RwLock::new(HashMap::new())),
-            relations: Arc::new(RwLock::new(HashMap::new())),
-            outgoing_relations: Arc::new(RwLock::new(HashMap::new())),
-            incoming_relations: Arc::new(RwLock::new(HashMap::new())),
-            entities_by_type: Arc::new(RwLock::new(HashMap::new())),
-        }
+        Self::default()
     }
 }

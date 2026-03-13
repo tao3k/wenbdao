@@ -1,0 +1,12 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/support/scenario_framework.rs
+expression: result
+---
+{
+  "category": "agentic_expansion",
+  "files": [
+    "result.json"
+  ],
+  "scenario_id": "018_agentic_worker_and_pair_budgets",
+  "status": "validated"
+}

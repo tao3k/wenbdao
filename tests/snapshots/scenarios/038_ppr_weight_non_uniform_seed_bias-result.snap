@@ -1,0 +1,12 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/support/scenario_framework.rs
+expression: result
+---
+{
+  "category": "ppr_weighting",
+  "files": [
+    "result.json"
+  ],
+  "scenario_id": "038_ppr_weight_non_uniform_seed_bias",
+  "status": "validated"
+}

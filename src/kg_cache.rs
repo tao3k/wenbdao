@@ -1,4 +1,5 @@
 //! In-process cache for `KnowledgeGraph` loaded from Valkey.
+#![allow(clippy::doc_markdown)]
 //!
 //! Avoids repeated backend reads when the same graph scope key is accessed
 //! across multiple recall operations. Cache is invalidated on save so ingest
@@ -8,7 +9,7 @@ use crate::graph::{GraphError, KnowledgeGraph};
 use log::debug;
 use std::collections::HashMap;
 use std::path::Path;
-use std::sync::{LazyLock, Mutex};
+use std::sync::{LazyLock, Mutex, MutexGuard};
 
 static KG_CACHE: LazyLock<Mutex<HashMap<String, KnowledgeGraph>>> =
     LazyLock::new(|| Mutex::new(HashMap::new()));
@@ -36,9 +37,11 @@ pub fn load_from_valkey_cached(scope_key: &str) -> Result<Option<KnowledgeGraph>
     let key = normalize_scope(scope_key);
 
     {
-        let cache = KG_CACHE
-            .lock()
-            .map_err(|e| GraphError::InvalidRelation("cache_lock".into(), e.to_string()))?;
+        let cache = KG_CACHE.lock().map_err(
+            |e: std::sync::PoisonError<MutexGuard<'_, HashMap<String, KnowledgeGraph>>>| {
+                GraphError::InvalidRelation("cache_lock".into(), e.to_string())
+            },
+        )?;
         if let Some(cached) = cache.get(&key) {
             debug!("KG cache hit for scope: {key}");
             return Ok(Some(cached.clone()));
@@ -52,9 +55,11 @@ pub fn load_from_valkey_cached(scope_key: &str) -> Result<Option<KnowledgeGraph>
     } else {
         let cloned = graph.clone();
         {
-            let mut cache = KG_CACHE
-                .lock()
-                .map_err(|e| GraphError::InvalidRelation("cache_lock".into(), e.to_string()))?;
+            let mut cache = KG_CACHE.lock().map_err(
+                |e: std::sync::PoisonError<MutexGuard<'_, HashMap<String, KnowledgeGraph>>>| {
+                    GraphError::InvalidRelation("cache_lock".into(), e.to_string())
+                },
+            )?;
             cache.insert(key.clone(), graph);
             debug!(
                 "KG cache insert for scope: {key} ({} entities, {} relations)",
@@ -77,14 +82,15 @@ fn load_from_valkey_impl(scope_key: &str) -> Result<KnowledgeGraph, GraphError> 
 /// Invalidate cache for the given scope key.
 pub fn invalidate(scope_key: &str) {
     let key = normalize_scope(scope_key);
-    if let Ok(mut cache) = KG_CACHE.lock()
-        && cache.remove(&key).is_some()
-    {
-        debug!("KG cache invalidated for scope: {key}");
+    if let Ok(mut cache) = KG_CACHE.lock() {
+        if cache.remove(&key).is_some() {
+            debug!("KG cache invalidated for scope: {key}");
+        }
     }
 }
 
 /// Invalidate all cached graphs (for testing or full reset).
+#[allow(dead_code)]
 pub fn invalidate_all() {
     if let Ok(mut cache) = KG_CACHE.lock() {
         let count = cache.len();
@@ -96,7 +102,12 @@ pub fn invalidate_all() {
 }
 
 /// Return the number of cached entries (for testing).
+#[allow(dead_code)]
 #[must_use]
 pub fn cache_len() -> usize {
-    KG_CACHE.lock().map_or(0, |c| c.len())
+    KG_CACHE
+        .lock()
+        .map_or(0, |c: MutexGuard<'_, HashMap<String, KnowledgeGraph>>| {
+            c.len()
+        })
 }

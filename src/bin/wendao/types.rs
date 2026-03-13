@@ -8,5 +8,5 @@ mod commands;
 mod enums;
 
 pub(crate) use cli::Cli;
-pub(crate) use commands::{AgenticCommand, Command, HmasCommand, SaliencyCommand, SearchArgs};
-pub(crate) use enums::{OutputFormat, RelatedPprSubgraphModeArg};
+pub(crate) use commands::{AgenticCommand, Command, HmasCommand, SaliencyCommand};
+pub(crate) use enums::{LinkGraphScopeArg, OutputFormat, RelatedPprSubgraphModeArg};

@@ -1,6 +1,6 @@
 //! Integration tests for `xiuxian_wendao::unified_symbol_py` internals.
 
-use xiuxian_wendao::unified_symbol::UnifiedSymbolIndex;
+use xiuxian_wendao::UnifiedSymbolIndex;
 
 #[test]
 fn test_unified_symbol_creation() {

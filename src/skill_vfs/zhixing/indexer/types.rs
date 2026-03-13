@@ -1,6 +1,6 @@
-use crate::IncrementalSyncPolicy;
 use crate::graph::KnowledgeGraph;
 use crate::skill_vfs::zhixing::Result;
+use crate::sync::IncrementalSyncPolicy;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
@@ -17,10 +17,6 @@ pub struct ZhixingIndexSummary {
     pub entities_added: usize,
     /// Number of task relations linked from agenda documents.
     pub relations_linked: usize,
-    /// Number of semantic `Skill -> Entity` reference relations indexed from embedded skills.
-    pub skill_reference_relations: usize,
-    /// Number of entities added while indexing embedded skill references.
-    pub skill_reference_entities_added: usize,
 }
 
 /// Specialized indexer for Zhixing domain concepts into Wendao graph schema.
@@ -41,24 +37,6 @@ impl ZhixingWendaoIndexer {
         }
     }
 
-    /// Indexes only embedded skill reference relations into the graph.
-    ///
-    /// This lightweight path is intended for runtime semantic discovery where
-    /// notebook document/task indexing is unnecessary.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error when embedded skill registry parsing or graph writes fail.
-    pub fn index_embedded_skill_references_only(&self) -> Result<ZhixingIndexSummary> {
-        let mut summary = ZhixingIndexSummary::default();
-        let (entities_added, relations_linked) = self.index_embedded_skill_references()?;
-        summary.skill_reference_entities_added = entities_added;
-        summary.skill_reference_relations = relations_linked;
-        summary.entities_added = entities_added;
-        summary.relations_linked = relations_linked;
-        Ok(summary)
-    }
-
     /// Trigger a full scan of domain objects and map them into graph entities.
     ///
     /// # Errors
@@ -70,19 +48,14 @@ impl ZhixingWendaoIndexer {
         summary.journal_documents = self.index_document_dir("journal", "Journal", &mut summary)?;
         summary.agenda_documents = self.index_document_dir("agenda", "Agenda", &mut summary)?;
         summary.task_entities = self.index_agenda_tasks(&mut summary)?;
-        let (skill_ref_entities, skill_ref_relations) = self.index_embedded_skill_references()?;
-        summary.skill_reference_entities_added = skill_ref_entities;
-        summary.skill_reference_relations = skill_ref_relations;
 
         log::info!(
-            "Zhixing domain indexed successfully into Wendao (journal_documents={}, agenda_documents={}, task_entities={}, entities_added={}, relations_linked={}, skill_reference_entities_added={}, skill_reference_relations={}).",
+            "Zhixing domain indexed successfully into Wendao (journal_documents={}, agenda_documents={}, task_entities={}, entities_added={}, relations_linked={}).",
             summary.journal_documents,
             summary.agenda_documents,
             summary.task_entities,
             summary.entities_added,
-            summary.relations_linked,
-            summary.skill_reference_entities_added,
-            summary.skill_reference_relations
+            summary.relations_linked
         );
         Ok(summary)
     }

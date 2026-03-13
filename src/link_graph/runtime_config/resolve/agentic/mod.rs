@@ -4,7 +4,7 @@ use crate::link_graph::runtime_config::settings::merged_wendao_settings;
 mod apply;
 mod finalize;
 
-pub(crate) fn resolve_link_graph_agentic_runtime() -> LinkGraphAgenticRuntimeConfig {
+pub fn resolve_link_graph_agentic_runtime() -> LinkGraphAgenticRuntimeConfig {
     let settings = merged_wendao_settings();
     let mut resolved = LinkGraphAgenticRuntimeConfig::default();
 

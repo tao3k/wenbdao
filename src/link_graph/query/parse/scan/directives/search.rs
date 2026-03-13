@@ -30,25 +30,6 @@ pub(super) fn apply(
             }
             true
         }
-        "id" => {
-            let parsed = parse_list_values(value).into_iter().next().or_else(|| {
-                let trimmed = value
-                    .trim()
-                    .trim_matches('"')
-                    .trim_matches('\'')
-                    .trim()
-                    .to_string();
-                if trimmed.is_empty() {
-                    None
-                } else {
-                    Some(trimmed)
-                }
-            });
-            if let Some(direct_id) = parsed {
-                state.direct_id = Some(direct_id);
-            }
-            true
-        }
         "sort" => {
             let mut parsed_any = false;
             for item in parse_list_values(value) {

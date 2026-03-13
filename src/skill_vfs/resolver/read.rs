@@ -12,7 +12,7 @@ impl SkillVfsResolver {
     /// Returns [`SkillVfsError`] when URI resolution fails or content lookup fails.
     pub fn read_utf8(&self, uri: &str) -> Result<String, SkillVfsError> {
         self.read_semantic(uri)
-            .map(|text| text.as_ref().to_string())
+            .map(|text: Arc<str>| text.as_ref().to_string())
     }
 
     /// Resolve one Wendao URI and return shared UTF-8 content.
@@ -77,7 +77,7 @@ impl SkillVfsResolver {
         parsed: &WendaoResourceUri,
         canonical_uri: &str,
     ) -> Result<Arc<str>, SkillVfsError> {
-        let path = self.resolve_internal_uri(parsed)?;
+        let path = self.resolve_parsed_uri(parsed)?;
         let content = std::fs::read_to_string(path.as_path()).map_err(|source| {
             SkillVfsError::ReadResource {
                 path: path.clone(),

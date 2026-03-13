@@ -1,4 +1,4 @@
-use xiuxian_wendao::KnowledgeStats;
+use super::*;
 
 #[test]
 fn test_knowledge_stats_default() {

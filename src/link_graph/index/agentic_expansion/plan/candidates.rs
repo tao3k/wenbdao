@@ -1,7 +1,8 @@
 use super::ExpansionCandidateDoc;
 use crate::link_graph::index::{LinkGraphIndex, LinkGraphSearchOptions};
+use crate::link_graph::saliency::{learned_saliency_signal_from_state, valkey_saliency_get_many};
 use std::cmp::Ordering;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 pub(super) fn collect_agentic_expansion_candidates(
     index: &LinkGraphIndex,
@@ -56,6 +57,8 @@ pub(super) fn collect_agentic_expansion_candidates(
         );
     }
 
+    let saliency_signals = load_saliency_signals(&candidate_ids);
+
     candidate_ids
         .into_iter()
         .filter_map(|doc_id| {
@@ -65,6 +68,7 @@ pub(super) fn collect_agentic_expansion_candidates(
                 .map(|doc| ExpansionCandidateDoc {
                     doc_id: doc_id.clone(),
                     rank: index.rank_by_id.get(&doc_id).copied().unwrap_or(0.0),
+                    saliency_signal: saliency_signals.get(&doc_id).copied().unwrap_or(0.0),
                     tags: doc.tags_lower.iter().cloned().collect(),
                 })
         })
@@ -98,7 +102,25 @@ pub(super) fn agentic_pair_priority(
             0.0
         }
     };
-    (rank_signal * 0.7 + tag_signal * 0.3).clamp(0.0, 1.0)
+    let semantic_score = (rank_signal * 0.7 + tag_signal * 0.3).clamp(0.0, 1.0);
+    let saliency_factor =
+        (1.0 + f64::midpoint(left.saliency_signal, right.saliency_signal)).clamp(1.0, 2.0);
+    (semantic_score * saliency_factor).clamp(0.0, 1.0)
+}
+
+fn load_saliency_signals(candidate_ids: &[String]) -> HashMap<String, f64> {
+    let Ok(states) = valkey_saliency_get_many(candidate_ids) else {
+        return HashMap::new();
+    };
+
+    candidate_ids
+        .iter()
+        .filter_map(|doc_id| {
+            states
+                .get(doc_id)
+                .map(|state| (doc_id.clone(), learned_saliency_signal_from_state(state)))
+        })
+        .collect()
 }
 
 fn usize_to_f64_saturating(value: usize) -> f64 {

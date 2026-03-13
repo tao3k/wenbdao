@@ -1,7 +1,4 @@
-use crate::test_wendao_cli::cli_commands::support::parse_success_json;
-use crate::test_wendao_cli::support::{wendao_cmd, write_file};
-use serde_json::Value;
-use tempfile::TempDir;
+use super::*;
 
 #[test]
 fn test_wendao_stats_reports_note_counts() -> Result<(), Box<dyn std::error::Error>> {

@@ -1,19 +1,25 @@
-//! Metadata lookup and alias resolution command handlers.
+//! Metadata and alias resolution command handlers.
 
 use crate::helpers::emit;
 use crate::types::Cli;
 use anyhow::{Context, Result};
 use serde_json::json;
-use xiuxian_wendao::{LinkGraphIndex, LinkGraphMetadata};
+use xiuxian_wendao::LinkGraphIndex;
 
 pub(super) fn handle_metadata(cli: &Cli, index: Option<&LinkGraphIndex>, stem: &str) -> Result<()> {
     let index = index.context("link_graph index is required for metadata command")?;
     let candidates = index.resolve_metadata_candidates(stem);
     match candidates.len() {
-        0 => emit(&Option::<LinkGraphMetadata>::None, cli.output),
+        0 => emit(
+            &Option::<xiuxian_wendao::LinkGraphMetadata>::None,
+            cli.output,
+        ),
         1 => {
-            let one = candidates.into_iter().next();
-            emit(&one, cli.output)
+            let resolved = candidates
+                .into_iter()
+                .next()
+                .context("metadata candidate unexpectedly missing")?;
+            emit(&index.metadata(&resolved.path), cli.output)
         }
         _ => {
             let payload = json!({
@@ -35,14 +41,8 @@ pub(super) fn handle_resolve(
     limit: usize,
 ) -> Result<()> {
     let index = index.context("link_graph index is required for resolve command")?;
-    let mut candidates = index.resolve_metadata_candidates(alias);
-    let total_count = candidates.len();
-    candidates.truncate(limit.max(1));
-    let payload = json!({
-        "query": alias,
-        "count": total_count,
-        "returned_count": candidates.len(),
-        "candidates": candidates,
-    });
-    emit(&payload, cli.output)
+    let candidates = index.resolve_metadata_candidates(alias);
+    let bounded_limit = limit.max(1);
+    let results: Vec<_> = candidates.into_iter().take(bounded_limit).collect();
+    emit(&results, cli.output)
 }

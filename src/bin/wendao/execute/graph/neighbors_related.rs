@@ -1,15 +1,12 @@
 //! Neighbor and related-traversal command handlers.
 
-use crate::helpers::{
-    build_optional_related_ppr_options, build_phase_monitor_summary,
-    build_promoted_overlay_monitor_phase, build_related_monitor_phases, emit,
-};
+use crate::helpers::{build_optional_related_ppr_options, build_related_monitor_phases, emit};
 use crate::types::{Cli, RelatedPprSubgraphModeArg};
 use anyhow::{Context, Result};
 use serde_json::json;
 use xiuxian_wendao::{LinkGraphDirection, LinkGraphIndex};
 
-pub(super) struct RelatedArgs<'a> {
+pub(crate) struct RelatedArgs<'a> {
     pub stem: &'a str,
     pub max_distance: usize,
     pub limit: usize,
@@ -27,7 +24,7 @@ pub(super) fn handle_neighbors(
     direction: &str,
     hops: usize,
     limit: usize,
-    verbose: bool,
+    _verbose: bool,
 ) -> Result<()> {
     let index = index.context("link_graph index is required for neighbors command")?;
     let candidates = index.resolve_metadata_candidates(stem);
@@ -35,31 +32,13 @@ pub(super) fn handle_neighbors(
         0 => emit(&Vec::<serde_json::Value>::new(), cli.output),
         1 => {
             let resolved = &candidates[0].path;
-            let (results, promoted_overlay) = index.neighbors_with_overlay(
+            let payload = index.neighbors(
                 resolved,
                 LinkGraphDirection::from_alias(direction),
                 hops.max(1),
                 limit.max(1),
             );
-            if verbose {
-                let phases = vec![build_promoted_overlay_monitor_phase(&promoted_overlay)];
-                let payload = json!({
-                    "stem": stem,
-                    "direction": LinkGraphDirection::from_alias(direction),
-                    "hops": hops.max(1),
-                    "limit": limit.max(1),
-                    "promoted_overlay": promoted_overlay,
-                    "phases": phases,
-                    "monitor": {
-                        "bottlenecks": build_phase_monitor_summary(&phases),
-                    },
-                    "total": results.len(),
-                    "results": results,
-                });
-                emit(&payload, cli.output)
-            } else {
-                emit(&results, cli.output)
-            }
+            emit(&payload, cli.output)
         }
         _ => {
             let payload = json!({
@@ -106,32 +85,23 @@ pub(super) fn handle_related(
     let bounded_distance = args.max_distance.max(1);
     let bounded_limit = args.limit.max(1);
     if args.verbose {
-        let (results, diagnostics, promoted_overlay) = index.related_with_diagnostics_and_overlay(
-            resolved,
-            bounded_distance,
-            bounded_limit,
-            ppr.as_ref(),
-        );
-        let mut phases = build_related_monitor_phases(diagnostics);
-        phases.push(build_promoted_overlay_monitor_phase(&promoted_overlay));
+        let (results, diagnostics) =
+            index.related_with_diagnostics(resolved, bounded_distance, bounded_limit, ppr.as_ref());
+        let phases = build_related_monitor_phases(diagnostics.clone());
         let payload = json!({
             "stem": args.stem,
             "max_distance": bounded_distance,
             "limit": bounded_limit,
             "ppr": ppr,
             "diagnostics": diagnostics,
-            "promoted_overlay": promoted_overlay,
             "phases": phases,
-            "monitor": {
-                "bottlenecks": build_phase_monitor_summary(&phases),
-            },
             "total": results.len(),
             "results": results,
         });
         emit(&payload, cli.output)
     } else {
-        let payload =
-            index.related_with_options(resolved, bounded_distance, bounded_limit, ppr.as_ref());
-        emit(&payload, cli.output)
+        let (results, _) =
+            index.related_with_diagnostics(resolved, bounded_distance, bounded_limit, ppr.as_ref());
+        emit(&results, cli.output)
     }
 }

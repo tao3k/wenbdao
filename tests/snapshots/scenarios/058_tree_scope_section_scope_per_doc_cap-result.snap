@@ -1,0 +1,12 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/support/scenario_framework.rs
+expression: result
+---
+{
+  "category": "tree_scope_filters",
+  "files": [
+    "result.json"
+  ],
+  "scenario_id": "058_tree_scope_section_scope_per_doc_cap",
+  "status": "validated"
+}

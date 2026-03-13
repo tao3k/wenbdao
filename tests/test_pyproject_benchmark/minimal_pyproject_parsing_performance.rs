@@ -1,9 +1,4 @@
-use std::io::Write as StdWrite;
-
-use tempfile::NamedTempFile;
-use xiuxian_wendao::dependency_indexer::parse_pyproject_dependencies;
-
-use super::support::{BENCH_SLACK_ENV, benchmark_budget};
+use super::*;
 
 #[test]
 fn test_minimal_pyproject_parsing_performance() -> Result<(), Box<dyn std::error::Error>> {
@@ -34,7 +29,7 @@ dependencies = [
     let elapsed = start.elapsed();
 
     // Should complete 100 parses in under 300ms
-    let max_duration = benchmark_budget(
+    let max_duration = super::benchmark_budget(
         std::time::Duration::from_millis(300),
         std::time::Duration::from_millis(450),
     );
@@ -44,7 +39,7 @@ dependencies = [
         "Minimal pyproject parsing took {:.2}ms for 100 iterations, expected < {:.2}ms (set {} >= 1.0 to tune)",
         elapsed.as_secs_f64() * 1000.0,
         max_duration_ms,
-        BENCH_SLACK_ENV
+        super::BENCH_SLACK_ENV
     );
 
     println!(

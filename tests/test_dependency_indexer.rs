@@ -1,7 +1,7 @@
 //! Tests for dependency indexer functionality.
 
 use std::path::PathBuf;
-use xiuxian_wendao::{
+use xiuxian_wendao::dependency_indexer::{
     ConfigExternalDependency, DependencyBuildConfig, ExternalSymbol, SymbolIndex, SymbolKind,
 };
 

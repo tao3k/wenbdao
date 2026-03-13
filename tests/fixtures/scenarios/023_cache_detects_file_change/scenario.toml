@@ -1,0 +1,17 @@
+[scenario]
+id = "023_cache_detects_file_change"
+name = "Cache Build: detects file change"
+description = "cache_build scenario"
+category = "cache_build"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+
+[expected]
+type = "json_snapshot"
+files = ["result.json"]
+
+[runner]
+build_page_index = true
+collect_links = true

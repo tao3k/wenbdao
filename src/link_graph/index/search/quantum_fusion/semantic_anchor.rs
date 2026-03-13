@@ -1,13 +1,16 @@
 use super::anchor_batch::{QuantumAnchorBatchRow, QuantumAnchorBatchView};
 use crate::link_graph::index::LinkGraphIndex;
+use crate::link_graph::models::QuantumContext;
 
 #[derive(Debug, Clone)]
 pub(super) struct ResolvedQuantumAnchor {
     pub(super) batch_row: usize,
     pub(super) batch_anchor_id: String,
     pub(super) anchor_id: String,
-    pub(super) seed_doc_id: String,
+    pub(super) doc_id: String,
+    pub(super) path: String,
     pub(super) semantic_path: Vec<String>,
+    pub(super) trace_label: Option<String>,
     pub(super) vector_score: f64,
 }
 
@@ -30,20 +33,27 @@ impl LinkGraphIndex {
         if anchor_id.is_empty() {
             return None;
         }
-        let seed_doc_id = self.quantum_anchor_doc_id(anchor_id)?;
-        let semantic_path = self.page_index_semantic_path(anchor_id)?;
+        let doc_id = self.quantum_anchor_doc_id(anchor_id)?;
+        let path = self
+            .get_doc(doc_id.as_str())
+            .map(|doc| doc.path.clone())
+            .unwrap_or_else(|| doc_id.clone());
+        let semantic_path = self.extract_lineage(anchor_id).unwrap_or_default();
+        let trace_label = QuantumContext::trace_label_from_semantic_path(&semantic_path);
 
         Some(ResolvedQuantumAnchor {
             batch_row: row.row,
             batch_anchor_id: row.anchor_id.to_string(),
             anchor_id: anchor_id.to_string(),
-            seed_doc_id,
+            doc_id,
+            path,
             semantic_path,
+            trace_label,
             vector_score: row.vector_score.clamp(0.0, 1.0),
         })
     }
 
-    fn quantum_anchor_doc_id(&self, anchor_id: &str) -> Option<String> {
+    pub(super) fn quantum_anchor_doc_id(&self, anchor_id: &str) -> Option<String> {
         let trimmed = anchor_id.trim();
         if trimmed.is_empty() {
             return None;
@@ -53,6 +63,6 @@ impl LinkGraphIndex {
         {
             return Some(doc_id.to_string());
         }
-        self.resolve_doc_id(trimmed).map(str::to_string)
+        self.resolve_doc_id_pub(trimmed).map(str::to_string)
     }
 }

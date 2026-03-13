@@ -35,3 +35,6 @@ mod symbol;
 pub use index::UnifiedSymbolIndex;
 pub use stats::UnifiedIndexStats;
 pub use symbol::{SymbolSource, UnifiedSymbol};
+
+#[cfg(test)]
+mod tests;

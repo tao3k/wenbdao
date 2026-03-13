@@ -1,0 +1,12 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/support/scenario_framework.rs
+expression: result
+---
+{
+  "category": "search_filters",
+  "files": [
+    "result.json"
+  ],
+  "scenario_id": "041_search_filt_link_to_and_linked_by",
+  "status": "validated"
+}

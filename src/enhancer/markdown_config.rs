@@ -161,31 +161,6 @@ pub struct MarkdownConfigLinkTarget {
     pub reference_type: Option<String>,
 }
 
-/// Extracts local markdown/wikilink targets under each tagged heading scope.
-///
-/// Returned map shape:
-/// - key: config `id` from `<!-- id: "...", type: "..." -->`
-/// - value: normalized relative resource paths linked from that scope
-///
-/// External links (`https://...`, `mailto:...`) and pure fragments (`#section`)
-/// are ignored.
-#[must_use]
-pub fn extract_markdown_config_links_by_id(
-    markdown: &str,
-    source_path: &str,
-) -> HashMap<String, Vec<String>> {
-    extract_markdown_config_link_targets_by_id(markdown, source_path)
-        .into_iter()
-        .map(|(id, targets)| {
-            let paths = targets
-                .into_iter()
-                .map(|target| target.target)
-                .collect::<Vec<_>>();
-            (id, paths)
-        })
-        .collect()
-}
-
 /// Extracts normalized local/semantic link targets plus optional type-hints.
 ///
 /// Type hints are parsed from wikilink shape `[[target#type]]`.

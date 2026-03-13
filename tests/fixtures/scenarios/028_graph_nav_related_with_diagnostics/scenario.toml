@@ -1,0 +1,17 @@
+[scenario]
+id = "028_graph_nav_related_with_diagnostics"
+name = "Graph Navigation: related with diagnostics"
+description = "graph_navigation scenario"
+category = "graph_navigation"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+
+[expected]
+type = "json_snapshot"
+files = ["result.json"]
+
+[runner]
+build_page_index = true
+collect_links = true

@@ -61,3 +61,10 @@ pub(crate) fn parse_sort_term(raw: &str) -> LinkGraphSortTerm {
 
     LinkGraphSortTerm::default()
 }
+
+pub(crate) fn parse_sort_terms(raw: &[String]) -> Vec<LinkGraphSortTerm> {
+    if raw.is_empty() {
+        return Vec::new();
+    }
+    raw.iter().map(|s| parse_sort_term(s)).collect()
+}

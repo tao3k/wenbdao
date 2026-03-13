@@ -1,0 +1,12 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/support/scenario_framework.rs
+expression: result
+---
+{
+  "category": "build_scope",
+  "files": [
+    "result.json"
+  ],
+  "scenario_id": "022_build_scope_skill_metadata",
+  "status": "validated"
+}

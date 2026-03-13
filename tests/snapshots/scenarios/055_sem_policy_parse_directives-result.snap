@@ -1,0 +1,12 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/support/scenario_framework.rs
+expression: result
+---
+{
+  "category": "semantic_policy",
+  "files": [
+    "result.json"
+  ],
+  "scenario_id": "055_sem_policy_parse_directives",
+  "status": "no_input"
+}

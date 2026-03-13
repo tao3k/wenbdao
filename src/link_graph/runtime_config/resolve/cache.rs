@@ -7,7 +7,7 @@ use crate::link_graph::runtime_config::settings::{
     first_non_empty, get_setting_string, merged_wendao_settings, parse_positive_u64,
 };
 
-pub(crate) fn resolve_link_graph_cache_runtime() -> Result<LinkGraphCacheRuntimeConfig, String> {
+pub fn resolve_link_graph_cache_runtime() -> Result<LinkGraphCacheRuntimeConfig, String> {
     let settings = merged_wendao_settings();
 
     let valkey_url = first_non_empty(&[

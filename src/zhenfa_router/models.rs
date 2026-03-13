@@ -39,6 +39,7 @@ pub struct WendaoSearchRequest {
 }
 
 /// HTTP response envelope for direct Wendao search endpoint.
+#[cfg(feature = "zhenfa-router")]
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct WendaoSearchHttpResponse {
     /// Pre-rendered search result text.

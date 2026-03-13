@@ -1,3 +1,4 @@
+use crate::entity::{Entity, EntityType};
 use crate::skill_vfs::zhixing::{
     ATTR_JOURNAL_CARRYOVER, ATTR_TIMER_REMINDED, ATTR_TIMER_SCHEDULED, Error, Result,
 };
@@ -8,10 +9,9 @@ use std::path::Path;
 use super::super::file_discovery::collect_markdown_files;
 use super::super::parse::{TaskLineProjection, normalize_identity_token, parse_task_projection};
 use super::super::{ZhixingIndexSummary, ZhixingWendaoIndexer};
-use crate::{Entity, EntityType};
 
 impl ZhixingWendaoIndexer {
-    pub(in crate::skill_vfs::zhixing::indexer) fn index_agenda_tasks(
+    pub(in crate::skill_vfs::zhixing) fn index_agenda_tasks(
         &self,
         summary: &mut ZhixingIndexSummary,
     ) -> Result<usize> {
@@ -20,30 +20,62 @@ impl ZhixingWendaoIndexer {
         let mut indexed = 0usize;
 
         for file in files {
+            let content = fs::read_to_string(&file).map_err(|error| {
+                Error::Internal(format!("Failed reading {}: {error}", file.display()))
+            })?;
             let date = file
                 .file_stem()
-                .and_then(std::ffi::OsStr::to_str)
+                .and_then(|s| s.to_str())
                 .unwrap_or("unknown");
-            indexed =
-                indexed.saturating_add(self.reindex_agenda_tasks_for_path(&file, date, summary)?);
+            let agenda_entity_name = format!("Agenda {date}");
+            for (line_no, line) in content.lines().enumerate() {
+                let Some(task) = parse_task_projection(line, line_no + 1) else {
+                    continue;
+                };
+                let (entity, task_entity_name) = build_task_entity(&file, date, &task);
+                if self
+                    .graph
+                    .add_entity(entity)
+                    .map_err(|error| Error::Internal(format!("Graph operation failed: {error}")))?
+                {
+                    summary.entities_added = summary.entities_added.saturating_add(1);
+                }
+                self.link_task_to_agenda_document(
+                    &agenda_entity_name,
+                    &task_entity_name,
+                    &file,
+                    task.line_no,
+                )?;
+                summary.relations_linked = summary.relations_linked.saturating_add(1);
+                indexed = indexed.saturating_add(1);
+            }
         }
         Ok(indexed)
     }
 
-    pub(in crate::skill_vfs::zhixing::indexer) fn reindex_agenda_tasks_for_path(
+    pub(in crate::skill_vfs::zhixing) fn reindex_agenda_tasks_for_path(
         &self,
         file: &Path,
         date: &str,
         summary: &mut ZhixingIndexSummary,
     ) -> Result<usize> {
-        let _removed = self.remove_agenda_tasks_by_date(date)?;
+        let agenda_entity_name = format!("Agenda {date}");
+
+        // 1. Remove existing task links for this agenda document
+        self.graph
+            .remove_relations_for_source(&agenda_entity_name)
+            .map_err(|error| {
+                Error::Internal(format!("Graph operation failed during reindex: {error}"))
+            })?;
+
         if !file.exists() {
             return Ok(0);
         }
+
         let content = fs::read_to_string(file).map_err(|error| {
             Error::Internal(format!("Failed reading {}: {error}", file.display()))
         })?;
-        let agenda_entity_name = format!("Agenda {date}");
+
         let mut indexed = 0usize;
         for (line_no, line) in content.lines().enumerate() {
             let Some(task) = parse_task_projection(line, line_no + 1) else {
@@ -67,27 +99,6 @@ impl ZhixingWendaoIndexer {
             indexed = indexed.saturating_add(1);
         }
         Ok(indexed)
-    }
-
-    fn remove_agenda_tasks_by_date(&self, date: &str) -> Result<usize> {
-        let candidates = self.graph.get_entities_by_type("OTHER(Task)");
-        let task_ids = candidates
-            .into_iter()
-            .filter(|entity| {
-                entity
-                    .metadata
-                    .get("agenda_date")
-                    .and_then(serde_json::Value::as_str)
-                    == Some(date)
-            })
-            .map(|entity| entity.id)
-            .collect::<Vec<_>>();
-        for task_id in &task_ids {
-            self.graph
-                .remove_entity(task_id)
-                .map_err(|error| Error::Internal(format!("Graph operation failed: {error}")))?;
-        }
-        Ok(task_ids.len())
     }
 }
 

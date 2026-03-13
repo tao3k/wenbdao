@@ -1,0 +1,21 @@
+# Scenario: Page Index Semantic Documents
+# Description: Export semantic documents from page index
+
+[scenario]
+id = "005_page_index_semantic_docs"
+name = "Page Index Semantic Documents"
+description = "Export semantic documents for embedding generation"
+category = "page_index"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+
+[expected]
+type = "json_snapshot"
+files = ["documents.json"]
+
+[runner]
+build_page_index = true
+collect_links = false
+export_semantic_documents = true

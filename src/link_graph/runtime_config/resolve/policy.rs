@@ -1,113 +1,118 @@
-use crate::link_graph::models::LinkGraphSemanticDocumentScope;
 use crate::link_graph::runtime_config::constants::{
-    LINK_GRAPH_CANDIDATE_MULTIPLIER_ENV, LINK_GRAPH_HYBRID_MIN_HITS_ENV,
-    LINK_GRAPH_HYBRID_MIN_TOP_SCORE_ENV, LINK_GRAPH_MAX_SOURCES_ENV, LINK_GRAPH_RETRIEVAL_MODE_ENV,
-    LINK_GRAPH_ROWS_PER_SOURCE_ENV, LINK_GRAPH_SEMANTIC_MIN_VECTOR_SCORE_ENV,
-    LINK_GRAPH_SEMANTIC_SUMMARY_ONLY_ENV,
+    LINK_GRAPH_COACTIVATION_ALPHA_SCALE_ENV, LINK_GRAPH_COACTIVATION_ENABLED_ENV,
+    LINK_GRAPH_COACTIVATION_MAX_NEIGHBORS_PER_DIRECTION_ENV,
+    LINK_GRAPH_COACTIVATION_TOUCH_QUEUE_DEPTH_ENV,
 };
-use crate::link_graph::runtime_config::models::LinkGraphRetrievalPolicyRuntimeConfig;
+use crate::link_graph::runtime_config::models::LinkGraphCoactivationRuntimeConfig;
 use crate::link_graph::runtime_config::settings::{
-    first_non_empty, get_setting_bool, get_setting_string, merged_wendao_settings,
-    parse_positive_usize,
+    first_non_empty, get_setting_bool, get_setting_string, merged_wendao_settings, parse_bool,
+    parse_positive_f64, parse_positive_usize,
 };
 
-fn parse_mode(raw: &str) -> Option<crate::link_graph::models::LinkGraphRetrievalMode> {
-    crate::link_graph::models::LinkGraphRetrievalMode::from_alias(raw)
-}
+#[allow(dead_code)]
+pub fn resolve_link_graph_coactivation_runtime() -> LinkGraphCoactivationRuntimeConfig {
+    let settings = merged_wendao_settings();
+    let mut resolved = LinkGraphCoactivationRuntimeConfig::default();
 
-fn parse_score(raw: &str) -> Option<f64> {
-    raw.trim()
-        .parse::<f64>()
+    let enabled_from_env = std::env::var(LINK_GRAPH_COACTIVATION_ENABLED_ENV)
         .ok()
-        .filter(|value| value.is_finite() && (0.0..=1.0).contains(value))
+        .as_deref()
+        .and_then(parse_bool);
+    if let Some(value) =
+        get_setting_bool(&settings, "link_graph.saliency.coactivation.enabled").or(enabled_from_env)
+    {
+        resolved.enabled = value;
+    }
+
+    if let Some(value) = first_non_empty(&[
+        get_setting_string(&settings, "link_graph.saliency.coactivation.alpha_scale"),
+        std::env::var(LINK_GRAPH_COACTIVATION_ALPHA_SCALE_ENV).ok(),
+    ])
+    .as_deref()
+    .and_then(parse_positive_f64)
+    {
+        resolved.alpha_scale = value.clamp(0.0, 1.0);
+    }
+
+    if let Some(value) = first_non_empty(&[
+        get_setting_string(
+            &settings,
+            "link_graph.saliency.coactivation.max_neighbors_per_direction",
+        ),
+        std::env::var(LINK_GRAPH_COACTIVATION_MAX_NEIGHBORS_PER_DIRECTION_ENV).ok(),
+    ])
+    .as_deref()
+    .and_then(parse_positive_usize)
+    {
+        resolved.max_neighbors_per_direction = value;
+    }
+
+    if let Some(value) = first_non_empty(&[
+        get_setting_string(
+            &settings,
+            "link_graph.saliency.coactivation.touch_queue_depth",
+        ),
+        std::env::var(LINK_GRAPH_COACTIVATION_TOUCH_QUEUE_DEPTH_ENV).ok(),
+    ])
+    .as_deref()
+    .and_then(parse_positive_usize)
+    {
+        resolved.touch_queue_depth = value;
+    }
+
+    resolved
 }
 
+use crate::link_graph::models::LinkGraphRetrievalMode;
+use crate::link_graph::runtime_config::models::LinkGraphRetrievalPolicyRuntimeConfig;
+
+/// Resolve retrieval policy runtime configuration from settings.
 pub(crate) fn resolve_link_graph_retrieval_policy_runtime() -> LinkGraphRetrievalPolicyRuntimeConfig
 {
     let settings = merged_wendao_settings();
     let mut resolved = LinkGraphRetrievalPolicyRuntimeConfig::default();
 
-    if let Some(value) = first_non_empty(&[
-        get_setting_string(&settings, "link_graph.retrieval_mode"),
-        std::env::var(LINK_GRAPH_RETRIEVAL_MODE_ENV).ok(),
-    ])
-    .as_deref()
-    .and_then(parse_mode)
+    if let Some(value) = get_setting_string(&settings, "link_graph.retrieval.mode")
+        .as_deref()
+        .and_then(LinkGraphRetrievalMode::from_alias)
     {
         resolved.mode = value;
     }
 
-    if let Some(value) = first_non_empty(&[
-        get_setting_string(&settings, "link_graph.candidate_multiplier"),
-        std::env::var(LINK_GRAPH_CANDIDATE_MULTIPLIER_ENV).ok(),
-    ])
-    .as_deref()
-    .and_then(parse_positive_usize)
+    if let Some(value) = get_setting_string(&settings, "link_graph.retrieval.candidate_multiplier")
+        .as_deref()
+        .and_then(parse_positive_usize)
     {
         resolved.candidate_multiplier = value;
     }
 
-    if let Some(value) = first_non_empty(&[
-        get_setting_string(&settings, "link_graph.max_sources"),
-        std::env::var(LINK_GRAPH_MAX_SOURCES_ENV).ok(),
-    ])
-    .as_deref()
-    .and_then(parse_positive_usize)
+    if let Some(value) = get_setting_string(&settings, "link_graph.retrieval.max_sources")
+        .as_deref()
+        .and_then(parse_positive_usize)
     {
         resolved.max_sources = value;
     }
 
-    if let Some(value) = first_non_empty(&[
-        get_setting_string(&settings, "link_graph.hybrid.min_hits"),
-        std::env::var(LINK_GRAPH_HYBRID_MIN_HITS_ENV).ok(),
-    ])
-    .as_deref()
-    .and_then(parse_positive_usize)
+    if let Some(value) = get_setting_string(&settings, "link_graph.retrieval.hybrid_min_hits")
+        .as_deref()
+        .and_then(parse_positive_usize)
     {
         resolved.hybrid_min_hits = value;
     }
 
-    if let Some(value) = first_non_empty(&[
-        get_setting_string(&settings, "link_graph.hybrid.min_top_score"),
-        std::env::var(LINK_GRAPH_HYBRID_MIN_TOP_SCORE_ENV).ok(),
-    ])
-    .as_deref()
-    .and_then(parse_score)
+    if let Some(value) = get_setting_string(&settings, "link_graph.retrieval.hybrid_min_top_score")
+        .as_deref()
+        .and_then(parse_positive_f64)
     {
         resolved.hybrid_min_top_score = value;
     }
 
-    if let Some(value) = first_non_empty(&[
-        get_setting_string(&settings, "link_graph.graph_rows_per_source"),
-        std::env::var(LINK_GRAPH_ROWS_PER_SOURCE_ENV).ok(),
-    ])
-    .as_deref()
-    .and_then(parse_positive_usize)
+    if let Some(value) = get_setting_string(&settings, "link_graph.retrieval.graph_rows_per_source")
+        .as_deref()
+        .and_then(parse_positive_usize)
     {
         resolved.graph_rows_per_source = value;
     }
 
-    if get_setting_bool(&settings, "link_graph.semantic.summary_only")
-        .or_else(|| {
-            std::env::var(LINK_GRAPH_SEMANTIC_SUMMARY_ONLY_ENV)
-                .ok()
-                .and_then(|raw| crate::link_graph::runtime_config::settings::parse_bool(&raw))
-        })
-        .unwrap_or(false)
-    {
-        resolved.semantic_policy.document_scope = LinkGraphSemanticDocumentScope::SummaryOnly;
-    }
-
-    if let Some(value) = first_non_empty(&[
-        get_setting_string(&settings, "link_graph.semantic.min_vector_score"),
-        std::env::var(LINK_GRAPH_SEMANTIC_MIN_VECTOR_SCORE_ENV).ok(),
-    ])
-    .as_deref()
-    .and_then(parse_score)
-    {
-        resolved.semantic_policy.min_vector_score = Some(value);
-    }
-
-    resolved.semantic_policy = resolved.semantic_policy.normalized();
     resolved
 }

@@ -1,0 +1,11 @@
+{
+  "reused_columns": {
+    "anchor_id": true,
+    "vector_score": true
+  },
+  "schema": {
+    "input": ["anchor_id", "vector_score"],
+    "output": ["anchor_id", "vector_score", "quantum_saliency"]
+  },
+  "saliency_column": "quantum_saliency"
+}

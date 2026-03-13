@@ -1,8 +1,9 @@
-//! `PyO3` bindings for sync engine (incremental file sync).
+//! PyO3 bindings for sync engine (incremental file sync).
 
 use pyo3::prelude::*;
 use serde_json::to_string;
 use std::collections::HashMap;
+use std::path::PathBuf;
 
 use crate::sync::{SyncEngine, SyncManifest, SyncResult};
 
@@ -72,13 +73,13 @@ impl PySyncEngine {
     #[pyo3(signature = (project_root, manifest_path))]
     fn new(project_root: &str, manifest_path: &str) -> Self {
         Self {
-            inner: SyncEngine::new(project_root, manifest_path),
+            inner: SyncEngine::new(PathBuf::from(project_root), PathBuf::from(manifest_path)),
         }
     }
 
-    fn load_manifest(&self) -> String {
+    fn load_manifest(&self) -> PyResult<String> {
         let manifest = self.inner.load_manifest();
-        serde_json::to_string(&manifest.0).unwrap_or_default()
+        Ok(serde_json::to_string(&manifest.0).unwrap_or_default())
     }
 
     fn save_manifest(&self, manifest_json: &str) -> PyResult<()> {
@@ -113,7 +114,6 @@ impl PySyncEngine {
 /// Compute hash from content using xxhash (fast).
 #[pyfunction]
 #[pyo3(signature = (content))]
-#[must_use]
 pub fn compute_hash(content: &str) -> String {
     SyncEngine::compute_hash(content)
 }

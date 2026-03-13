@@ -4,8 +4,6 @@
 mod metadata_resolve;
 #[path = "graph/neighbors_related.rs"]
 mod neighbors_related;
-#[path = "graph/page_index.rs"]
-mod page_index;
 #[path = "graph/stats_toc.rs"]
 mod stats_toc;
 
@@ -40,7 +38,6 @@ pub(super) fn handle(cli: &Cli, index: Option<&LinkGraphIndex>) -> Result<()> {
             neighbors_related::handle_related(cli, index, &related_args)
         }
         Command::Metadata(args) => metadata_resolve::handle_metadata(cli, index, &args.stem),
-        Command::PageIndex(args) => page_index::handle_page_index(cli, index, &args.stem),
         Command::Resolve(args) => {
             metadata_resolve::handle_resolve(cli, index, &args.alias, args.limit)
         }

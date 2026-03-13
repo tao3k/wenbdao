@@ -3,7 +3,7 @@ use comrak::nodes::{AstNode, NodeValue};
 
 pub(super) fn node_line(node: &AstNode<'_>) -> usize {
     let line = node.data.borrow().sourcepos.start.line;
-    if line == 0 { 1 } else { line }
+    line.max(1) as usize
 }
 
 fn push_text_from_node<'a>(node: &'a AstNode<'a>, out: &mut String) {

@@ -3,7 +3,6 @@ use super::scoring::topology_score_from_ranked;
 use super::semantic_anchor::ResolvedQuantumAnchor;
 use crate::link_graph::index::LinkGraphIndex;
 use crate::link_graph::models::QuantumFusionOptions;
-use std::collections::HashMap;
 
 impl LinkGraphIndex {
     pub(super) fn expand_quantum_context_candidates(
@@ -14,7 +13,7 @@ impl LinkGraphIndex {
         let mut candidates = Vec::new();
         for anchor in resolved_anchors {
             let ranked = self.quantum_related_ranked_doc_ids(
-                anchor.seed_doc_id.as_str(),
+                anchor.doc_id.as_str(),
                 anchor.vector_score,
                 options,
             );
@@ -29,7 +28,10 @@ impl LinkGraphIndex {
                 batch_row: anchor.batch_row,
                 batch_anchor_id: anchor.batch_anchor_id.clone(),
                 anchor_id: anchor.anchor_id.clone(),
+                doc_id: anchor.doc_id.clone(),
+                path: anchor.path.clone(),
                 semantic_path: anchor.semantic_path.clone(),
+                trace_label: anchor.trace_label.clone(),
                 related_clusters,
                 vector_score: anchor.vector_score,
                 topology_score,
@@ -37,16 +39,5 @@ impl LinkGraphIndex {
         }
 
         candidates
-    }
-
-    fn quantum_related_ranked_doc_ids(
-        &self,
-        seed_doc_id: &str,
-        vector_score: f64,
-        options: &QuantumFusionOptions,
-    ) -> Vec<(String, usize, f64)> {
-        let mut seeds = HashMap::new();
-        seeds.insert(seed_doc_id.to_string(), vector_score.max(0.000_001));
-        self.related_ppr_ranked_doc_ids(&seeds, options.max_distance, options.ppr.as_ref())
     }
 }

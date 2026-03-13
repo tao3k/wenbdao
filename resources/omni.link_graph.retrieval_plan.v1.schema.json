@@ -15,7 +15,6 @@
     "source_hint_count",
     "graph_confidence_score",
     "graph_confidence_level",
-    "semantic_policy",
     "budget"
   ],
   "properties": {
@@ -86,22 +85,6 @@
         "rows_per_source": {
           "type": "integer",
           "minimum": 1
-        }
-      }
-    },
-    "semantic_policy": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["document_scope"],
-      "properties": {
-        "document_scope": {
-          "type": "string",
-          "enum": ["all", "summary_only"]
-        },
-        "min_vector_score": {
-          "type": ["number", "null"],
-          "minimum": 0.0,
-          "maximum": 1.0
         }
       }
     }

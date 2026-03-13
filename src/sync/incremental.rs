@@ -1,158 +1,207 @@
-use super::DiscoveryOptions;
-use std::collections::BTreeSet;
-use std::path::Path;
+use super::{DiscoveryOptions, SyncManifest, SyncResult};
+use std::collections::{BTreeSet, HashSet};
+use std::path::{Path, PathBuf};
+use walkdir::WalkDir;
 
 /// Common extension policy for incremental sync routing.
-///
-/// This policy is intentionally domain-agnostic so consumers can drive
-/// markdown/org/template/config synchronization using one shared filter.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct IncrementalSyncPolicy {
-    extensions: Vec<String>,
+    /// File extensions allowed for sync (e.g. `md`, `txt`).
+    pub extensions: Vec<String>,
+    /// Glob patterns used to include files.
+    pub include_globs: Vec<String>,
+    /// Glob patterns used to exclude files.
+    pub exclude_globs: Vec<String>,
+}
+
+impl Default for IncrementalSyncPolicy {
+    fn default() -> Self {
+        Self {
+            extensions: vec!["md".to_string(), "markdown".to_string()],
+            include_globs: Vec::new(),
+            exclude_globs: Vec::new(),
+        }
+    }
 }
 
 impl IncrementalSyncPolicy {
-    /// Create policy from extension list.
-    ///
-    /// Empty input falls back to default sync extensions.
-    #[must_use]
+    /// Create a new policy with explicit extensions.
     pub fn new(extensions: &[String]) -> Self {
-        let normalized = normalize_extensions(extensions);
-        if normalized.is_empty() {
-            return Self {
-                extensions: DiscoveryOptions::default().extensions,
-            };
-        }
         Self {
-            extensions: normalized,
+            extensions: extensions.to_vec(),
+            ..Self::default()
         }
     }
 
-    /// Build policy by extracting extension hints from glob patterns.
-    ///
-    /// Falls back to `fallback_extensions` when no extension can be extracted.
+    /// Derives sync policy from glob patterns.
     #[must_use]
     pub fn from_glob_patterns(patterns: &[String], fallback_extensions: &[&str]) -> Self {
         let mut extensions = extract_extensions_from_glob_patterns(patterns);
         if extensions.is_empty() {
-            extensions = fallback_extensions
-                .iter()
-                .filter_map(|value| normalize_extension(value))
-                .collect();
+            extensions = fallback_extensions.iter().map(|s| s.to_string()).collect();
         }
-        Self::new(&extensions)
-    }
-
-    /// Build policy with explicit extension overrides.
-    ///
-    /// Precedence:
-    /// 1) `explicit_extensions` (if not empty after normalization)
-    /// 2) extensions extracted from `patterns`
-    /// 3) `fallback_extensions`
-    #[must_use]
-    pub fn from_patterns_and_extensions(
-        patterns: &[String],
-        explicit_extensions: &[String],
-        fallback_extensions: &[&str],
-    ) -> Self {
-        let explicit = normalize_extensions(explicit_extensions);
-        if !explicit.is_empty() {
-            return Self {
-                extensions: explicit,
-            };
+        Self {
+            extensions,
+            include_globs: patterns.to_vec(),
+            ..Self::default()
         }
-        Self::from_glob_patterns(patterns, fallback_extensions)
     }
 
-    /// Returns normalized extension allowlist (lowercased, without leading dot).
-    #[must_use]
-    pub fn extensions(&self) -> &[String] {
-        &self.extensions
-    }
-
-    /// Returns true when `path` has a supported extension.
-    #[must_use]
+    /// Returns true if the path extension matches policy.
     pub fn supports_path(&self, path: &Path) -> bool {
-        let Some(extension) = extension_from_path(path) else {
+        let Some(ext) = path.extension().and_then(|s| s.to_str()) else {
             return false;
         };
-        self.extensions.iter().any(|allowed| allowed == &extension)
+        let lower = ext.to_lowercase();
+        self.extensions.iter().any(|e| e == &lower)
     }
 }
 
-/// Extract lowercased extension from path (without dot).
-#[must_use]
-pub fn extension_from_path(path: &Path) -> Option<String> {
-    path.extension()
-        .and_then(std::ffi::OsStr::to_str)
-        .and_then(normalize_extension)
-}
-
-/// Normalize extension token from user input.
-#[must_use]
-pub fn normalize_extension(raw: &str) -> Option<String> {
-    let normalized = raw.trim().trim_start_matches('.').to_ascii_lowercase();
-    if normalized.is_empty() {
-        return None;
-    }
-    if normalized
-        .chars()
-        .all(|ch| ch.is_ascii_alphanumeric() || ch == '_' || ch == '-')
-    {
-        Some(normalized)
-    } else {
-        None
-    }
-}
-
-/// Extract extension hints from glob patterns (e.g. `"**/*.md"` -> `"md"`).
-#[must_use]
+/// Helper to extract base extensions from a list of globs.
 pub fn extract_extensions_from_glob_patterns(patterns: &[String]) -> Vec<String> {
     let mut values = BTreeSet::new();
     for pattern in patterns {
-        let normalized = pattern.trim();
-        if normalized.is_empty() {
-            continue;
+        if let Some(index) = pattern.rfind("*.") {
+            let ext = &pattern[index + 2..];
+            values.insert(ext.to_lowercase());
         }
-        if let Some(index) = normalized.rfind("*.") {
-            let token = &normalized[index + 2..];
-            if let Some(brace_payload) = token.strip_prefix('{')
-                && let Some(end_index) = brace_payload.find('}')
-            {
-                for candidate in brace_payload[..end_index].split(',') {
-                    if let Some(extension) = normalize_extension_token(candidate) {
-                        values.insert(extension);
+    }
+    values.into_iter().collect()
+}
+
+/// Core synchronization engine.
+#[derive(Debug, Clone)]
+pub struct SyncEngine {
+    /// Root directory of the project to sync.
+    pub project_root: PathBuf,
+    /// Path where sync manifest is persisted.
+    pub manifest_path: PathBuf,
+    /// Discovery behavior options.
+    pub options: DiscoveryOptions,
+}
+
+impl SyncEngine {
+    /// Construct a new sync engine for a project.
+    pub fn new(project_root: PathBuf, manifest_path: PathBuf) -> Self {
+        Self {
+            project_root,
+            manifest_path,
+            options: DiscoveryOptions::default(),
+        }
+    }
+
+    /// Attach discovery options to the engine.
+    pub fn with_options(mut self, options: DiscoveryOptions) -> Self {
+        self.options = options;
+        self
+    }
+
+    /// Discover files under the project root according to discovery options.
+    #[must_use]
+    pub fn discover_files(&self) -> Vec<PathBuf> {
+        let mut files = Vec::new();
+        let root = self.project_root.as_path();
+        if !root.is_dir() {
+            return files;
+        }
+
+        let options = &self.options;
+        let extensions: HashSet<String> = options
+            .extensions
+            .iter()
+            .map(|ext| ext.to_ascii_lowercase())
+            .collect();
+        let skip_dirs: HashSet<String> = options
+            .skip_dirs
+            .iter()
+            .map(|name| name.to_ascii_lowercase())
+            .collect();
+
+        for entry in WalkDir::new(root)
+            .follow_links(false)
+            .into_iter()
+            .filter_entry(|entry| {
+                if entry.depth() == 0 {
+                    return true;
+                }
+                if entry.file_type().is_dir() {
+                    let name = entry.file_name().to_string_lossy();
+                    if options.skip_hidden && name.starts_with('.') {
+                        return false;
+                    }
+                    if skip_dirs.contains(name.to_ascii_lowercase().as_str()) {
+                        return false;
                     }
                 }
+                true
+            })
+            .filter_map(Result::ok)
+        {
+            if !entry.file_type().is_file() {
                 continue;
             }
-            let simple_token = token
-                .split(['/', '*', '?', '[', '{', ',', '}'])
-                .next()
-                .unwrap_or_default();
-            if let Some(extension) = normalize_extension_token(simple_token) {
-                values.insert(extension);
+            let path = entry.path();
+            if options.skip_hidden && is_hidden_path(path) {
+                continue;
+            }
+            let Some(ext) = path.extension().and_then(|value| value.to_str()) else {
+                continue;
+            };
+            if !extensions.contains(&ext.to_ascii_lowercase()) {
+                continue;
+            }
+            if let Ok(metadata) = path.metadata() {
+                if metadata.len() > options.max_file_size {
+                    continue;
+                }
+            }
+            files.push(path.to_path_buf());
+            if let Some(limit) = options.max_files {
+                if files.len() >= limit {
+                    break;
+                }
             }
         }
-    }
-    values.into_iter().collect()
-}
 
-fn normalize_extensions(extensions: &[String]) -> Vec<String> {
-    let mut values = BTreeSet::new();
-    for extension in extensions {
-        if let Some(normalized) = normalize_extension(extension) {
-            values.insert(normalized);
+        files.sort();
+        files
+    }
+
+    /// Compute diff between a manifest snapshot and current file list.
+    #[must_use]
+    pub fn compute_diff(&self, manifest: &SyncManifest, files: &[PathBuf]) -> SyncResult {
+        let mut result = SyncResult::default();
+        let mut seen: HashSet<String> = HashSet::new();
+
+        for file in files {
+            let key = manifest_key_for_path(file, &self.project_root);
+            seen.insert(key.clone());
+            match manifest.0.get(&key) {
+                None => result.added.push(file.clone()),
+                Some(previous) => match Self::compute_file_hash(file) {
+                    Some(current) if current == *previous => result.unchanged += 1,
+                    _ => result.modified.push(file.clone()),
+                },
+            }
         }
+
+        for key in manifest.0.keys() {
+            if !seen.contains(key) {
+                result.deleted.push(PathBuf::from(key));
+            }
+        }
+
+        result
     }
-    values.into_iter().collect()
 }
 
-fn normalize_extension_token(raw: &str) -> Option<String> {
-    let token = raw.trim();
-    if token.is_empty() {
-        return None;
-    }
-    let suffix = token.rsplit('.').next().unwrap_or(token);
-    normalize_extension(suffix)
+fn is_hidden_path(path: &Path) -> bool {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| name.starts_with('.'))
+}
+
+fn manifest_key_for_path(path: &Path, root: &Path) -> String {
+    let relative = path.strip_prefix(root).unwrap_or(path);
+    relative.to_string_lossy().replace('\\', "/")
 }

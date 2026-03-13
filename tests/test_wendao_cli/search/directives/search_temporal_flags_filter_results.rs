@@ -1,17 +1,24 @@
-use crate::test_wendao_cli::support::wendao_cmd;
-use serde_json::Value;
-
-use super::fixture_contract_support::{
-    SearchDirectivesFixture, assert_search_directives_fixture, search_payload_snapshot,
-};
+use super::*;
 
 #[test]
 fn test_wendao_search_temporal_flags_filter_results() -> Result<(), Box<dyn std::error::Error>> {
-    let fixture = SearchDirectivesFixture::build("temporal_flags_filter_results")?;
+    let tmp = TempDir::new()?;
+    write_file(
+        &tmp.path().join("docs/a.md"),
+        "---\ncreated: 2024-01-01\nmodified: 2024-01-05\n---\n# A\n",
+    )?;
+    write_file(
+        &tmp.path().join("docs/b.md"),
+        "---\ncreated: 2024-01-03\nmodified: 2024-01-02\n---\n# B\n",
+    )?;
+    write_file(
+        &tmp.path().join("docs/c.md"),
+        "---\ncreated: 2024-01-10\nmodified: 2024-01-12\n---\n# C\n",
+    )?;
 
     let output = wendao_cmd()
         .arg("--root")
-        .arg(fixture.root())
+        .arg(tmp.path())
         .arg("search")
         .arg(".md")
         .arg("--limit")
@@ -31,7 +38,37 @@ fn test_wendao_search_temporal_flags_filter_results() -> Result<(), Box<dyn std:
     );
 
     let payload: Value = serde_json::from_str(&String::from_utf8(output.stdout)?)?;
-    let actual = search_payload_snapshot(&payload);
-    assert_search_directives_fixture("temporal_flags_filter_results", "result.json", &actual);
+    assert_eq!(
+        payload.get("created_after").and_then(Value::as_i64),
+        Some(1_704_153_600)
+    );
+    assert_eq!(
+        payload.get("created_before").and_then(Value::as_i64),
+        Some(1_704_758_400)
+    );
+    let sort_terms = payload
+        .get("sort_terms")
+        .and_then(Value::as_array)
+        .ok_or("missing sort_terms")?;
+    assert_eq!(sort_terms.len(), 1);
+    assert_eq!(
+        sort_terms[0].get("field").and_then(Value::as_str),
+        Some("created")
+    );
+    assert_eq!(
+        sort_terms[0].get("order").and_then(Value::as_str),
+        Some("asc")
+    );
+    let rows = payload
+        .get("results")
+        .and_then(Value::as_array)
+        .ok_or("missing results")?;
+    assert_eq!(rows.len(), 1);
+    assert_eq!(
+        rows.first()
+            .and_then(|row| row.get("path"))
+            .and_then(Value::as_str),
+        Some("docs/b.md")
+    );
     Ok(())
 }

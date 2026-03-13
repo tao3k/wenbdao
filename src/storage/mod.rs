@@ -1,17 +1,12 @@
 //! Valkey-backed storage operations for knowledge entries.
 
 mod crud;
-mod keyspace;
 mod query;
 
 use std::collections::HashSet;
 use std::path::PathBuf;
 
 use crate::types::{KnowledgeCategory, KnowledgeEntry};
-
-const KNOWLEDGE_VALKEY_URL_ENV: &str = "XIUXIAN_WENDAO_KNOWLEDGE_VALKEY_URL";
-const KNOWLEDGE_VALKEY_KEY_PREFIX_ENV: &str = "XIUXIAN_WENDAO_KNOWLEDGE_VALKEY_KEY_PREFIX";
-const DEFAULT_KNOWLEDGE_VALKEY_KEY_PREFIX: &str = "xiuxian_wendao:knowledge";
 
 /// Knowledge storage using Valkey.
 #[derive(Debug)]

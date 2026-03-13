@@ -45,7 +45,7 @@ fn test_relation_creation() {
 
     assert!(relation.id.contains("claude_code"));
     assert!(relation.id.contains("part_of"));
-    assert!(relation.id.contains("xiuxian-artisan-workshop"));
+    assert!(relation.id.contains("omni-dev-fusion"));
 }
 
 #[test]

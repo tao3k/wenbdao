@@ -2,7 +2,7 @@
 
 use std::collections::{HashMap, HashSet};
 
-use xiuxian_wendao::{RecallResult, apply_link_graph_proximity_boost};
+use xiuxian_wendao::fusion::{RecallResult, apply_link_graph_proximity_boost};
 
 #[test]
 fn test_apply_link_graph_proximity_boost_bidirectional_link() {

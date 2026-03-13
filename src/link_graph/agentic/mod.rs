@@ -5,9 +5,7 @@ mod keys;
 mod store;
 mod types;
 
-pub(crate) use idempotency::{
-    suggested_link_signature_from_request, suggested_link_signature_from_row,
-};
+pub use idempotency::{suggested_link_signature_from_request, suggested_link_signature_from_row};
 pub use store::{
     valkey_suggested_link_decide, valkey_suggested_link_decide_with_valkey,
     valkey_suggested_link_decisions_recent, valkey_suggested_link_decisions_recent_with_valkey,

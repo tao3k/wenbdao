@@ -1,6 +1,7 @@
 //! `PyO3` bindings for `KnowledgeStorage` (Valkey operations).
 
 use pyo3::prelude::*;
+use tokio::runtime::Runtime;
 
 use crate::knowledge_py::PyKnowledgeEntry;
 use crate::storage::KnowledgeStorage;
@@ -10,101 +11,88 @@ use crate::storage::KnowledgeStorage;
 #[derive(Debug)]
 pub struct PyKnowledgeStorage {
     inner: KnowledgeStorage,
+    runtime: Runtime,
 }
 
 #[pymethods]
 impl PyKnowledgeStorage {
+    /// Create a new storage instance.
     #[new]
     #[pyo3(signature = (path, table_name))]
-    fn new(path: &str, table_name: &str) -> Self {
-        Self {
-            inner: KnowledgeStorage::new(path, table_name),
-        }
+    pub fn new(path: &str, table_name: &str) -> PyResult<Self> {
+        let storage = KnowledgeStorage::new(path, table_name);
+        let runtime = Runtime::new()
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+        Ok(Self {
+            inner: storage,
+            runtime,
+        })
     }
 
-    #[getter]
-    fn path(&self) -> String {
-        self.inner.path().to_string_lossy().to_string()
+    /// Add an entry to storage.
+    pub fn add_entry(&self, entry: PyKnowledgeEntry) -> PyResult<()> {
+        self.runtime.block_on(async {
+            self.inner
+                .upsert(&entry.inner)
+                .await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
+        })
     }
 
-    #[getter]
-    fn table_name(&self) -> String {
-        self.inner.table_name().to_string()
+    /// Get an entry by ID.
+    pub fn get_entry(&self, entry_id: &str) -> PyResult<Option<PyKnowledgeEntry>> {
+        self.runtime.block_on(async {
+            let entry = self
+                .inner
+                .get_entry(entry_id)
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            Ok(entry.map(|e| PyKnowledgeEntry { inner: e }))
+        })
     }
 
-    fn init(&self) -> PyResult<()> {
-        let runtime = tokio::runtime::Builder::new_current_thread()
-            .enable_all()
-            .build()
-            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
-        runtime
-            .block_on(self.inner.init())
-            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
-        Ok(())
+    /// Search entries by text.
+    pub fn text_search(&self, query: &str, limit: i32) -> PyResult<Vec<PyKnowledgeEntry>> {
+        self.runtime.block_on(async {
+            let entries =
+                self.inner.search_text(query, limit).await.map_err(|e| {
+                    PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string())
+                })?;
+            Ok(entries
+                .into_iter()
+                .map(|e| PyKnowledgeEntry { inner: e })
+                .collect())
+        })
     }
 
-    fn upsert(&self, entry: &PyKnowledgeEntry) -> PyResult<bool> {
-        let runtime = tokio::runtime::Builder::new_current_thread()
-            .enable_all()
-            .build()
-            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
-        runtime
-            .block_on(self.inner.upsert(&entry.inner))
-            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
-        Ok(true)
+    /// Search entries by vector similarity.
+    pub fn vector_search(
+        &self,
+        query_vector: Vec<f32>,
+        limit: i32,
+    ) -> PyResult<Vec<PyKnowledgeEntry>> {
+        self.runtime.block_on(async {
+            let entries =
+                self.inner.search(&query_vector, limit).await.map_err(|e| {
+                    PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string())
+                })?;
+            Ok(entries
+                .into_iter()
+                .map(|e| PyKnowledgeEntry { inner: e })
+                .collect())
+        })
     }
 
-    fn text_search(&self, query: &str, limit: i32) -> PyResult<Vec<PyKnowledgeEntry>> {
-        let runtime = tokio::runtime::Builder::new_current_thread()
-            .enable_all()
-            .build()
-            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
-        let results = runtime
-            .block_on(self.inner.search_text(query, limit))
-            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
-        Ok(results
-            .into_iter()
-            .map(|inner| PyKnowledgeEntry { inner })
-            .collect())
-    }
-
-    fn vector_search(&self, query_vector: Vec<f32>, limit: i32) -> PyResult<Vec<PyKnowledgeEntry>> {
-        let runtime = tokio::runtime::Builder::new_current_thread()
-            .enable_all()
-            .build()
-            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
-        let query_vector = query_vector.into_boxed_slice();
-        let results = runtime
-            .block_on(self.inner.search(query_vector.as_ref(), limit))
-            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
-        Ok(results
-            .into_iter()
-            .map(|inner| PyKnowledgeEntry { inner })
-            .collect())
-    }
-
-    fn search(&self, query: &str, limit: i32) -> PyResult<Vec<PyKnowledgeEntry>> {
-        self.text_search(query, limit)
-    }
-
-    fn count(&self) -> PyResult<i64> {
-        let runtime = tokio::runtime::Builder::new_current_thread()
-            .enable_all()
-            .build()
-            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
-        runtime
-            .block_on(self.inner.count())
-            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))
-    }
-
-    fn clear(&self) -> PyResult<()> {
-        let runtime = tokio::runtime::Builder::new_current_thread()
-            .enable_all()
-            .build()
-            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
-        runtime
-            .block_on(self.inner.clear())
-            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
-        Ok(())
+    /// Hybrid search (text + vector).
+    pub fn search(&self, query: &str, limit: i32) -> PyResult<Vec<PyKnowledgeEntry>> {
+        self.runtime.block_on(async {
+            let entries =
+                self.inner.search_text(query, limit).await.map_err(|e| {
+                    PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string())
+                })?;
+            Ok(entries
+                .into_iter()
+                .map(|e| PyKnowledgeEntry { inner: e })
+                .collect())
+        })
     }
 }

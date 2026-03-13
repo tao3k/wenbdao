@@ -56,10 +56,8 @@ impl PyLinkGraphEngine {
     }
 
     pub(super) fn narrate_hits_json_impl(hits_json: &str) -> PyResult<String> {
-        let hits: Vec<crate::link_graph::LinkGraphHit> =
-            serde_json::from_str(hits_json).map_err(|e| {
-                pyo3::exceptions::PyValueError::new_err(format!("Invalid hits JSON: {e}"))
-            })?;
+        let hits = serde_json::from_str::<Vec<crate::link_graph::LinkGraphHit>>(hits_json)
+            .map_err(|error| pyo3::exceptions::PyValueError::new_err(error.to_string()))?;
         Ok(crate::link_graph::narrate_subgraph(&hits))
     }
 }

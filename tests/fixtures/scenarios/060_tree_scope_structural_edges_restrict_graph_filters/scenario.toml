@@ -1,0 +1,17 @@
+[scenario]
+id = "060_tree_scope_structural_edges_restrict_graph_filters"
+name = "structural edges restrict graph filters"
+description = "tree_scope_filters scenario"
+category = "tree_scope_filters"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+
+[expected]
+type = "json_snapshot"
+files = ["result.json"]
+
+[runner]
+build_page_index = true
+collect_links = true

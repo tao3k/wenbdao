@@ -1,18 +1,16 @@
-use crate::test_wendao_cli::support::wendao_cmd;
-use serde_json::Value;
-
-use super::fixture_contract_support::{
-    SearchDirectivesFixture, assert_search_directives_fixture, search_payload_snapshot,
-};
+use super::*;
 
 #[test]
 fn test_wendao_search_query_directives_apply_without_cli_flags()
 -> Result<(), Box<dyn std::error::Error>> {
-    let fixture = SearchDirectivesFixture::build("query_directives_without_cli_flags")?;
+    let tmp = TempDir::new()?;
+    write_file(&tmp.path().join("docs/a.md"), "# A\n\n[[b]]\n")?;
+    write_file(&tmp.path().join("docs/c.md"), "# C\n\n[[b]]\n")?;
+    write_file(&tmp.path().join("docs/b.md"), "# B\n\nNo links.\n")?;
 
     let output = wendao_cmd()
         .arg("--root")
-        .arg(fixture.root())
+        .arg(tmp.path())
         .arg("search")
         .arg("to:b sort:path_asc .md")
         .arg("--limit")
@@ -26,7 +24,45 @@ fn test_wendao_search_query_directives_apply_without_cli_flags()
     );
 
     let payload: Value = serde_json::from_str(&String::from_utf8(output.stdout)?)?;
-    let actual = search_payload_snapshot(&payload);
-    assert_search_directives_fixture("query_directives_without_cli_flags", "result.json", &actual);
+    assert_eq!(payload.get("query").and_then(Value::as_str), Some(".md"));
+    let filters = payload.get("filters").ok_or("missing filters payload")?;
+    assert_eq!(
+        filters
+            .get("link_to")
+            .and_then(|row| row.get("seeds"))
+            .and_then(Value::as_array)
+            .map(std::vec::Vec::len),
+        Some(1)
+    );
+    let sort_terms = payload
+        .get("sort_terms")
+        .and_then(Value::as_array)
+        .ok_or("missing sort_terms")?;
+    assert_eq!(sort_terms.len(), 1);
+    assert_eq!(
+        sort_terms[0].get("field").and_then(Value::as_str),
+        Some("path")
+    );
+    assert_eq!(
+        sort_terms[0].get("order").and_then(Value::as_str),
+        Some("asc")
+    );
+    let rows = payload
+        .get("results")
+        .and_then(Value::as_array)
+        .ok_or("missing results")?;
+    assert_eq!(rows.len(), 2);
+    assert_eq!(
+        rows.first()
+            .and_then(|row| row.get("path"))
+            .and_then(Value::as_str),
+        Some("docs/a.md")
+    );
+    assert_eq!(
+        rows.get(1)
+            .and_then(|row| row.get("path"))
+            .and_then(Value::as_str),
+        Some("docs/c.md")
+    );
     Ok(())
 }

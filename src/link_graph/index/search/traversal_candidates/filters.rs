@@ -1,16 +1,16 @@
 use super::super::super::{
     LinkGraphDirection, LinkGraphIndex, LinkGraphLinkFilter, LinkGraphRelatedFilter,
 };
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 
 impl LinkGraphIndex {
     pub(in crate::link_graph::index::search) fn combine_candidates(
         current: Option<HashSet<String>>,
         incoming: HashSet<String>,
-    ) -> HashSet<String> {
+    ) -> Option<HashSet<String>> {
         match current {
-            None => incoming,
-            Some(existing) => existing.intersection(&incoming).cloned().collect(),
+            None => Some(incoming),
+            Some(existing) => Some(existing.intersection(&incoming).cloned().collect()),
         }
     }
 
@@ -46,9 +46,7 @@ impl LinkGraphIndex {
             return HashSet::new();
         }
         let max_distance = filter.max_distance.unwrap_or(2).max(1);
-        let weighted_seeds: HashMap<String, f64> =
-            seed_ids.into_iter().map(|doc_id| (doc_id, 1.0)).collect();
-        self.related_ppr_ranked_doc_ids(&weighted_seeds, max_distance, filter.ppr.as_ref())
+        self.related_ppr_ranked_doc_ids(&seed_ids, max_distance, filter.ppr.as_ref())
             .into_iter()
             .map(|(doc_id, _distance, _score)| doc_id)
             .collect()

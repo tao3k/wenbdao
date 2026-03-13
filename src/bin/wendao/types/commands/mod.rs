@@ -9,9 +9,7 @@ mod search;
 
 pub(crate) use agentic::AgenticCommand;
 pub(crate) use attachments::AttachmentsArgs;
-pub(crate) use graph::{
-    MetadataArgs, NeighborsArgs, PageIndexArgs, RelatedArgs, ResolveArgs, TocArgs,
-};
+pub(crate) use graph::{MetadataArgs, NeighborsArgs, RelatedArgs, ResolveArgs, TocArgs};
 pub(crate) use hmas::HmasCommand;
 pub(crate) use saliency::SaliencyCommand;
 pub(crate) use search::SearchArgs;
@@ -30,8 +28,6 @@ pub(crate) enum Command {
     Related(RelatedArgs),
     /// Return metadata for a note.
     Metadata(MetadataArgs),
-    /// Return hierarchical `PageIndex` roots for a note.
-    PageIndex(PageIndexArgs),
     /// Resolve ambiguous stem/id/path input into canonical candidates.
     Resolve(ResolveArgs),
     /// Search extracted local attachments by query/extension/type.

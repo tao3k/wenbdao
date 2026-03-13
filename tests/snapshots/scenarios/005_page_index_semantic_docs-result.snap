@@ -1,0 +1,52 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/support/scenario_framework.rs
+expression: result
+---
+{
+  "nodes": [
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [],
+              "is_thinned": false,
+              "level": 3,
+              "line_range": [
+                9,
+                11
+              ],
+              "node_id": "docs/alpha#alpha---beta---gamma",
+              "summary": null,
+              "text": "gamma leaf body stays visible for semantic document export tests.",
+              "title": "Gamma",
+              "token_count": 10
+            }
+          ],
+          "is_thinned": false,
+          "level": 2,
+          "line_range": [
+            5,
+            8
+          ],
+          "node_id": "docs/alpha#alpha---beta",
+          "summary": null,
+          "text": "beta child section keeps enough detail to survive semantic document export without thinning away.",
+          "title": "Beta",
+          "token_count": 14
+        }
+      ],
+      "is_thinned": false,
+      "level": 1,
+      "line_range": [
+        1,
+        4
+      ],
+      "node_id": "docs/alpha#alpha",
+      "summary": null,
+      "text": "alpha root section carries enough words to remain stable while powering semantic exports for hybrid retrieval.",
+      "title": "Alpha",
+      "token_count": 16
+    }
+  ]
+}

@@ -5,7 +5,9 @@ mod query;
 mod records;
 mod semantic_policy;
 
-pub use attachments::{LinkGraphAttachment, LinkGraphAttachmentHit, LinkGraphAttachmentKind};
+pub use attachments::{
+    LinkGraphAttachment, LinkGraphAttachmentHit, LinkGraphAttachmentKind, VisionAnnotation,
+};
 pub use query::{
     LinkGraphDirection, LinkGraphEdgeType, LinkGraphLinkFilter, LinkGraphMatchStrategy,
     LinkGraphPprSubgraphMode, LinkGraphRelatedFilter, LinkGraphRelatedPprOptions, LinkGraphScope,
@@ -21,12 +23,12 @@ pub use records::{
     LINK_GRAPH_REASON_GRAPH_POLICY_MODE_CONFLICT, LINK_GRAPH_REASON_GRAPH_SEARCH_TIMEOUT,
     LINK_GRAPH_REASON_GRAPH_SUFFICIENT, LINK_GRAPH_REASON_HYBRID_SELECTED,
     LINK_GRAPH_REASON_VECTOR_ONLY_REQUESTED, LINK_GRAPH_RETRIEVAL_PLAN_SCHEMA_VERSION,
-    LinkGraphConfidenceLevel, LinkGraphDisplayHit, LinkGraphDocument, LinkGraphHit,
-    LinkGraphMetadata, LinkGraphNeighbor, LinkGraphPassage, LinkGraphPlannedSearchPayload,
-    LinkGraphPromotedOverlayTelemetry, LinkGraphRelatedPprDiagnostics, LinkGraphRetrievalBudget,
-    LinkGraphRetrievalMode, LinkGraphRetrievalPlanInput, LinkGraphRetrievalPlanRecord,
-    LinkGraphSemanticDocument, LinkGraphSemanticDocumentKind, LinkGraphStats, PageIndexMeta,
-    PageIndexNode, QuantumAnchorHit, QuantumContext, QuantumFusionOptions,
-    QuantumSemanticSearchRequest,
+    LinkGraphCcsAudit, LinkGraphConfidenceLevel, LinkGraphDisplayHit, LinkGraphDocument,
+    LinkGraphHit, LinkGraphMetadata, LinkGraphNeighbor, LinkGraphPassage,
+    LinkGraphPlannedSearchPayload, LinkGraphPromotedOverlayTelemetry,
+    LinkGraphRelatedPprDiagnostics, LinkGraphRetrievalBudget, LinkGraphRetrievalMode,
+    LinkGraphRetrievalPlanInput, LinkGraphRetrievalPlanRecord, LinkGraphSemanticDocument,
+    LinkGraphSemanticDocumentKind, LinkGraphStats, PageIndexMeta, PageIndexNode, QuantumAnchorHit,
+    QuantumContext, QuantumFusionOptions, QuantumFusionTelemetry, QuantumSemanticSearchRequest,
 };
 pub use semantic_policy::{LinkGraphSemanticDocumentScope, LinkGraphSemanticSearchPolicy};

@@ -1,4 +1,3 @@
-use super::super::semantic_policy::LinkGraphSemanticSearchPolicy;
 use super::enums::LinkGraphMatchStrategy;
 use super::filters::LinkGraphSearchFilters;
 use super::sort::LinkGraphSortTerm;
@@ -19,9 +18,6 @@ pub struct LinkGraphSearchOptions {
     /// Structured filters.
     #[serde(default)]
     pub filters: LinkGraphSearchFilters,
-    /// Semantic ignition policy used if retrieval escalates beyond graph search.
-    #[serde(default)]
-    pub semantic_policy: LinkGraphSemanticSearchPolicy,
     /// Keep rows with `created_ts >= created_after`.
     #[serde(default)]
     pub created_after: Option<i64>,
@@ -34,6 +30,11 @@ pub struct LinkGraphSearchOptions {
     /// Keep rows with `modified_ts <= modified_before`.
     #[serde(default)]
     pub modified_before: Option<i64>,
+    /// Style anchors for CCS (Context Completeness Score) audit.
+    /// When provided, the search payload will include a CCS audit result
+    /// measuring how well the retrieved evidence aligns with these anchors.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub style_anchors: Vec<String>,
 }
 
 impl Default for LinkGraphSearchOptions {
@@ -43,21 +44,17 @@ impl Default for LinkGraphSearchOptions {
             case_sensitive: false,
             sort_terms: vec![LinkGraphSortTerm::default()],
             filters: LinkGraphSearchFilters::default(),
-            semantic_policy: LinkGraphSemanticSearchPolicy::default(),
             created_after: None,
             created_before: None,
             modified_after: None,
             modified_before: None,
+            style_anchors: Vec::new(),
         }
     }
 }
 
 impl LinkGraphSearchOptions {
     /// Validate schema-equivalent constraints for runtime safety.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error when any option violates schema constraints.
     pub fn validate(&self) -> Result<(), String> {
         if let Some(filter) = &self.filters.link_to
             && filter.max_distance.is_some_and(|distance| distance == 0)
@@ -124,14 +121,6 @@ impl LinkGraphSearchOptions {
         {
             return Err(
                 "link_graph search options schema violation at filters.per_doc_section_cap: must be >= 1"
-                    .to_string(),
-            );
-        }
-        if let Some(score) = self.semantic_policy.min_vector_score
-            && !(0.0..=1.0).contains(&score)
-        {
-            return Err(
-                "link_graph search options schema violation at semantic_policy.min_vector_score: must be between 0 and 1"
                     .to_string(),
             );
         }

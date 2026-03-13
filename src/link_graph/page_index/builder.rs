@@ -20,19 +20,24 @@ pub(in crate::link_graph) fn build_page_index_tree(
         if section.section_text.trim().is_empty() && section.heading_path.trim().is_empty() {
             continue;
         }
+
+        let level = effective_level(section.heading_level);
+        while stack
+            .last()
+            .is_some_and(|parent: &PageIndexNode| parent.level >= level)
+        {
+            close_last_open_node(&mut roots, &mut stack);
+        }
+
+        let parent_id = stack.last().map(|p| p.node_id.clone());
         let node = build_node(
             doc_id,
             doc_title,
             section,
             has_named_headings,
             &mut slug_counts,
+            parent_id,
         );
-        while stack
-            .last()
-            .is_some_and(|parent: &PageIndexNode| parent.level >= node.level)
-        {
-            close_last_open_node(&mut roots, &mut stack);
-        }
         stack.push(node);
     }
 
@@ -49,6 +54,7 @@ fn build_node(
     section: &IndexedSection,
     has_named_headings: bool,
     slug_counts: &mut HashMap<String, usize>,
+    parent_id: Option<String>,
 ) -> PageIndexNode {
     let title = effective_title(section, doc_title, has_named_headings);
     let slug = effective_slug(section, &title);
@@ -59,11 +65,12 @@ fn build_node(
     } else {
         format!("{doc_id}#{slug}-{}", *sequence - 1)
     };
-    let line_start = section.line_start.max(1);
-    let line_end = section.line_end.max(line_start);
+    let line_start = section.line_start;
+    let line_end = section.line_end;
 
     PageIndexNode {
         node_id,
+        parent_id,
         title,
         level: effective_level(section.heading_level),
         text: Arc::<str>::from(section.section_text.as_str()),
@@ -91,6 +98,14 @@ fn close_last_open_node(roots: &mut Vec<PageIndexNode>, stack: &mut Vec<PageInde
 fn effective_title(section: &IndexedSection, doc_title: &str, has_named_headings: bool) -> String {
     if !section.heading_title.trim().is_empty() {
         return section.heading_title.clone();
+    }
+    if !section.heading_path.trim().is_empty() {
+        return section
+            .heading_path
+            .rsplit(" / ")
+            .next()
+            .unwrap_or(doc_title)
+            .to_string();
     }
     if has_named_headings {
         return "Overview".to_string();

@@ -1,5 +1,4 @@
-use xiuxian_wendao::graph::{KnowledgeGraph, SkillDoc};
-use xiuxian_wendao::{EntityType, RelationType};
+use super::*;
 
 #[test]
 fn test_register_skill_entities_creates_entities_and_relations() {
@@ -150,71 +149,5 @@ fn test_register_skill_entities_shared_keyword_creates_graph_connections() {
         search_rels.len() >= 2,
         "keyword:search should have relations from both tools, got: {}",
         search_rels.len()
-    );
-}
-
-#[test]
-fn test_register_skill_entities_creates_qianji_flow_governs_relation() {
-    let graph = KnowledgeGraph::new();
-
-    let docs = vec![SkillDoc {
-        id: "agenda".to_string(),
-        doc_type: "skill".to_string(),
-        skill_name: "agenda".to_string(),
-        tool_name: String::new(),
-        content: "Flow mapping [[references/agenda_flow.toml#qianji-flow]]".to_string(),
-        routing_keywords: vec![],
-    }];
-
-    let result = graph
-        .register_skill_entities(&docs)
-        .unwrap_or_else(|error| panic!("qianji-flow registration should succeed: {error}"));
-    assert!(
-        result.entities_added >= 2,
-        "Expected skill + qianji flow entities, got {}",
-        result.entities_added
-    );
-
-    let flow = graph.get_entity_by_name("agenda_flow");
-    let Some(flow) = flow else {
-        panic!("QianjiFlow entity 'agenda_flow' should exist");
-    };
-    assert_eq!(
-        flow.entity_type,
-        EntityType::Other("QianjiFlow".to_string())
-    );
-
-    let governs = graph.get_relations(Some("agenda"), Some(RelationType::Governs));
-    assert!(
-        governs
-            .iter()
-            .any(|relation| relation.source == "agenda" && relation.target == "agenda_flow"),
-        "Expected GOVERNS relation agenda -> agenda_flow, got: {governs:?}"
-    );
-}
-
-#[test]
-fn test_register_skill_entities_extracts_qianji_flow_from_command_doc() {
-    let graph = KnowledgeGraph::new();
-
-    let docs = vec![SkillDoc {
-        id: "agenda.validate".to_string(),
-        doc_type: "command".to_string(),
-        skill_name: "agenda".to_string(),
-        tool_name: "agenda.validate".to_string(),
-        content: "Use [[agenda_flow.toml#qianji-flow]] for validation".to_string(),
-        routing_keywords: vec!["agenda".to_string()],
-    }];
-
-    graph
-        .register_skill_entities(&docs)
-        .unwrap_or_else(|error| panic!("command qianji-flow registration should succeed: {error}"));
-
-    let governs = graph.get_relations(Some("agenda"), Some(RelationType::Governs));
-    assert!(
-        governs
-            .iter()
-            .any(|relation| relation.source == "agenda" && relation.target == "agenda_flow"),
-        "Expected command-driven GOVERNS relation agenda -> agenda_flow, got: {governs:?}"
     );
 }

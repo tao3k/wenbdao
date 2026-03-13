@@ -54,6 +54,24 @@ pub struct LinkGraphPlannedSearchPayload {
     /// Query-time promoted-edge overlay telemetry for observability.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub promoted_overlay: Option<LinkGraphPromotedOverlayTelemetry>,
+    /// CCS (Context Completeness Score) audit result for persona-style anchor coverage.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ccs_audit: Option<LinkGraphCcsAudit>,
+}
+
+/// Context Completeness Score audit result for search payloads.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct LinkGraphCcsAudit {
+    /// Context Completeness Score (0.0-1.0).
+    pub ccs_score: f64,
+    /// Whether CCS passed the threshold (>= 0.70).
+    pub passed: bool,
+    /// Whether compensation was applied (re-search with expanded parameters).
+    #[serde(default)]
+    pub compensated: bool,
+    /// Anchors missing from search evidence.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub missing_anchors: Vec<String>,
 }
 
 /// Promoted-edge overlay telemetry emitted on search payloads.

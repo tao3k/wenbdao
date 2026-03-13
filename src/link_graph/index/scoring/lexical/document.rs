@@ -75,12 +75,11 @@ pub(in crate::link_graph::index) fn score_document(
         phrase_hits += content_occurrences.min(6);
 
         if phrase_hits > 0 {
-            let mut phrase_score = 0.70 + usize_to_f64_saturating(phrase_hits.min(8)) * 0.03;
+            let mut phrase_score = 0.70 + (phrase_hits.min(8) as f64) * 0.03;
             if doc.word_count > 0 && content_occurrences > 0 {
-                let density = ((usize_to_f64_saturating(content_occurrences)
-                    * usize_to_f64_saturating(query_tokens.len()))
-                    / usize_to_f64_saturating(doc.word_count))
-                .clamp(0.0, 0.08);
+                let density = ((content_occurrences as f64 * query_tokens.len() as f64)
+                    / doc.word_count as f64)
+                    .clamp(0.0, 0.08);
                 phrase_score += density;
             }
             score = score.max(phrase_score.clamp(0.0, 0.97));
@@ -98,8 +97,7 @@ pub(in crate::link_graph::index) fn score_document(
             }
         }
         if matched > 0 {
-            let ratio =
-                usize_to_f64_saturating(matched) / usize_to_f64_saturating(query_tokens.len());
+            let ratio = matched as f64 / query_tokens.len() as f64;
             let token_score = if query_tokens.len() >= 2 {
                 0.33 + ratio * 0.42
             } else {
@@ -109,8 +107,4 @@ pub(in crate::link_graph::index) fn score_document(
         }
     }
     score.clamp(0.0, 1.0)
-}
-
-fn usize_to_f64_saturating(value: usize) -> f64 {
-    u32::try_from(value).map_or(f64::from(u32::MAX), f64::from)
 }

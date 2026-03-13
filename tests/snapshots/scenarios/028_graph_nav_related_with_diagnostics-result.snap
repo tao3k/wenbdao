@@ -1,0 +1,12 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/support/scenario_framework.rs
+expression: result
+---
+{
+  "category": "graph_navigation",
+  "files": [
+    "result.json"
+  ],
+  "scenario_id": "028_graph_nav_related_with_diagnostics",
+  "status": "validated"
+}

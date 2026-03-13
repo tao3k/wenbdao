@@ -1,17 +1,16 @@
-use crate::test_wendao_cli::support::wendao_cmd;
-use serde_json::Value;
-
-use super::fixture_contract_support::{
-    RelatedCliFixture, assert_related_cli_fixture, related_rows_snapshot,
-};
+use super::*;
 
 #[test]
 fn test_wendao_related_command_accepts_ppr_flags() -> Result<(), Box<dyn std::error::Error>> {
-    let fixture = RelatedCliFixture::build("linear_chain")?;
+    let tmp = TempDir::new()?;
+    write_file(&tmp.path().join("docs/a.md"), "# A\n\n[[b]]\n")?;
+    write_file(&tmp.path().join("docs/b.md"), "# B\n\n[[c]]\n")?;
+    write_file(&tmp.path().join("docs/c.md"), "# C\n\n[[d]]\n")?;
+    write_file(&tmp.path().join("docs/d.md"), "# D\n\nNo links.\n")?;
 
     let output = wendao_cmd()
         .arg("--root")
-        .arg(fixture.root())
+        .arg(tmp.path())
         .arg("related")
         .arg("b")
         .arg("--max-distance")
@@ -35,8 +34,17 @@ fn test_wendao_related_command_accepts_ppr_flags() -> Result<(), Box<dyn std::er
     );
 
     let payload: Value = serde_json::from_str(&String::from_utf8(output.stdout)?)?;
-    let actual = related_rows_snapshot(&payload)?;
-    assert_related_cli_fixture("linear_chain", "related_with_ppr_flags.json", &actual);
+    let rows = payload
+        .as_array()
+        .ok_or("expected related output to be a json array")?;
+    assert_eq!(rows.len(), 3);
+    let stems: Vec<&str> = rows
+        .iter()
+        .filter_map(|row| row.get("stem").and_then(Value::as_str))
+        .collect();
+    assert!(stems.contains(&"a"));
+    assert!(stems.contains(&"c"));
+    assert!(stems.contains(&"d"));
 
     Ok(())
 }

@@ -1,0 +1,12 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/support/scenario_framework.rs
+expression: result
+---
+{
+  "category": "search_filters",
+  "files": [
+    "result.json"
+  ],
+  "scenario_id": "042_search_filt_mentions_orphan_tagless_missing_backlink",
+  "status": "validated"
+}

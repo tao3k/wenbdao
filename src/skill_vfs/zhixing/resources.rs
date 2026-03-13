@@ -315,9 +315,9 @@ fn embedded_discovery_records() -> Result<&'static [EmbeddedDiscoveryRecord]> {
 fn build_embedded_discovery_records() -> std::result::Result<Vec<EmbeddedDiscoveryRecord>, String> {
     let graph = Arc::new(KnowledgeGraph::new());
     let indexer = super::indexer::ZhixingWendaoIndexer::new(Arc::clone(&graph), PathBuf::new());
-    indexer
+    let _ = indexer
         .index_embedded_skill_references_only()
-        .map_err(|error| error.to_string())?;
+        .map_err(|error: Error| error.to_string())?;
 
     let mut by_uri: HashMap<String, EmbeddedDiscoveryRecord> = HashMap::new();
     for relation in graph.get_all_relations() {

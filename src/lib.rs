@@ -44,19 +44,22 @@ use pyo3::prelude::*;
 // ---------------------------------------------------------------------------
 // Core domain modules
 // ---------------------------------------------------------------------------
-mod entity;
+pub mod entity;
 pub mod graph;
 /// HMAS blackboard protocol contracts and validators.
 pub mod hmas;
-pub mod ingress;
 pub mod kg_cache;
 pub mod link_graph;
 pub mod link_graph_py;
 pub mod schemas;
-pub mod skill_vfs;
-mod storage;
-mod sync;
+pub mod storage;
+pub mod sync;
 mod types;
+
+#[path = "../tests/support/fixture_json_assertions.rs"]
+pub mod fixture_json_assertions;
+#[path = "../tests/support/fixture_read.rs"]
+pub mod fixture_read;
 
 // ---------------------------------------------------------------------------
 // PyO3 binding modules (one per domain)
@@ -72,7 +75,7 @@ pub mod sync_py;
 // ---------------------------------------------------------------------------
 // Fusion recall boost (Rust computation, Python thin wrapper)
 // ---------------------------------------------------------------------------
-mod fusion;
+pub mod fusion;
 pub mod fusion_py;
 
 // ---------------------------------------------------------------------------
@@ -82,12 +85,14 @@ pub mod dep_indexer_py;
 pub mod dependency_indexer;
 pub mod enhancer;
 pub mod enhancer_py;
+pub mod gateway;
+pub mod ingress;
 pub mod link_graph_refs;
 mod link_graph_refs_py;
+pub mod skill_vfs;
 pub mod unified_symbol;
 pub mod unified_symbol_py;
-#[cfg(feature = "zhenfa-router")]
-/// Zhenfa HTTP/RPC router integration for Wendao retrieval capabilities.
+/// High-level search router for integrating multiple backends.
 pub mod zhenfa_router;
 
 // ---------------------------------------------------------------------------
@@ -102,12 +107,9 @@ pub use dependency_indexer::{
     DependencyIndexer, DependencyStats, ExternalSymbol, SymbolIndex, SymbolKind,
 };
 pub use enhancer::{
-    EnhancedNote, EntityRefData, InferredRelation, MarkdownConfigBlock, MarkdownConfigLinkTarget,
-    MarkdownConfigMemoryIndex, MissingEmbeddedLink, NoteFrontmatter, NoteInput, RefStatsData,
-    SkillReferenceSemantics, WendaoResourceFile, WendaoResourceLinkTarget, WendaoResourceRegistry,
-    WendaoResourceRegistryError, classify_skill_reference, enhance_note, enhance_notes_batch,
-    extract_markdown_config_blocks, extract_markdown_config_link_targets_by_id,
-    extract_markdown_config_links_by_id, parse_frontmatter,
+    EnhancedNote, EntityRefData, InferredRelation, NoteFrontmatter, NoteInput, RefStatsData,
+    WendaoResourceLinkTarget, WendaoResourceRegistry, classify_skill_reference, enhance_note,
+    enhance_notes_batch, infer_relations, parse_frontmatter,
 };
 pub use enhancer_py::{
     PyEnhancedNote, PyInferredRelation, PyNoteFrontmatter, link_graph_enhance_note,
@@ -116,7 +118,6 @@ pub use enhancer_py::{
 pub use entity::{
     Entity, EntitySearchQuery, EntityType, GraphStats, MultiHopOptions, Relation, RelationType,
 };
-pub use fusion::{RecallResult, apply_link_graph_proximity_boost};
 pub use graph::{KnowledgeGraph, QueryIntent, SkillDoc, SkillRegistrationResult, extract_intent};
 pub use hmas::{
     HmasConclusionPayload, HmasDigitalThreadPayload, HmasEvidencePayload, HmasRecordKind,
@@ -130,35 +131,40 @@ pub use ingress::{
     web_namespace_from_url,
 };
 pub use link_graph::{
-    BatchQuantumScorer, BatchQuantumScorerError, LINK_GRAPH_RETRIEVAL_PLAN_SCHEMA_VERSION,
+    BatchQuantumScorer, BatchQuantumScorerError,
+    LINK_GRAPH_QUANTUM_CONTEXT_SNAPSHOT_SCHEMA_VERSION, LINK_GRAPH_RETRIEVAL_PLAN_SCHEMA_VERSION,
     LINK_GRAPH_SALIENCY_SCHEMA_VERSION, LINK_GRAPH_SUGGESTED_LINK_DECISION_SCHEMA_VERSION,
     LINK_GRAPH_SUGGESTED_LINK_SCHEMA_VERSION, LinkGraphAgenticCandidatePair,
     LinkGraphAgenticExecutionConfig, LinkGraphAgenticExecutionResult,
     LinkGraphAgenticExpansionConfig, LinkGraphAgenticExpansionPlan,
     LinkGraphAgenticWorkerExecution, LinkGraphAgenticWorkerPhase, LinkGraphAgenticWorkerPlan,
-    LinkGraphAttachment, LinkGraphAttachmentHit, LinkGraphAttachmentKind, LinkGraphConfidenceLevel,
-    LinkGraphDirection, LinkGraphDocument, LinkGraphEdgeType, LinkGraphHit, LinkGraphIndex,
-    LinkGraphLinkFilter, LinkGraphMatchStrategy, LinkGraphMetadata, LinkGraphNeighbor,
-    LinkGraphPassage, LinkGraphPprSubgraphMode, LinkGraphRelatedFilter,
+    LinkGraphAttachment, LinkGraphAttachmentHit, LinkGraphAttachmentKind, LinkGraphCacheBuildMeta,
+    LinkGraphConfidenceLevel, LinkGraphDirection, LinkGraphDisplayHit, LinkGraphDocument,
+    LinkGraphEdgeType, LinkGraphHit, LinkGraphIndex, LinkGraphLinkFilter, LinkGraphMatchStrategy,
+    LinkGraphMetadata, LinkGraphNeighbor, LinkGraphPassage, LinkGraphPlannedSearchPayload,
+    LinkGraphPprSubgraphMode, LinkGraphRefreshMode, LinkGraphRelatedFilter,
     LinkGraphRelatedPprDiagnostics, LinkGraphRelatedPprOptions, LinkGraphRetrievalBudget,
     LinkGraphRetrievalMode, LinkGraphRetrievalPlanRecord, LinkGraphSaliencyPolicy,
     LinkGraphSaliencyState, LinkGraphSaliencyTouchRequest, LinkGraphScope, LinkGraphSearchFilters,
-    LinkGraphSearchOptions, LinkGraphSemanticDocument, LinkGraphSemanticDocumentKind,
-    LinkGraphSemanticDocumentScope, LinkGraphSemanticSearchPolicy, LinkGraphSortField,
-    LinkGraphSortOrder, LinkGraphSortTerm, LinkGraphStats, LinkGraphSuggestedLink,
-    LinkGraphSuggestedLinkDecision, LinkGraphSuggestedLinkDecisionRequest,
-    LinkGraphSuggestedLinkDecisionResult, LinkGraphSuggestedLinkRequest,
-    LinkGraphSuggestedLinkState, LinkGraphTagFilter, PageIndexMeta, PageIndexNode,
+    LinkGraphSearchOptions, LinkGraphSortField, LinkGraphSortOrder, LinkGraphSortTerm,
+    LinkGraphStats, LinkGraphSuggestedLink, LinkGraphSuggestedLinkDecision,
+    LinkGraphSuggestedLinkDecisionRequest, LinkGraphSuggestedLinkDecisionResult,
+    LinkGraphSuggestedLinkRequest, LinkGraphSuggestedLinkState, LinkGraphTagFilter,
     ParsedLinkGraphQuery, QUANTUM_SALIENCY_COLUMN, QuantumAnchorHit, QuantumContext,
-    QuantumContextBuildError, QuantumFusionOptions, QuantumSemanticIgnition,
-    QuantumSemanticIgnitionError, QuantumSemanticIgnitionFuture, QuantumSemanticSearchRequest,
-    compute_link_graph_saliency, narrate_subgraph, parse_search_query,
+    QuantumContextBuildError, QuantumContextSnapshot, QuantumFusionOptions, QuantumFusionTelemetry,
+    QuantumSemanticIgnition, QuantumSemanticIgnitionError, QuantumSemanticIgnitionFuture,
+    QuantumSemanticSearchRequest, VectorStoreSemanticIgnition, compute_link_graph_saliency,
+    narrate_subgraph, parse_search_query, quantum_context_snapshot_id,
     resolve_link_graph_index_runtime, set_link_graph_config_home_override,
-    set_link_graph_wendao_config_override, valkey_saliency_del, valkey_saliency_get,
-    valkey_saliency_get_with_valkey, valkey_saliency_touch, valkey_saliency_touch_with_valkey,
-    valkey_suggested_link_decide, valkey_suggested_link_decide_with_valkey,
-    valkey_suggested_link_decisions_recent, valkey_suggested_link_decisions_recent_with_valkey,
-    valkey_suggested_link_log, valkey_suggested_link_log_with_valkey, valkey_suggested_link_recent,
+    set_link_graph_wendao_config_override, valkey_quantum_context_snapshot_drop,
+    valkey_quantum_context_snapshot_get, valkey_quantum_context_snapshot_get_with_valkey,
+    valkey_quantum_context_snapshot_rollback, valkey_quantum_context_snapshot_rollback_with_valkey,
+    valkey_quantum_context_snapshot_save, valkey_quantum_context_snapshot_save_with_valkey,
+    valkey_saliency_del, valkey_saliency_get, valkey_saliency_get_with_valkey,
+    valkey_saliency_touch, valkey_saliency_touch_with_valkey, valkey_suggested_link_decide,
+    valkey_suggested_link_decide_with_valkey, valkey_suggested_link_decisions_recent,
+    valkey_suggested_link_decisions_recent_with_valkey, valkey_suggested_link_log,
+    valkey_suggested_link_log_with_valkey, valkey_suggested_link_recent,
     valkey_suggested_link_recent_latest, valkey_suggested_link_recent_latest_with_valkey,
     valkey_suggested_link_recent_with_valkey,
 };
@@ -167,8 +173,9 @@ pub use link_graph_py::{
     link_graph_stats_cache_set,
 };
 pub use link_graph_refs::{
-    LinkGraphEntityRef, LinkGraphRefStats, extract_entity_refs, find_notes_referencing_entity,
-    get_ref_stats,
+    LinkGraphEntityRef, LinkGraphRefStats, count_entity_refs, extract_entity_refs,
+    extract_entity_refs_batch, find_notes_referencing_entity, get_ref_stats, is_valid_entity_ref,
+    parse_entity_ref,
 };
 pub use link_graph_refs_py::{
     PyLinkGraphEntityRef, PyLinkGraphRefStats, link_graph_count_refs,
@@ -176,10 +183,10 @@ pub use link_graph_refs_py::{
     link_graph_is_valid_ref, link_graph_parse_entity_ref,
 };
 pub use skill_vfs::{
-    AssetRequest, AuthorizedInternalSkillManifestScan, AuthorizedInternalSkillNativeAliasScan,
-    InternalSkillAuthorityReport, InternalSkillIntentCatalog, SkillNamespaceIndex,
-    SkillNamespaceMount, SkillVfsError, SkillVfsResolver, WENDAO_URI_SCHEME, WendaoAssetHandle,
-    WendaoResourceUri, ZHIXING_SKILL_DOC_PATH, ZhixingIndexSummary, ZhixingWendaoIndexer,
+    ATTR_JOURNAL_CARRYOVER, ATTR_TIMER_REMINDED, ATTR_TIMER_SCHEDULED, AssetRequest,
+    InternalSkillManifest, InternalSkillWorkflowType, SkillNamespaceIndex, SkillNamespaceMount,
+    SkillVfsError, SkillVfsResolver, WENDAO_URI_SCHEME, WendaoAssetHandle, WendaoResourceUri,
+    ZHIXING_SKILL_DOC_PATH, ZhixingIndexSummary, ZhixingWendaoIndexer,
     build_embedded_wendao_registry, embedded_discover_canonical_uris, embedded_resource_text,
     embedded_resource_text_from_wendao_uri, embedded_skill_links_for_id,
     embedded_skill_links_for_reference_type, embedded_skill_links_index, embedded_skill_markdown,
@@ -187,13 +194,18 @@ pub use skill_vfs::{
 pub use storage::KnowledgeStorage;
 pub use sync::{
     DiscoveryOptions, FileChange, IncrementalSyncPolicy, SyncEngine, SyncManifest, SyncResult,
-    extension_from_path, extract_extensions_from_glob_patterns, normalize_extension,
+    extract_extensions_from_glob_patterns,
 };
 pub use types::{KnowledgeCategory, KnowledgeEntry, KnowledgeSearchQuery, KnowledgeStats};
 pub use unified_symbol::{SymbolSource, UnifiedIndexStats, UnifiedSymbol, UnifiedSymbolIndex};
 pub use unified_symbol_py::{PyUnifiedIndexStats, PyUnifiedSymbol, PyUnifiedSymbolIndex};
+
 #[cfg(feature = "zhenfa-router")]
 pub use zhenfa_router::WendaoZhenfaRouter;
+/// Directly execute a search via the router using standard request types.
+pub use zhenfa_router::execute_search;
+/// Execute a search via the router using raw RPC parameters.
+pub use zhenfa_router::search_from_rpc_params;
 
 // Re-export PyO3 types for convenience
 pub use graph_py::{

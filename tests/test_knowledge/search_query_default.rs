@@ -1,4 +1,4 @@
-use xiuxian_wendao::KnowledgeSearchQuery;
+use super::*;
 
 #[test]
 fn test_search_query_default() {

@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.omni.dev/xiuxian_wendao.link_graph.quantum_context_snapshot.v1.schema.json",
+  "title": "xiuxian_wendao.link_graph.quantum_context_snapshot.v1",
+  "description": "Valkey snapshot payload for Wendao quantum-context fusion results.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "schema_fingerprint",
+    "snapshot_id",
+    "saved_at_unix",
+    "anchors",
+    "options",
+    "contexts"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "xiuxian_wendao.link_graph.quantum_context_snapshot.v1"
+    },
+    "schema_fingerprint": {
+      "type": "string",
+      "minLength": 1
+    },
+    "snapshot_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "query_text": {
+      "type": ["string", "null"]
+    },
+    "saved_at_unix": {
+      "type": "number",
+      "minimum": 0
+    },
+    "anchors": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/anchor_hit" }
+    },
+    "options": {
+      "$ref": "#/$defs/fusion_options"
+    },
+    "contexts": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/context" }
+    }
+  },
+  "$defs": {
+    "anchor_hit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["anchor_id", "vector_score"],
+      "properties": {
+        "anchor_id": { "type": "string", "minLength": 1 },
+        "vector_score": { "type": "number" }
+      }
+    },
+    "fusion_options": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["alpha", "max_distance", "related_limit"],
+      "properties": {
+        "alpha": { "type": "number" },
+        "max_distance": { "type": "integer", "minimum": 1 },
+        "related_limit": { "type": "integer", "minimum": 1 },
+        "ppr": { "$ref": "#/$defs/ppr_options" }
+      }
+    },
+    "ppr_options": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "alpha": { "type": ["number", "null"] },
+        "max_iter": { "type": ["integer", "null"], "minimum": 1 },
+        "tol": { "type": ["number", "null"], "minimum": 0 },
+        "subgraph_mode": {
+          "type": ["string", "null"],
+          "enum": ["auto", "disabled", "force", null]
+        }
+      }
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "anchor_id",
+        "doc_id",
+        "path",
+        "semantic_path",
+        "related_clusters",
+        "saliency_score",
+        "vector_score",
+        "topology_score"
+      ],
+      "properties": {
+        "anchor_id": { "type": "string", "minLength": 1 },
+        "doc_id": { "type": "string", "minLength": 1 },
+        "path": { "type": "string", "minLength": 1 },
+        "semantic_path": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "related_clusters": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "saliency_score": { "type": "number" },
+        "vector_score": { "type": "number" },
+        "topology_score": { "type": "number" }
+      }
+    }
+  }
+}

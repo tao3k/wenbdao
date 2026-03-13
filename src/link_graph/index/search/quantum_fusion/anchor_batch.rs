@@ -1,6 +1,7 @@
 use arrow::array::{Array, Float64Array, StringArray};
 use arrow::datatypes::DataType;
 use arrow::record_batch::RecordBatch;
+use thiserror::Error;
 
 #[derive(Debug, Clone)]
 pub(super) struct QuantumAnchorBatchView<'a> {
@@ -16,11 +17,15 @@ pub(super) struct QuantumAnchorBatchRow<'a> {
     pub(super) vector_score: f64,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Error)]
 pub(super) enum QuantumAnchorBatchError {
+    #[error("missing required batch column `{column}`")]
     MissingColumn { column: String },
+    #[error("batch column `{column}` must be Utf8, found `{data_type:?}`")]
     InvalidUtf8Column { column: String, data_type: DataType },
+    #[error("batch column `{column}` must be Float64, found `{data_type:?}`")]
     InvalidFloat64Column { column: String, data_type: DataType },
+    #[error("batch column `{column}` contains null at row {row}")]
     NullValue { column: String, row: usize },
 }
 

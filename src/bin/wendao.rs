@@ -21,7 +21,9 @@ fn main() -> Result<()> {
     init_from_cli("xiuxian_wendao", &cli.logging).map_err(|err| anyhow!(err))?;
 
     if let Some(conf) = &cli.config_file {
-        set_link_graph_wendao_config_override(conf.clone()).map_err(|err| anyhow!(err))?;
+        if let Some(path_str) = conf.to_str() {
+            set_link_graph_wendao_config_override(path_str);
+        }
     }
 
     let needs_index = matches!(
@@ -33,7 +35,6 @@ fn main() -> Result<()> {
             | Command::Neighbors(_)
             | Command::Related(_)
             | Command::Metadata(_)
-            | Command::PageIndex(_)
             | Command::Resolve(_)
             | Command::Agentic {
                 command: AgenticCommand::Plan { .. } | AgenticCommand::Run { .. },

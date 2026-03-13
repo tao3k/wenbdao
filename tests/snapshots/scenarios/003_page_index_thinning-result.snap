@@ -1,0 +1,22 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/support/scenario_framework.rs
+expression: result
+---
+{
+  "nodes": [
+    {
+      "children": [],
+      "is_thinned": true,
+      "level": 1,
+      "line_range": [
+        1,
+        7
+      ],
+      "node_id": "docs/thin#thin",
+      "summary": null,
+      "text": "small intro\n\nNested\nchild text that should be folded into the parent section during thinning.",
+      "title": "Thin",
+      "token_count": 15
+    }
+  ]
+}

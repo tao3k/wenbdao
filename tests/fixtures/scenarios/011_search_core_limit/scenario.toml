@@ -1,0 +1,17 @@
+[scenario]
+id = "011_search_core_limit"
+name = "Search Core Limit"
+description = "Search result limit enforcement"
+category = "search_core"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+
+[expected]
+type = "json_snapshot"
+files = ["result.json"]
+
+[runner]
+build_page_index = true
+collect_links = true

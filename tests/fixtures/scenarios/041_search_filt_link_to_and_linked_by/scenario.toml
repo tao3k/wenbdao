@@ -1,0 +1,17 @@
+[scenario]
+id = "041_search_filt_link_to_and_linked_by"
+name = "link to and linked by"
+description = "search_filters scenario"
+category = "search_filters"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+
+[expected]
+type = "json_snapshot"
+files = ["result.json"]
+
+[runner]
+build_page_index = true
+collect_links = true

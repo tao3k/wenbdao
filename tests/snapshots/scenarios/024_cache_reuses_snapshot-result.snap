@@ -1,0 +1,12 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/support/scenario_framework.rs
+expression: result
+---
+{
+  "category": "cache_build",
+  "files": [
+    "result.json"
+  ],
+  "scenario_id": "024_cache_reuses_snapshot",
+  "status": "validated"
+}

@@ -1,6 +1,7 @@
 use super::super::types::RelatedPprSubgraphModeArg;
 use xiuxian_wendao::{
-    LinkGraphLinkFilter, LinkGraphRelatedFilter, LinkGraphRelatedPprOptions, LinkGraphTagFilter,
+    LinkGraphLinkFilter, LinkGraphPprSubgraphMode, LinkGraphRelatedFilter,
+    LinkGraphRelatedPprOptions, LinkGraphTagFilter,
 };
 
 pub(crate) fn build_optional_link_filter(
@@ -48,7 +49,11 @@ pub(crate) fn build_optional_related_ppr_options(
         alpha,
         max_iter,
         tol,
-        subgraph_mode: subgraph_mode.map(Into::into),
+        subgraph_mode: subgraph_mode.map(|mode| match mode {
+            RelatedPprSubgraphModeArg::Auto => LinkGraphPprSubgraphMode::Auto,
+            RelatedPprSubgraphModeArg::Disabled => LinkGraphPprSubgraphMode::Disabled,
+            RelatedPprSubgraphModeArg::Force => LinkGraphPprSubgraphMode::Force,
+        }),
     })
 }
 

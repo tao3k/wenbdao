@@ -10,7 +10,10 @@ pub(super) struct QuantumContextCandidate {
     pub(super) batch_row: usize,
     pub(super) batch_anchor_id: String,
     pub(super) anchor_id: String,
+    pub(super) doc_id: String,
+    pub(super) path: String,
     pub(super) semantic_path: Vec<String>,
+    pub(super) trace_label: Option<String>,
     pub(super) related_clusters: Vec<String>,
     pub(super) vector_score: f64,
     pub(super) topology_score: f64,
@@ -31,7 +34,10 @@ pub(super) fn quantum_contexts_from_scored_batch(
             let saliency_score = saliency_score_at_row(saliency_scores, candidate.batch_row)?;
             Ok(QuantumContext {
                 anchor_id: candidate.anchor_id,
+                doc_id: candidate.doc_id,
+                path: candidate.path,
                 semantic_path: candidate.semantic_path,
+                trace_label: candidate.trace_label,
                 related_clusters: candidate.related_clusters,
                 saliency_score,
                 vector_score: candidate.vector_score,

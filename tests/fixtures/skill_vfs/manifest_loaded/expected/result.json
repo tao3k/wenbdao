@@ -1,15 +1,15 @@
 {
-  "manifest_id": "xiuxian.zhixing.agenda.add",
-  "tool_name": "agenda.add",
-  "workflow_type": "qianji_flow",
-  "workflow_matches_enum": true,
-  "internal_id": "xiuxian.native.zhixing.add",
-  "qianhuan_background": "$wendao://skills-internal/agenda/SKILL.md",
-  "flow_definition": "$wendao://skills-internal/agenda/references/add/qianji.toml",
   "annotations": {
-    "read_only": false,
     "destructive": true,
     "idempotent": false,
-    "open_world": true
-  }
+    "open_world": true,
+    "read_only": false
+  },
+  "flow_definition": "$wendao://skills-internal/agenda/references/add/qianji.toml",
+  "internal_id": "xiuxian.native.zhixing.add",
+  "manifest_id": "xiuxian.zhixing.agenda.add",
+  "qianhuan_background": "$wendao://skills-internal/agenda/SKILL.md",
+  "tool_name": "agenda.add",
+  "workflow_matches_enum": true,
+  "workflow_type": "qianji_flow"
 }

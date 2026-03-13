@@ -1,0 +1,17 @@
+[scenario]
+id = "040_refresh_threshold_modes"
+name = "threshold modes"
+description = "refresh scenario"
+category = "refresh"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+
+[expected]
+type = "json_snapshot"
+files = ["result.json"]
+
+[runner]
+build_page_index = true
+collect_links = true

@@ -1,6 +1,7 @@
 use super::super::KnowledgeGraph;
 use super::super::core::read_lock;
 use crate::entity::Entity;
+use std::collections::HashMap;
 use std::collections::HashSet;
 
 /// Scoring weights for entity search relevance.
@@ -28,7 +29,7 @@ impl KnowledgeGraph {
     /// 8. Description substring match (0.3)
     #[must_use]
     pub fn search_entities(&self, query: &str, limit: i32) -> Vec<Entity> {
-        let entities = read_lock(&self.entities);
+        let entities = read_lock::<HashMap<String, Entity>>(&self.entities);
         let query_lower = query.to_lowercase();
 
         if query_lower.is_empty() {
@@ -38,7 +39,7 @@ impl KnowledgeGraph {
         // Tokenize query: split on whitespace, dots, underscores, hyphens.
         let query_tokens: Vec<&str> = query_lower
             .split(|c: char| c.is_whitespace() || c == '.' || c == '_' || c == '-')
-            .filter(|t| !t.is_empty() && t.len() >= 2)
+            .filter(|t: &&str| !t.is_empty() && t.len() >= 2)
             .collect();
 
         let mut scored: Vec<(f64, Entity)> = Vec::new();
@@ -55,6 +56,7 @@ impl KnowledgeGraph {
             // Signal 2: Exact alias match.
             if best_score < ALIAS_EXACT_SCORE {
                 for alias in &entity.aliases {
+                    let alias: &String = alias;
                     if alias.to_lowercase() == query_lower {
                         best_score = best_score.max(ALIAS_EXACT_SCORE);
                         break;
@@ -66,16 +68,16 @@ impl KnowledgeGraph {
             if best_score < TOKEN_FULL_OVERLAP_SCORE && !query_tokens.is_empty() {
                 let name_tokens: HashSet<&str> = name_lower
                     .split(|c: char| c.is_whitespace() || c == '.' || c == '_' || c == '-')
-                    .filter(|t| !t.is_empty() && t.len() >= 2)
+                    .filter(|t: &&str| !t.is_empty() && t.len() >= 2)
                     .collect();
 
                 if !name_tokens.is_empty() {
                     let matched = query_tokens
                         .iter()
-                        .filter(|qt| {
+                        .filter(|qt: &&&str| {
                             name_tokens
                                 .iter()
-                                .any(|nt| nt.contains(*qt) || qt.contains(nt))
+                                .any(|nt: &&str| nt.contains(**qt) || qt.contains(nt))
                         })
                         .count();
 
@@ -103,6 +105,7 @@ impl KnowledgeGraph {
             // Signal 5: Alias substring match.
             if best_score < ALIAS_SUBSTRING_SCORE {
                 for alias in &entity.aliases {
+                    let alias: &String = alias;
                     let alias_lower = alias.to_lowercase();
                     if alias_lower.contains(&query_lower) || query_lower.contains(&alias_lower) {
                         best_score = best_score.max(ALIAS_SUBSTRING_SCORE);

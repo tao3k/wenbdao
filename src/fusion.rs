@@ -14,8 +14,8 @@ use std::collections::{HashMap, HashSet};
 /// Results are re-sorted by score (descending) in place.
 pub fn apply_link_graph_proximity_boost(
     results: &mut [RecallResult],
-    stem_links: &HashMap<String, HashSet<String, std::hash::RandomState>, std::hash::RandomState>,
-    stem_tags: &HashMap<String, HashSet<String, std::hash::RandomState>, std::hash::RandomState>,
+    stem_links: &HashMap<String, HashSet<String>>,
+    stem_tags: &HashMap<String, HashSet<String>>,
     link_boost: f64,
     tag_boost: f64,
 ) {
@@ -79,19 +79,18 @@ fn stem_from_source(source: &str) -> String {
 /// Recall result for boost computation.
 #[derive(Debug, Clone)]
 pub struct RecallResult {
-    /// Original source path or identifier.
+    /// Source identifier (usually a file path).
     pub source: String,
-    /// Current accumulated score.
+    /// Recall score (e.g. cosine similarity or BM25).
     pub score: f64,
-    /// Raw content snippet payload.
+    /// Raw text content of the result.
     pub content: String,
     /// Human-readable title.
     pub title: String,
 }
 
 impl RecallResult {
-    /// Create a new recall result entry.
-    #[must_use]
+    /// Create a new recall result.
     pub fn new(source: String, score: f64, content: String, title: String) -> Self {
         Self {
             source,
@@ -99,5 +98,33 @@ impl RecallResult {
             content,
             title,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_apply_link_graph_proximity_boost_bidirectional_link() {
+        let mut results = vec![
+            RecallResult::new("note-a.md".into(), 0.8, String::new(), String::new()),
+            RecallResult::new("note-b.md".into(), 0.7, String::new(), String::new()),
+        ];
+        let mut stem_links = HashMap::new();
+        stem_links.insert("note-a".into(), HashSet::from(["note-b".into()]));
+        stem_links.insert("note-b".into(), HashSet::from(["note-a".into()]));
+        let stem_tags: HashMap<String, HashSet<String>> = HashMap::new();
+
+        apply_link_graph_proximity_boost(&mut results, &stem_links, &stem_tags, 0.12, 0.08);
+
+        assert!((results[0].score - 0.92).abs() < 1e-6);
+        assert!((results[1].score - 0.82).abs() < 1e-6);
+    }
+
+    #[test]
+    fn test_stem_from_source() {
+        assert_eq!(stem_from_source("docs/note-a.md"), "note-a");
+        assert_eq!(stem_from_source("note-b.md"), "note-b");
     }
 }

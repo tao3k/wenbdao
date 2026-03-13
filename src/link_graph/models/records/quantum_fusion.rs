@@ -1,72 +1,44 @@
-use crate::link_graph::LinkGraphRelatedPprOptions;
+use crate::link_graph::models::LinkGraphRelatedPprOptions;
 use serde::{Deserialize, Serialize};
 
-/// One semantic ignition hit fed into Wendao's hybrid retriever.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+/// One semantic anchor hit returned by a vector backend.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct QuantumAnchorHit {
-    /// Stable anchor identifier, typically a `PageIndex` node id.
+    /// Canonical anchor identifier (`doc_id#anchor`).
     pub anchor_id: String,
-    /// Semantic score produced by the upstream vector stage.
+    /// Vector similarity score in `[0.0, 1.0]`.
     pub vector_score: f64,
 }
 
-/// Backend-agnostic semantic search request for hybrid retrieval.
-#[derive(Debug, Clone, Copy)]
-pub struct QuantumSemanticSearchRequest<'a> {
-    /// Optional raw query text for hybrid backends that use text and vector inputs together.
-    pub query_text: Option<&'a str>,
-    /// Precomputed semantic query vector.
-    pub query_vector: &'a [f32],
-    /// Maximum number of semantic anchors to request.
-    pub limit: usize,
-    /// Optional minimum semantic score required before topology diffusion runs.
-    pub min_vector_score: Option<f64>,
-}
-
-impl QuantumSemanticSearchRequest<'_> {
-    /// Return a normalized copy with trimmed text and a non-zero limit.
-    #[must_use]
-    pub fn normalized(self) -> Self {
-        Self {
-            query_text: self
-                .query_text
-                .map(str::trim)
-                .filter(|text| !text.is_empty()),
-            query_vector: self.query_vector,
-            limit: self.limit.max(1),
-            min_vector_score: self.min_vector_score.map(|score| score.clamp(0.0, 1.0)),
-        }
-    }
-
-    /// Return whether the request carries no usable text or vector signal.
-    #[must_use]
-    pub fn is_empty(self) -> bool {
-        self.query_text.is_none() && self.query_vector.is_empty()
-    }
-
-    /// Return whether a semantic score should seed topology diffusion.
-    #[must_use]
-    pub fn allows_vector_score(self, score: f64) -> bool {
-        self.min_vector_score
-            .is_none_or(|minimum| score.clamp(0.0, 1.0) >= minimum)
-    }
-}
-
-/// Runtime options for quantum-fusion retrieval orchestration.
-#[derive(Debug, Clone, Default)]
+/// Options that control quantum-fusion scoring.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct QuantumFusionOptions {
-    /// Weight assigned to semantic ignition scores.
+    /// Blend coefficient applied to vector similarity.
     pub alpha: f64,
-    /// Maximum graph traversal distance for topology diffusion.
+    /// Maximum graph traversal distance.
     pub max_distance: usize,
-    /// Maximum number of related cluster ids to retain per anchor.
+    /// Max number of related candidates to consider.
     pub related_limit: usize,
-    /// Optional PPR tuning overrides.
+    /// Optional PPR tuning for related traversal.
+    #[serde(default)]
     pub ppr: Option<LinkGraphRelatedPprOptions>,
 }
 
+impl Default for QuantumFusionOptions {
+    fn default() -> Self {
+        Self {
+            alpha: 0.5,
+            max_distance: 2,
+            related_limit: 8,
+            ppr: None,
+        }
+    }
+}
+
 impl QuantumFusionOptions {
-    /// Return a normalized copy with bounded weights and limits.
+    /// Normalize the fusion options into a safe runtime range.
     #[must_use]
     pub fn normalized(&self) -> Self {
         Self {
@@ -78,27 +50,118 @@ impl QuantumFusionOptions {
     }
 }
 
-/// Traceable hybrid-retrieval context assembled from semantic and topology layers.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+/// One fused quantum context derived from anchor hits.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct QuantumContext {
-    /// Original anchor identifier selected by semantic ignition.
+    /// Canonical anchor id used as the semantic seed.
     pub anchor_id: String,
-    /// Complete logical ancestry path recovered from `PageIndex`.
+    /// Canonical document id containing the anchor.
+    pub doc_id: String,
+    /// Path or stem for the anchored document.
+    pub path: String,
+    /// Ordered semantic breadcrumb trail.
     pub semantic_path: Vec<String>,
-    /// Canonical related cluster ids recovered from topology diffusion.
+    /// Traceability tag derived from the semantic path.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub trace_label: Option<String>,
+    /// Related cluster doc ids identified by topology expansion.
     pub related_clusters: Vec<String>,
     /// Final fused saliency score.
     pub saliency_score: f64,
-    /// Raw semantic ignition score.
+    /// Source vector similarity score.
     pub vector_score: f64,
-    /// Raw topology diffusion score.
+    /// Topology-derived score (for observability).
     pub topology_score: f64,
 }
 
 impl QuantumContext {
-    /// Render the canonical traceability label for downstream prompts.
+    /// Render a stable trace label for diagnostics.
     #[must_use]
     pub fn trace_label(&self) -> String {
-        format!("[Path: {}]", self.semantic_path.join(" > "))
+        self.trace_label
+            .as_deref()
+            .filter(|value| !value.trim().is_empty())
+            .map(str::to_string)
+            .unwrap_or_else(|| format!("quantum:{}:{:.3}", self.anchor_id, self.saliency_score))
     }
+
+    /// Build a traceability label from a semantic path.
+    #[must_use]
+    pub(crate) fn trace_label_from_semantic_path(semantic_path: &[String]) -> Option<String> {
+        if semantic_path.is_empty() {
+            None
+        } else {
+            Some(format!("[Path: {}]", semantic_path.join(" > ")))
+        }
+    }
+}
+
+/// Request payload for semantic ignition backends.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct QuantumSemanticSearchRequest<'a> {
+    /// Optional user query text (for telemetry).
+    pub query_text: Option<&'a str>,
+    /// Query embedding vector.
+    pub query_vector: &'a [f32],
+    /// Maximum number of anchor hits to request.
+    pub candidate_limit: usize,
+    /// Optional minimum similarity filter.
+    pub min_vector_score: Option<f64>,
+    /// Optional maximum similarity filter.
+    pub max_vector_score: Option<f64>,
+}
+
+impl<'a> QuantumSemanticSearchRequest<'a> {
+    /// Normalize request parameters into safe bounds.
+    #[must_use]
+    pub fn normalized(&self) -> Self {
+        let query_text = self.query_text.and_then(|value| {
+            let trimmed = value.trim();
+            if trimmed.is_empty() {
+                None
+            } else {
+                Some(trimmed)
+            }
+        });
+        let min_vector_score = self.min_vector_score.filter(|value| value.is_finite());
+        let max_vector_score = self.max_vector_score.filter(|value| value.is_finite());
+        Self {
+            query_text,
+            query_vector: self.query_vector,
+            candidate_limit: self.candidate_limit.max(1),
+            min_vector_score,
+            max_vector_score,
+        }
+    }
+
+    /// Return true when no search should be performed.
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.query_vector.is_empty() || self.candidate_limit == 0
+    }
+
+    /// Check whether a vector score passes the configured filter.
+    #[must_use]
+    pub fn allows_vector_score(&self, score: f64) -> bool {
+        let min_ok = self
+            .min_vector_score
+            .map(|min| score >= min)
+            .unwrap_or(true);
+        let max_ok = self
+            .max_vector_score
+            .map(|max| score <= max)
+            .unwrap_or(true);
+        min_ok && max_ok
+    }
+}
+
+/// Telemetry summary emitted by quantum-fusion searches.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+#[serde(deny_unknown_fields)]
+pub struct QuantumFusionTelemetry {
+    /// Number of anchor hits processed.
+    pub anchor_count: usize,
+    /// Number of contexts emitted.
+    pub context_count: usize,
 }

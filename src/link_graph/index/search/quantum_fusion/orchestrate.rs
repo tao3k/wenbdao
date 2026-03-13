@@ -1,58 +1,71 @@
 use super::anchor_batch::{QuantumAnchorBatchError, QuantumAnchorBatchView};
-use super::scored_context::{QuantumContextCandidate, quantum_contexts_from_scored_batch};
-use super::scoring::BatchQuantumScorer;
+use super::scored_context::quantum_contexts_from_scored_batch;
+use super::scoring::{
+    BatchQuantumScorer, BatchQuantumScorerError, QUANTUM_SALIENCY_COLUMN,
+    topology_score_from_ranked,
+};
 use crate::link_graph::index::LinkGraphIndex;
 use crate::link_graph::models::{QuantumAnchorHit, QuantumContext, QuantumFusionOptions};
-use arrow::array::{Float64Array, StringArray};
+use arrow::array::{Array, Float64Array, StringArray};
 use arrow::datatypes::{DataType, Field, Schema};
 use arrow::error::ArrowError;
 use arrow::record_batch::RecordBatch;
-use std::collections::HashMap;
+use std::cmp::Ordering;
+use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use thiserror::Error;
 
 const ANCHOR_ID_COLUMN: &str = "anchor_id";
 const VECTOR_SCORE_COLUMN: &str = "vector_score";
 
+#[derive(Debug, Clone)]
+struct QuantumContextCandidate {
+    anchor_id: String,
+    semantic_path: Vec<String>,
+    related_clusters: Vec<String>,
+    vector_score: f64,
+    topology_score: f64,
+}
+
 /// Error returned when Wendao cannot construct scored quantum contexts.
 #[derive(Debug, Error)]
 pub enum QuantumContextBuildError {
+    /// Input batch is missing the configured identifier column.
+    #[error("missing required input batch column `{column}`")]
+    MissingInputColumn {
+        /// Name of the missing column.
+        column: String,
+    },
+    /// Input batch identifier column is not Arrow `Utf8`.
+    #[error("input batch column `{column}` must be Utf8, found `{data_type:?}`")]
+    InvalidInputUtf8Column {
+        /// Name of the offending input column.
+        column: String,
+        /// Actual Arrow type found in the input batch.
+        data_type: DataType,
+    },
+    /// Input batch score column is not Arrow `Float64`.
+    #[error("input batch column `{column}` must be Float64, found `{data_type:?}`")]
+    InvalidInputFloat64Column {
+        /// Name of the offending input column.
+        column: String,
+        /// Actual Arrow type found in the input batch.
+        data_type: DataType,
+    },
+    /// Input batch unexpectedly contained a null value.
+    #[error("input batch column `{column}` contains null at row {row}")]
+    NullInputValue {
+        /// Name of the offending input column.
+        column: String,
+        /// Zero-based row index of the null value.
+        row: usize,
+    },
     /// Failed to build the Arrow batch fed into the batch scorer.
     #[error("failed to build Arrow batch for quantum-context scoring")]
     BuildScoringBatch(#[source] ArrowError),
-    /// Required anchor-input column is missing from the semantic batch.
-    #[error("missing required quantum-anchor batch column `{column}`")]
-    MissingInputColumn {
-        /// Name of the missing anchor-input column.
-        column: String,
-    },
-    /// Anchor-id input column is not Arrow `Utf8`.
-    #[error("quantum-anchor batch column `{column}` must be Utf8, found `{data_type:?}`")]
-    InvalidInputUtf8Column {
-        /// Name of the offending anchor-input column.
-        column: String,
-        /// Actual Arrow type found in the input batch.
-        data_type: DataType,
-    },
-    /// Vector-score input column is not Arrow `Float64`.
-    #[error("quantum-anchor batch column `{column}` must be Float64, found `{data_type:?}`")]
-    InvalidInputFloat64Column {
-        /// Name of the offending score-input column.
-        column: String,
-        /// Actual Arrow type found in the input batch.
-        data_type: DataType,
-    },
-    /// Required anchor-input cell is null.
-    #[error("quantum-anchor batch column `{column}` contains null at row {row}")]
-    NullInputValue {
-        /// Name of the offending anchor-input column.
-        column: String,
-        /// Zero-based row index of the null input value.
-        row: usize,
-    },
     /// The batch scorer rejected the prepared scoring batch.
     #[error("failed to compute quantum-context saliency from scoring batch")]
-    ScoreScoringBatch(#[source] super::scoring::BatchQuantumScorerError),
+    ScoreScoringBatch(#[source] BatchQuantumScorerError),
     /// The scored batch did not contain the fused saliency column.
     #[error("scored quantum-context batch is missing fused saliency column `{column}`")]
     MissingSaliencyColumn {
@@ -80,8 +93,8 @@ pub enum QuantumContextBuildError {
 }
 
 impl From<QuantumAnchorBatchError> for QuantumContextBuildError {
-    fn from(value: QuantumAnchorBatchError) -> Self {
-        match value {
+    fn from(error: QuantumAnchorBatchError) -> Self {
+        match error {
             QuantumAnchorBatchError::MissingColumn { column } => {
                 Self::MissingInputColumn { column }
             }
@@ -99,40 +112,13 @@ impl From<QuantumAnchorBatchError> for QuantumContextBuildError {
 }
 
 impl LinkGraphIndex {
-    /// Build traceable quantum-fusion contexts from precomputed semantic anchors.
+    /// Build traceable quantum-fusion contexts from Arrow anchor batches.
     ///
     /// # Errors
     ///
-    /// Returns [`QuantumContextBuildError`] when the anchor slice cannot be
-    /// converted into the canonical scoring batch or the Arrow-native scorer
-    /// cannot produce the fused saliency output column.
-    pub fn quantum_contexts_from_anchors(
-        &self,
-        anchors: &[QuantumAnchorHit],
-        options: &QuantumFusionOptions,
-    ) -> Result<Vec<QuantumContext>, QuantumContextBuildError> {
-        let batch = build_anchor_batch_from_hits(anchors)?;
-        self.quantum_contexts_from_anchor_batch(
-            &batch,
-            ANCHOR_ID_COLUMN,
-            VECTOR_SCORE_COLUMN,
-            options,
-        )
-    }
-
-    /// Build traceable quantum-fusion contexts from a prepared Arrow batch of
-    /// semantic anchors.
-    ///
-    /// The input batch must contain one `Utf8` anchor-id column and one
-    /// `Float64` semantic-score column, identified by `id_col` and `score_col`.
-    /// Rows with blank or unresolved anchor ids are ignored after validation.
-    ///
-    /// # Errors
-    ///
-    /// Returns [`QuantumContextBuildError`] when required input columns are
-    /// missing, input types do not match the expected Arrow layout, a required
-    /// input cell is null, or the Arrow-native scorer cannot produce the fused
-    /// saliency output column.
+    /// Returns [`QuantumContextBuildError`] when the anchor batch cannot be
+    /// decoded or the Arrow-native scorer cannot produce the fused saliency
+    /// output column.
     pub fn quantum_contexts_from_anchor_batch(
         &self,
         batch: &RecordBatch,
@@ -141,49 +127,210 @@ impl LinkGraphIndex {
         options: &QuantumFusionOptions,
     ) -> Result<Vec<QuantumContext>, QuantumContextBuildError> {
         let options = options.normalized();
-        let batch_view = QuantumAnchorBatchView::new(batch, id_col, score_col)?;
-        let resolved_anchors = self.resolve_quantum_anchors(&batch_view);
-        let candidates = self.expand_quantum_context_candidates(&resolved_anchors, &options);
-        let scored_batch = score_quantum_context_batch(&batch_view, &candidates, &options)?;
+        let view = QuantumAnchorBatchView::new(batch, id_col, score_col)?;
+        let resolved = self.resolve_quantum_anchors(&view);
+        if resolved.is_empty() {
+            return Ok(Vec::new());
+        }
+        let candidates = self.expand_quantum_context_candidates(&resolved, &options);
+        if candidates.is_empty() {
+            return Ok(Vec::new());
+        }
+
+        let topology_scores = candidates
+            .iter()
+            .map(|candidate| (candidate.batch_anchor_id.clone(), candidate.topology_score))
+            .collect::<HashMap<_, _>>();
+        let scorer = BatchQuantumScorer::new(&options);
+        let scored_batch = scorer
+            .score_batch(view.batch(), &topology_scores, id_col, score_col)
+            .map_err(QuantumContextBuildError::ScoreScoringBatch)?;
+
         quantum_contexts_from_scored_batch(candidates, &scored_batch)
     }
-}
 
-fn score_quantum_context_batch(
-    batch: &QuantumAnchorBatchView<'_>,
-    candidates: &[QuantumContextCandidate],
-    options: &QuantumFusionOptions,
-) -> Result<RecordBatch, QuantumContextBuildError> {
-    if candidates.is_empty() {
-        return Ok(batch.batch().clone());
+    /// Build traceable quantum-fusion contexts from precomputed semantic anchors.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`QuantumContextBuildError`] when the prepared scoring batch
+    /// cannot be constructed or the Arrow-native scorer cannot produce the
+    /// fused saliency output column.
+    pub fn quantum_contexts_from_anchors(
+        &self,
+        anchors: &[QuantumAnchorHit],
+        options: &QuantumFusionOptions,
+    ) -> Result<Vec<QuantumContext>, QuantumContextBuildError> {
+        let options = options.normalized();
+        let candidates = self.quantum_context_candidates(anchors, &options);
+        let saliency_scores = score_quantum_context_candidates(&candidates, &options)?;
+
+        let mut contexts = candidates
+            .into_iter()
+            .zip(saliency_scores)
+            .map(|(candidate, saliency_score)| {
+                let anchor_id = candidate.anchor_id;
+                let doc_id = anchor_id
+                    .split_once('#')
+                    .map(|(doc_id, _)| doc_id)
+                    .unwrap_or(anchor_id.as_str())
+                    .to_string();
+                let path = self
+                    .get_doc(doc_id.as_str())
+                    .map(|doc| doc.path.clone())
+                    .unwrap_or_else(|| doc_id.clone());
+                let trace_label =
+                    QuantumContext::trace_label_from_semantic_path(&candidate.semantic_path);
+                QuantumContext {
+                    anchor_id,
+                    doc_id,
+                    path,
+                    semantic_path: candidate.semantic_path,
+                    trace_label,
+                    related_clusters: candidate.related_clusters,
+                    saliency_score,
+                    vector_score: candidate.vector_score,
+                    topology_score: candidate.topology_score,
+                }
+            })
+            .collect::<Vec<_>>();
+
+        contexts.sort_by(|left, right| {
+            right
+                .saliency_score
+                .partial_cmp(&left.saliency_score)
+                .unwrap_or(Ordering::Equal)
+                .then(left.anchor_id.cmp(&right.anchor_id))
+        });
+        Ok(contexts)
     }
 
-    let topology_scores = candidates
-        .iter()
-        .map(|candidate| (candidate.batch_anchor_id.clone(), candidate.topology_score))
-        .collect::<HashMap<_, _>>();
-    let scorer = BatchQuantumScorer::new(options);
-    scorer
-        .score_anchor_batch_view(batch, &topology_scores)
-        .map_err(QuantumContextBuildError::ScoreScoringBatch)
+    fn quantum_context_candidates(
+        &self,
+        anchors: &[QuantumAnchorHit],
+        options: &QuantumFusionOptions,
+    ) -> Vec<QuantumContextCandidate> {
+        let mut candidates = Vec::new();
+
+        for anchor in anchors {
+            let anchor_id = anchor.anchor_id.trim();
+            if anchor_id.is_empty() {
+                continue;
+            }
+            let Some(seed_doc_id) = self.quantum_anchor_doc_id(anchor_id) else {
+                continue;
+            };
+            // 2026 Refinement: use hierarchical lineage for anchor semantic path
+            let semantic_path = self.extract_lineage(anchor_id).unwrap_or_default();
+
+            let ranked = self.quantum_related_ranked_doc_ids(
+                seed_doc_id.as_str(),
+                anchor.vector_score,
+                options,
+            );
+            let related_clusters = ranked
+                .iter()
+                .take(options.related_limit)
+                .map(|(doc_id, _, _)| doc_id.clone())
+                .collect::<Vec<_>>();
+            let topology_score = topology_score_from_ranked(&ranked, options.related_limit);
+
+            candidates.push(QuantumContextCandidate {
+                anchor_id: anchor_id.to_string(),
+                semantic_path,
+                related_clusters,
+                vector_score: anchor.vector_score.clamp(0.0, 1.0),
+                topology_score,
+            });
+        }
+
+        candidates
+    }
+
+    pub(super) fn quantum_related_ranked_doc_ids(
+        &self,
+        seed_doc_id: &str,
+        _vector_score: f64,
+        options: &QuantumFusionOptions,
+    ) -> Vec<(String, usize, f64)> {
+        let seeds = HashSet::from([seed_doc_id.to_string()]);
+        self.related_ppr_ranked_doc_ids(&seeds, options.max_distance, options.ppr.as_ref())
+    }
 }
 
-fn build_anchor_batch_from_hits(
-    anchors: &[QuantumAnchorHit],
+fn score_quantum_context_candidates(
+    candidates: &[QuantumContextCandidate],
+    options: &QuantumFusionOptions,
+) -> Result<Vec<f64>, QuantumContextBuildError> {
+    if candidates.is_empty() {
+        return Ok(Vec::new());
+    }
+
+    let batch = build_quantum_context_batch(candidates)?;
+    let topology_scores = candidates
+        .iter()
+        .map(|candidate| (candidate.anchor_id.clone(), candidate.topology_score))
+        .collect::<HashMap<_, _>>();
+    let scorer = BatchQuantumScorer::new(options);
+    let scored_batch = scorer
+        .score_batch(
+            &batch,
+            &topology_scores,
+            ANCHOR_ID_COLUMN,
+            VECTOR_SCORE_COLUMN,
+        )
+        .map_err(QuantumContextBuildError::ScoreScoringBatch)?;
+
+    extract_saliency_scores(&scored_batch)
+}
+
+fn build_quantum_context_batch(
+    candidates: &[QuantumContextCandidate],
 ) -> Result<RecordBatch, QuantumContextBuildError> {
     let schema = Arc::new(Schema::new(vec![
         Field::new(ANCHOR_ID_COLUMN, DataType::Utf8, false),
         Field::new(VECTOR_SCORE_COLUMN, DataType::Float64, false),
     ]));
-    let anchor_ids =
-        StringArray::from_iter_values(anchors.iter().map(|anchor| anchor.anchor_id.as_str()));
-    let vector_scores = Float64Array::from(
-        anchors
+    let anchor_ids = StringArray::from_iter_values(
+        candidates
             .iter()
-            .map(|anchor| anchor.vector_score)
+            .map(|candidate| candidate.anchor_id.as_str()),
+    );
+    let vector_scores = Float64Array::from(
+        candidates
+            .iter()
+            .map(|candidate| candidate.vector_score)
             .collect::<Vec<_>>(),
     );
 
     RecordBatch::try_new(schema, vec![Arc::new(anchor_ids), Arc::new(vector_scores)])
         .map_err(QuantumContextBuildError::BuildScoringBatch)
+}
+
+fn extract_saliency_scores(batch: &RecordBatch) -> Result<Vec<f64>, QuantumContextBuildError> {
+    let saliency_column = batch
+        .column_by_name(QUANTUM_SALIENCY_COLUMN)
+        .ok_or_else(|| QuantumContextBuildError::MissingSaliencyColumn {
+            column: QUANTUM_SALIENCY_COLUMN.to_string(),
+        })?;
+    let saliency_scores = saliency_column
+        .as_any()
+        .downcast_ref::<Float64Array>()
+        .ok_or_else(|| QuantumContextBuildError::InvalidSaliencyColumn {
+            column: QUANTUM_SALIENCY_COLUMN.to_string(),
+            data_type: saliency_column.data_type().clone(),
+        })?;
+
+    let mut scores = Vec::with_capacity(saliency_scores.len());
+    for index in 0..saliency_scores.len() {
+        if saliency_scores.is_null(index) {
+            return Err(QuantumContextBuildError::NullSaliencyValue {
+                column: QUANTUM_SALIENCY_COLUMN.to_string(),
+                row: index,
+            });
+        }
+        scores.push(saliency_scores.value(index));
+    }
+
+    Ok(scores)
 }

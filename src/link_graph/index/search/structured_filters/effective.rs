@@ -55,9 +55,9 @@ impl LinkGraphIndex {
         !filters.include_paths.is_empty()
             || !filters.exclude_paths.is_empty()
             || Self::has_tag_filters(filters)
-            || Self::has_link_filter(filters.link_to.as_ref())
-            || Self::has_link_filter(filters.linked_by.as_ref())
-            || Self::has_related_filter(filters.related.as_ref())
+            || Self::has_link_filter(&filters.link_to)
+            || Self::has_link_filter(&filters.linked_by)
+            || Self::has_related_filter(&filters.related)
             || !filters.mentions_of.is_empty()
             || !filters.mentioned_by_notes.is_empty()
             || filters.orphan

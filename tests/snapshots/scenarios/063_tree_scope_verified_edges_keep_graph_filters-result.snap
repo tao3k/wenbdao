@@ -1,0 +1,12 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/support/scenario_framework.rs
+expression: result
+---
+{
+  "category": "tree_scope_filters",
+  "files": [
+    "result.json"
+  ],
+  "scenario_id": "063_tree_scope_verified_edges_keep_graph_filters",
+  "status": "validated"
+}

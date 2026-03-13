@@ -1,4 +1,4 @@
-use super::super::{LinkGraphAttachmentHit, LinkGraphAttachmentKind, LinkGraphIndex};
+use crate::link_graph::{LinkGraphAttachmentHit, LinkGraphAttachmentKind, LinkGraphIndex};
 use std::collections::HashSet;
 
 impl LinkGraphIndex {
@@ -94,6 +94,14 @@ impl LinkGraphIndex {
                     attachment_ext: row.attachment_ext.clone(),
                     kind: row.kind,
                     score,
+                    vision_snippet: row.vision_annotation.as_ref().map(|v| {
+                        let desc = &v.description;
+                        if desc.len() > 100 {
+                            format!("{}...", &desc[..100])
+                        } else {
+                            desc.clone()
+                        }
+                    }),
                 });
             }
         }

@@ -5,7 +5,7 @@ mod semantic;
 use std::collections::HashMap;
 use std::path::PathBuf;
 
-use preload::{preload_reference_dir, semantic_resource_uri_key};
+use preload::{preload_reference_dir_with_internal_flag, semantic_resource_uri_key};
 
 /// One mounted semantic namespace in skill VFS.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -42,13 +42,43 @@ impl SkillNamespaceIndex {
     /// Resolve one concrete path from parsed semantic URI.
     #[must_use]
     pub fn path_for_uri(&self, uri: &super::WendaoResourceUri) -> Option<&PathBuf> {
-        let key = semantic_resource_uri_key(uri.semantic_name(), uri.entity_name());
+        let key = semantic_resource_uri_key(
+            uri.semantic_name(),
+            uri.entity_name(),
+            uri.is_internal_skill(),
+        );
         self.paths_by_uri.get(key.as_str())
     }
 
-    pub(in crate::skill_vfs::index) fn preload_references_for_semantic(
+    /// Index a single root directory into the namespace.
+    ///
+    /// # Errors
+    /// Returns [`SkillVfsError`] if descriptor scanning or parsing fails.
+    pub fn index_root(
+        &mut self,
+        root: &std::path::Path,
+        is_internal: bool,
+    ) -> Result<(), super::SkillVfsError> {
+        let other = Self::build_from_roots_with_internal_flag(&[root.to_path_buf()], is_internal)?;
+        for (name, mounts) in other.mounts_by_name {
+            self.mounts_by_name.entry(name).or_default().extend(mounts);
+        }
+        for (uri, path) in other.paths_by_uri {
+            self.paths_by_uri.insert(uri, path);
+        }
+        Ok(())
+    }
+
+    /// Return all unique semantic resource URIs currently indexed.
+    pub fn all_uris(&self) -> Vec<String> {
+        self.paths_by_uri.keys().cloned().collect()
+    }
+
+    /// Internal helper to preload references with a specific scheme flag.
+    pub(in crate::skill_vfs::index) fn preload_references_for_semantic_with_internal_flag(
         &mut self,
         semantic_name: &str,
+        is_internal: bool,
     ) {
         let Some(mounts) = self.mounts_by_name.get(semantic_name) else {
             return;
@@ -58,7 +88,12 @@ impl SkillNamespaceIndex {
             .map(|mount| mount.references_dir.clone())
             .collect::<Vec<_>>();
         for references_dir in references_roots {
-            preload_reference_dir(self, semantic_name, references_dir.as_path());
+            preload_reference_dir_with_internal_flag(
+                self,
+                semantic_name,
+                references_dir.as_path(),
+                is_internal,
+            );
         }
     }
 }

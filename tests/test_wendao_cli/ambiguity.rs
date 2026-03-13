@@ -1,184 +1,114 @@
-use crate::test_wendao_cli::support::{wendao_cmd, write_file};
-use serde_json::Value;
-use tempfile::TempDir;
+use super::*;
 
 #[test]
-fn test_wendao_metadata_reports_ambiguous_stem_candidates() -> Result<(), Box<dyn std::error::Error>>
+fn test_wendao_attachments_search_filters_by_ext_and_kind() -> Result<(), Box<dyn std::error::Error>>
 {
     let tmp = TempDir::new()?;
     write_file(
-        &tmp.path().join("assets/skills/a/SKILL.md"),
-        "# Skill A\n\nA.\n",
+        &tmp.path().join("docs/a.md"),
+        "# Alpha\n\n[Paper](files/paper.pdf)\n![Diagram](assets/diagram.png)\n[Key](security/signing.gpg)\n",
     )?;
     write_file(
-        &tmp.path().join("assets/skills/b/SKILL.md"),
-        "# Skill B\n\nB.\n",
+        &tmp.path().join("docs/b.md"),
+        "# Beta\n\n![Photo](assets/photo.jpg)\n",
     )?;
 
-    let output = wendao_cmd()
+    let image_output = wendao_cmd()
         .arg("--root")
         .arg(tmp.path())
-        .arg("metadata")
-        .arg("SKILL")
-        .output()?;
-
-    assert!(
-        output.status.success(),
-        "wendao metadata failed: {}",
-        String::from_utf8_lossy(&output.stderr)
-    );
-
-    let payload: Value = serde_json::from_str(&String::from_utf8(output.stdout)?)?;
-    assert_eq!(
-        payload.get("error").and_then(Value::as_str),
-        Some("ambiguous_stem")
-    );
-    assert_eq!(payload.get("query").and_then(Value::as_str), Some("SKILL"));
-    assert_eq!(payload.get("count").and_then(Value::as_u64), Some(2));
-    let candidates = payload
-        .get("candidates")
-        .and_then(Value::as_array)
-        .ok_or("missing candidates array")?;
-    assert_eq!(candidates.len(), 2);
-    assert!(
-        candidates
-            .iter()
-            .any(|row| row.get("path").and_then(Value::as_str) == Some("assets/skills/a/SKILL.md"))
-    );
-    assert!(
-        candidates
-            .iter()
-            .any(|row| row.get("path").and_then(Value::as_str) == Some("assets/skills/b/SKILL.md"))
-    );
-    Ok(())
-}
-
-#[test]
-fn test_wendao_resolve_returns_candidates() -> Result<(), Box<dyn std::error::Error>> {
-    let tmp = TempDir::new()?;
-    write_file(
-        &tmp.path().join("assets/skills/a/SKILL.md"),
-        "# Skill A\n\nA.\n",
-    )?;
-    write_file(
-        &tmp.path().join("assets/skills/b/SKILL.md"),
-        "# Skill B\n\nB.\n",
-    )?;
-
-    let output = wendao_cmd()
-        .arg("--root")
-        .arg(tmp.path())
-        .arg("resolve")
-        .arg("SKILL")
+        .arg("attachments")
+        .arg("--kind")
+        .arg("image")
         .arg("--limit")
         .arg("10")
         .output()?;
-
     assert!(
-        output.status.success(),
-        "wendao resolve failed: {}",
-        String::from_utf8_lossy(&output.stderr)
+        image_output.status.success(),
+        "wendao attachments --kind image failed: {}",
+        String::from_utf8_lossy(&image_output.stderr)
+    );
+    let image_payload: Value = serde_json::from_str(&String::from_utf8(image_output.stdout)?)?;
+    let image_hits = image_payload
+        .get("hits")
+        .and_then(Value::as_array)
+        .ok_or("missing image attachment hits")?;
+    assert!(
+        image_hits
+            .iter()
+            .all(|row| row.get("kind").and_then(Value::as_str) == Some("image"))
+    );
+    assert!(
+        image_hits
+            .iter()
+            .any(|row| { row.get("attachment_ext").and_then(Value::as_str) == Some("png") })
+    );
+    assert!(
+        image_hits
+            .iter()
+            .any(|row| { row.get("attachment_ext").and_then(Value::as_str) == Some("jpg") })
     );
 
-    let payload: Value = serde_json::from_str(&String::from_utf8(output.stdout)?)?;
-    assert_eq!(payload.get("query").and_then(Value::as_str), Some("SKILL"));
-    assert_eq!(payload.get("count").and_then(Value::as_u64), Some(2));
-    assert_eq!(
-        payload.get("returned_count").and_then(Value::as_u64),
-        Some(2)
+    let pdf_output = wendao_cmd()
+        .arg("--root")
+        .arg(tmp.path())
+        .arg("attachments")
+        .arg("--ext")
+        .arg("pdf")
+        .arg("--limit")
+        .arg("10")
+        .output()?;
+    assert!(
+        pdf_output.status.success(),
+        "wendao attachments --ext pdf failed: {}",
+        String::from_utf8_lossy(&pdf_output.stderr)
     );
-    let candidates = payload
-        .get("candidates")
+    let pdf_payload: Value = serde_json::from_str(&String::from_utf8(pdf_output.stdout)?)?;
+    let pdf_hits = pdf_payload
+        .get("hits")
         .and_then(Value::as_array)
-        .ok_or("missing candidates array")?;
-    assert_eq!(candidates.len(), 2);
+        .ok_or("missing pdf attachment hits")?;
+    assert_eq!(pdf_hits.len(), 1);
+    assert_eq!(
+        pdf_hits[0].get("attachment_ext").and_then(Value::as_str),
+        Some("pdf")
+    );
+    assert_eq!(pdf_hits[0].get("kind").and_then(Value::as_str), Some("pdf"));
     Ok(())
 }
 
 #[test]
-fn test_wendao_neighbors_reports_ambiguous_stem_candidates()
+fn test_wendao_attachments_search_normalizes_file_scheme_targets()
 -> Result<(), Box<dyn std::error::Error>> {
     let tmp = TempDir::new()?;
     write_file(
-        &tmp.path().join("assets/skills/a/SKILL.md"),
-        "# Skill A\n\n[[other]]\n",
+        &tmp.path().join("docs/a.md"),
+        "# Alpha\n\n[Absolute](/tmp/manual.pdf)\n[FileUri](file:///tmp/manual-2.pdf)\n",
     )?;
-    write_file(
-        &tmp.path().join("assets/skills/b/SKILL.md"),
-        "# Skill B\n\n[[other]]\n",
-    )?;
-    write_file(&tmp.path().join("assets/skills/other.md"), "# Other\n")?;
 
     let output = wendao_cmd()
         .arg("--root")
         .arg(tmp.path())
-        .arg("neighbors")
-        .arg("SKILL")
+        .arg("attachments")
+        .arg("--ext")
+        .arg("pdf")
         .arg("--limit")
-        .arg("5")
+        .arg("10")
         .output()?;
-
     assert!(
         output.status.success(),
-        "wendao neighbors failed: {}",
+        "wendao attachments file targets failed: {}",
         String::from_utf8_lossy(&output.stderr)
     );
-
     let payload: Value = serde_json::from_str(&String::from_utf8(output.stdout)?)?;
-    assert_eq!(
-        payload.get("error").and_then(Value::as_str),
-        Some("ambiguous_stem")
-    );
-    assert_eq!(
-        payload.get("command").and_then(Value::as_str),
-        Some("neighbors")
-    );
-    assert_eq!(payload.get("query").and_then(Value::as_str), Some("SKILL"));
-    assert_eq!(payload.get("count").and_then(Value::as_u64), Some(2));
-    Ok(())
-}
-
-#[test]
-fn test_wendao_related_reports_ambiguous_stem_candidates() -> Result<(), Box<dyn std::error::Error>>
-{
-    let tmp = TempDir::new()?;
-    write_file(
-        &tmp.path().join("assets/skills/a/SKILL.md"),
-        "# Skill A\n\n[[other]]\n",
-    )?;
-    write_file(
-        &tmp.path().join("assets/skills/b/SKILL.md"),
-        "# Skill B\n\n[[other]]\n",
-    )?;
-    write_file(&tmp.path().join("assets/skills/other.md"), "# Other\n")?;
-
-    let output = wendao_cmd()
-        .arg("--root")
-        .arg(tmp.path())
-        .arg("related")
-        .arg("SKILL")
-        .arg("--max-distance")
-        .arg("2")
-        .arg("--limit")
-        .arg("5")
-        .output()?;
-
-    assert!(
-        output.status.success(),
-        "wendao related failed: {}",
-        String::from_utf8_lossy(&output.stderr)
-    );
-
-    let payload: Value = serde_json::from_str(&String::from_utf8(output.stdout)?)?;
-    assert_eq!(
-        payload.get("error").and_then(Value::as_str),
-        Some("ambiguous_stem")
-    );
-    assert_eq!(
-        payload.get("command").and_then(Value::as_str),
-        Some("related")
-    );
-    assert_eq!(payload.get("query").and_then(Value::as_str), Some("SKILL"));
-    assert_eq!(payload.get("count").and_then(Value::as_u64), Some(2));
+    let hits = payload
+        .get("hits")
+        .and_then(Value::as_array)
+        .ok_or("missing attachment hits")?;
+    assert!(hits.iter().any(|row| {
+        row.get("attachment_path").and_then(Value::as_str) == Some("/tmp/manual.pdf")
+    }));
+    assert!(hits.iter().any(|row| {
+        row.get("attachment_path").and_then(Value::as_str) == Some("/tmp/manual-2.pdf")
+    }));
     Ok(())
 }

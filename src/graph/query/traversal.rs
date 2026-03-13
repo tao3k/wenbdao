@@ -1,7 +1,7 @@
 use super::super::KnowledgeGraph;
 use super::super::core::read_lock;
-use crate::entity::Entity;
-use std::collections::HashSet;
+use crate::entity::{Entity, Relation};
+use std::collections::{HashMap, HashSet};
 
 impl KnowledgeGraph {
     /// Multi-hop search: traverse both outgoing AND incoming relations.
@@ -14,11 +14,11 @@ impl KnowledgeGraph {
         let mut found_entities: Vec<Entity> = Vec::new();
         let mut frontier: Vec<String> = vec![start_name.to_string()];
 
-        let entities_by_name = read_lock(&self.entities_by_name);
-        let entities = read_lock(&self.entities);
-        let outgoing = read_lock(&self.outgoing_relations);
-        let incoming = read_lock(&self.incoming_relations);
-        let relations = read_lock(&self.relations);
+        let entities_by_name = read_lock::<HashMap<String, String>>(&self.entities_by_name);
+        let entities = read_lock::<HashMap<String, Entity>>(&self.entities);
+        let outgoing = read_lock::<HashMap<String, HashSet<String>>>(&self.outgoing_relations);
+        let incoming = read_lock::<HashMap<String, HashSet<String>>>(&self.incoming_relations);
+        let relations = read_lock::<HashMap<String, Relation>>(&self.relations);
 
         for _hop in 0..max_hops {
             let mut next_frontier: Vec<String> = Vec::new();

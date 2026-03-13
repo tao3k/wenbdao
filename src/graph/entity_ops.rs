@@ -1,7 +1,8 @@
 use super::core::{read_lock, write_lock};
 use super::{GraphError, KnowledgeGraph};
-use crate::entity::Entity;
+use crate::entity::{Entity, Relation};
 use log::info;
+use std::collections::{HashMap, HashSet};
 
 impl KnowledgeGraph {
     /// Add an entity.
@@ -10,22 +11,13 @@ impl KnowledgeGraph {
     ///
     /// # Errors
     ///
-    /// Returns [`GraphError::InvalidEntity`] when required entity fields are empty.
+    /// This currently never returns an error and is modeled as `Result` for API compatibility.
+    #[allow(clippy::unnecessary_wraps)]
     pub fn add_entity(&self, entity: Entity) -> Result<bool, GraphError> {
-        if entity.id.trim().is_empty() {
-            return Err(GraphError::InvalidEntity(
-                "entity id must not be empty".to_string(),
-            ));
-        }
-        if entity.name.trim().is_empty() {
-            return Err(GraphError::InvalidEntity(
-                "entity name must not be empty".to_string(),
-            ));
-        }
-
-        let mut entities = write_lock(&self.entities);
-        let mut entities_by_name = write_lock(&self.entities_by_name);
-        let mut entities_by_type = write_lock(&self.entities_by_type);
+        let mut entities = write_lock::<HashMap<String, Entity>>(&self.entities);
+        let mut entities_by_name = write_lock::<HashMap<String, String>>(&self.entities_by_name);
+        let mut entities_by_type =
+            write_lock::<HashMap<String, Vec<String>>>(&self.entities_by_type);
 
         let type_str = entity.entity_type.to_string();
         if let Some(existing_id) = entities_by_name.get(&entity.name)
@@ -36,7 +28,6 @@ impl KnowledgeGraph {
             existing.aliases = entity.aliases;
             existing.confidence = entity.confidence;
             existing.updated_at = entity.updated_at;
-            existing.metadata.extend(entity.metadata);
             info!("Updated entity: {}", entity.name);
             return Ok(false);
         }
@@ -57,15 +48,19 @@ impl KnowledgeGraph {
     /// Get an entity by ID.
     #[must_use]
     pub fn get_entity(&self, entity_id: &str) -> Option<Entity> {
-        read_lock(&self.entities).get(entity_id).cloned()
+        read_lock::<HashMap<String, Entity>>(&self.entities)
+            .get(entity_id)
+            .cloned()
     }
 
     /// Get an entity by name.
     #[must_use]
     pub fn get_entity_by_name(&self, name: &str) -> Option<Entity> {
-        let entities_by_name = read_lock(&self.entities_by_name);
+        let entities_by_name = read_lock::<HashMap<String, String>>(&self.entities_by_name);
         if let Some(entity_id) = entities_by_name.get(name) {
-            return read_lock(&self.entities).get(entity_id).cloned();
+            return read_lock::<HashMap<String, Entity>>(&self.entities)
+                .get(entity_id)
+                .cloned();
         }
         None
     }
@@ -73,8 +68,8 @@ impl KnowledgeGraph {
     /// Get entities by type.
     #[must_use]
     pub fn get_entities_by_type(&self, entity_type: &str) -> Vec<Entity> {
-        let entities_by_type = read_lock(&self.entities_by_type);
-        let entities = read_lock(&self.entities);
+        let entities_by_type = read_lock::<HashMap<String, Vec<String>>>(&self.entities_by_type);
+        let entities = read_lock::<HashMap<String, Entity>>(&self.entities);
 
         if let Some(entity_ids) = entities_by_type.get(entity_type) {
             entity_ids
@@ -88,19 +83,22 @@ impl KnowledgeGraph {
 
     /// Clear all entities and relations.
     pub fn clear(&mut self) {
-        write_lock(&self.entities).clear();
-        write_lock(&self.entities_by_name).clear();
-        write_lock(&self.relations).clear();
-        write_lock(&self.outgoing_relations).clear();
-        write_lock(&self.incoming_relations).clear();
-        write_lock(&self.entities_by_type).clear();
+        write_lock::<HashMap<String, Entity>>(&self.entities).clear();
+        write_lock::<HashMap<String, String>>(&self.entities_by_name).clear();
+        write_lock::<HashMap<String, Relation>>(&self.relations).clear();
+        write_lock::<HashMap<String, HashSet<String>>>(&self.outgoing_relations).clear();
+        write_lock::<HashMap<String, HashSet<String>>>(&self.incoming_relations).clear();
+        write_lock::<HashMap<String, Vec<String>>>(&self.entities_by_type).clear();
         info!("Knowledge graph cleared");
     }
 
     /// Get all entities as a vector.
     #[must_use]
     pub fn get_all_entities(&self) -> Vec<Entity> {
-        read_lock(&self.entities).values().cloned().collect()
+        read_lock::<HashMap<String, Entity>>(&self.entities)
+            .values()
+            .cloned()
+            .collect()
     }
 
     /// Remove an entity by ID.
@@ -109,12 +107,13 @@ impl KnowledgeGraph {
     ///
     /// Returns [`GraphError::EntityNotFound`] if the entity ID is absent.
     pub fn remove_entity(&self, entity_id: &str) -> Result<(), GraphError> {
-        let mut entities = write_lock(&self.entities);
-        let mut entities_by_name = write_lock(&self.entities_by_name);
-        let mut entities_by_type = write_lock(&self.entities_by_type);
-        let mut relations = write_lock(&self.relations);
-        let mut outgoing = write_lock(&self.outgoing_relations);
-        let mut incoming = write_lock(&self.incoming_relations);
+        let mut entities = write_lock::<HashMap<String, Entity>>(&self.entities);
+        let mut entities_by_name = write_lock::<HashMap<String, String>>(&self.entities_by_name);
+        let mut entities_by_type =
+            write_lock::<HashMap<String, Vec<String>>>(&self.entities_by_type);
+        let mut relations = write_lock::<HashMap<String, Relation>>(&self.relations);
+        let mut outgoing = write_lock::<HashMap<String, HashSet<String>>>(&self.outgoing_relations);
+        let mut incoming = write_lock::<HashMap<String, HashSet<String>>>(&self.incoming_relations);
 
         if let Some(entity) = entities.remove(entity_id) {
             entities_by_name.remove(&entity.name);
@@ -125,7 +124,7 @@ impl KnowledgeGraph {
 
             let rel_ids_to_remove: Vec<String> = relations
                 .keys()
-                .filter(|id| {
+                .filter(|id: &&String| {
                     if let Some(rel) = relations.get(id.as_str()) {
                         rel.source == entity.name || rel.target == entity.name
                     } else {

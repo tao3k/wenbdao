@@ -2,48 +2,29 @@ use std::path::{Component, Path, PathBuf};
 
 use super::SkillVfsError;
 
-/// Canonical URI scheme for Wendao skill resource addressing.
+/// Canonical URI scheme for semantic skill resource addressing.
 pub const WENDAO_URI_SCHEME: &str = "wendao";
 const SKILLS_SEGMENT: &str = "skills";
-const SKILLS_INTERNAL_SEGMENT: &str = "skills-internal";
+const INTERNAL_SKILLS_SEGMENT: &str = "skills-internal";
 const REFERENCES_SEGMENT: &str = "references";
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-enum WendaoUriNamespace {
-    Semantic,
-    Internal,
-}
-
-impl WendaoUriNamespace {
-    fn segment(self) -> &'static str {
-        match self {
-            Self::Semantic => SKILLS_SEGMENT,
-            Self::Internal => SKILLS_INTERNAL_SEGMENT,
-        }
-    }
-}
-
-/// Parsed Wendao skill resource URI.
+/// Parsed semantic skill resource URI.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct WendaoResourceUri {
-    namespace: WendaoUriNamespace,
-    skill_name: String,
+    semantic_name: String,
     entity_name: String,
+    is_internal_skill: bool,
 }
 
 impl WendaoResourceUri {
-    /// Parse one URI string in one of these shapes:
-    ///
-    /// - `wendao://skills/<semantic_name>/references/<entity_name>.<ext>`
-    /// - `wendao://skills-internal/<skill_name>/<relative_path>.<ext>`
-    ///
-    /// A leading `$` is accepted for placeholder-style inputs.
+    /// Parse one URI string in the shape:
+    /// `wendao://skills/<semantic_name>/references/<entity_name>.<ext>`.
     ///
     /// # Errors
     ///
     /// Returns [`SkillVfsError`] when URI syntax or path safety checks fail.
     pub fn parse(uri: &str) -> Result<Self, SkillVfsError> {
-        let trimmed = normalize_raw_uri(uri);
+        let trimmed = uri.trim();
         let (scheme, payload) = split_scheme(trimmed)?;
         if !scheme.eq_ignore_ascii_case(WENDAO_URI_SCHEME) {
             return Err(SkillVfsError::UnsupportedScheme {
@@ -54,33 +35,27 @@ impl WendaoResourceUri {
 
         let payload = strip_uri_suffix(payload);
         let segments: Vec<&str> = payload.split('/').collect();
-        if segments.len() < 3 {
+        if segments.len() < 4 {
             return Err(SkillVfsError::InvalidUri(trimmed.to_string()));
         }
 
-        let namespace = match segments.first().copied() {
-            Some(SKILLS_SEGMENT) => WendaoUriNamespace::Semantic,
-            Some(SKILLS_INTERNAL_SEGMENT) => WendaoUriNamespace::Internal,
+        let is_internal_skill = match segments.first().copied() {
+            Some(SKILLS_SEGMENT) => false,
+            Some(INTERNAL_SKILLS_SEGMENT) => true,
             _ => return Err(SkillVfsError::InvalidUri(trimmed.to_string())),
         };
 
-        let skill_name = normalize_segment(segments.get(1).copied()).ok_or_else(|| {
+        if segments.get(2).copied() != Some(REFERENCES_SEGMENT) {
+            return Err(SkillVfsError::InvalidUri(trimmed.to_string()));
+        }
+
+        let semantic_name = normalize_segment(segments.get(1).copied()).ok_or_else(|| {
             SkillVfsError::MissingUriSegment {
                 uri: trimmed.to_string(),
-                segment: "skill_name",
+                segment: "semantic_name",
             }
         })?;
-
-        let raw_entity = match namespace {
-            WendaoUriNamespace::Semantic => {
-                if segments.len() < 4 || segments.get(2).copied() != Some(REFERENCES_SEGMENT) {
-                    return Err(SkillVfsError::InvalidUri(trimmed.to_string()));
-                }
-                segments[3..].join("/")
-            }
-            WendaoUriNamespace::Internal => segments[2..].join("/"),
-        };
-
+        let raw_entity = segments[3..].join("/");
         let entity_name = normalize_entity_path(&raw_entity, trimmed).map_err(|entity| {
             SkillVfsError::InvalidEntityPath {
                 uri: trimmed.to_string(),
@@ -95,74 +70,54 @@ impl WendaoResourceUri {
         }
 
         Ok(Self {
-            namespace,
-            skill_name,
+            semantic_name,
             entity_name,
+            is_internal_skill,
         })
     }
 
-    /// Mounted skill identifier.
-    ///
-    /// For semantic URIs this is the semantic namespace from `skills/<name>`.
-    /// For internal URIs this is the mounted internal skill directory name.
-    #[must_use]
-    pub fn skill_name(&self) -> &str {
-        &self.skill_name
-    }
-
-    /// Backward-compatible alias for callers that treat the mounted skill id as
-    /// a semantic namespace.
+    /// Semantic namespace (`skills/<semantic_name>`).
     #[must_use]
     pub fn semantic_name(&self) -> &str {
-        self.skill_name()
+        &self.semantic_name
     }
 
-    /// Resource path within the mounted skill namespace.
+    /// Entity id under the `references` namespace.
     #[must_use]
     pub fn entity_name(&self) -> &str {
         &self.entity_name
     }
 
-    /// Returns `true` when the URI targets `skills-internal`.
-    #[must_use]
+    /// Returns true if this URI addresses an internal skill resource.
     pub fn is_internal_skill(&self) -> bool {
-        matches!(self.namespace, WendaoUriNamespace::Internal)
+        self.is_internal_skill
     }
 
-    /// Canonical URI string with normalized segments.
+    /// Canonical semantic URI string with normalized segments.
     #[must_use]
     pub fn canonical_uri(&self) -> String {
-        match self.namespace {
-            WendaoUriNamespace::Semantic => format!(
-                "{WENDAO_URI_SCHEME}://{}/{}/{REFERENCES_SEGMENT}/{}",
-                self.namespace.segment(),
-                self.skill_name,
-                self.entity_name
-            ),
-            WendaoUriNamespace::Internal => format!(
-                "{WENDAO_URI_SCHEME}://{}/{}/{}",
-                self.namespace.segment(),
-                self.skill_name,
-                self.entity_name
-            ),
-        }
+        let segment = if self.is_internal_skill {
+            INTERNAL_SKILLS_SEGMENT
+        } else {
+            SKILLS_SEGMENT
+        };
+        format!(
+            "{WENDAO_URI_SCHEME}://{segment}/{}/{REFERENCES_SEGMENT}/{}",
+            self.semantic_name, self.entity_name
+        )
     }
 
-    /// Zero-allocation relative entity path inside the mounted skill namespace.
+    /// Zero-allocation relative entity path under the `references` namespace.
     #[must_use]
     pub fn entity_relative_path(&self) -> &Path {
         Path::new(self.entity_name())
     }
 
-    /// Candidate relative paths inside the mounted skill namespace.
+    /// Candidate relative paths under a skill's `references/` directory.
     #[must_use]
     pub fn candidate_paths(&self) -> Vec<PathBuf> {
         vec![PathBuf::from(self.entity_relative_path())]
     }
-}
-
-fn normalize_raw_uri(uri: &str) -> &str {
-    uri.trim().trim_start_matches('$').trim_start()
 }
 
 fn split_scheme(uri: &str) -> Result<(&str, &str), SkillVfsError> {

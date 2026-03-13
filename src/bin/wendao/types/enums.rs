@@ -1,6 +1,6 @@
 use clap::ValueEnum;
 use xiuxian_wendao::{
-    LinkGraphAttachmentKind, LinkGraphPprSubgraphMode, LinkGraphSuggestedLinkState,
+    LinkGraphAttachmentKind, LinkGraphPprSubgraphMode, LinkGraphScope, LinkGraphSuggestedLinkState,
 };
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, ValueEnum)]
@@ -14,6 +14,23 @@ pub(crate) enum RelatedPprSubgraphModeArg {
     Auto,
     Disabled,
     Force,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq, ValueEnum)]
+pub(crate) enum LinkGraphScopeArg {
+    Mixed,
+    DocOnly,
+    SectionOnly,
+}
+
+impl From<LinkGraphScopeArg> for LinkGraphScope {
+    fn from(value: LinkGraphScopeArg) -> Self {
+        match value {
+            LinkGraphScopeArg::Mixed => Self::Mixed,
+            LinkGraphScopeArg::DocOnly => Self::DocOnly,
+            LinkGraphScopeArg::SectionOnly => Self::SectionOnly,
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, ValueEnum)]

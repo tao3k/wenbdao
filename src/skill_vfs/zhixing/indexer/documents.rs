@@ -1,3 +1,4 @@
+use crate::entity::{Entity, EntityType};
 use crate::skill_vfs::zhixing::{Error, Result};
 use serde_json::json;
 use std::fs;
@@ -6,7 +7,6 @@ use std::path::Path;
 use super::file_discovery::collect_markdown_files;
 use super::stats::{count_agenda_statuses, count_reflection_sections};
 use super::{ZhixingIndexSummary, ZhixingWendaoIndexer};
-use crate::{Entity, EntityType};
 
 impl ZhixingWendaoIndexer {
     pub(super) fn index_document_dir(
@@ -20,7 +20,7 @@ impl ZhixingWendaoIndexer {
         for file in &files {
             let date = file
                 .file_stem()
-                .and_then(std::ffi::OsStr::to_str)
+                .and_then(|s| s.to_str())
                 .unwrap_or("unknown");
             self.sync_document_path(segment, kind, file, date, summary)?;
         }

@@ -1,0 +1,17 @@
+{
+  "root": {
+    "node_id": "docs/alpha#alpha",
+    "parent_id": null,
+    "known": true
+  },
+  "beta": {
+    "node_id": "docs/alpha#alpha---beta",
+    "parent_id": "docs/alpha#alpha",
+    "known": true
+  },
+  "gamma": {
+    "node_id": "docs/alpha#alpha---beta---gamma",
+    "parent_id": "docs/alpha#alpha---beta",
+    "known": true
+  }
+}

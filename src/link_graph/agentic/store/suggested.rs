@@ -1,3 +1,10 @@
+use std::collections::HashSet;
+
+use crate::link_graph::runtime_config::{
+    DEFAULT_LINK_GRAPH_VALKEY_KEY_PREFIX, resolve_link_graph_agentic_runtime,
+    resolve_link_graph_cache_runtime,
+};
+
 use super::super::keys::suggested_link_stream_key;
 use super::super::types::{
     LINK_GRAPH_SUGGESTED_LINK_SCHEMA_VERSION, LinkGraphSuggestedLink,
@@ -5,18 +12,8 @@ use super::super::types::{
 };
 use super::common::{push_stream_entry, redis_client};
 use super::normalize::{normalize_record_for_read, normalize_request};
-use crate::link_graph::runtime_config::{
-    DEFAULT_LINK_GRAPH_VALKEY_KEY_PREFIX, resolve_link_graph_agentic_runtime,
-    resolve_link_graph_cache_runtime,
-};
-use std::collections::HashSet;
 
 /// Append one suggested-link proposal to Valkey passive stream.
-///
-/// # Errors
-///
-/// Returns an error when runtime configuration is invalid, request normalization fails, or
-/// Valkey operations fail.
 pub fn valkey_suggested_link_log(
     request: LinkGraphSuggestedLinkRequest,
 ) -> Result<LinkGraphSuggestedLink, String> {
@@ -32,11 +29,6 @@ pub fn valkey_suggested_link_log(
 }
 
 /// Append one suggested-link proposal to explicit Valkey endpoint.
-///
-/// # Errors
-///
-/// Returns an error when inputs are invalid, request normalization fails, serialization fails,
-/// or Valkey operations fail.
 pub fn valkey_suggested_link_log_with_valkey(
     request: LinkGraphSuggestedLinkRequest,
     valkey_url: &str,
@@ -75,10 +67,6 @@ pub fn valkey_suggested_link_log_with_valkey(
 }
 
 /// Read recent suggested-link proposals from Valkey passive stream.
-///
-/// # Errors
-///
-/// Returns an error when runtime configuration is invalid or Valkey operations fail.
 pub fn valkey_suggested_link_recent(limit: usize) -> Result<Vec<LinkGraphSuggestedLink>, String> {
     let cache_runtime = resolve_link_graph_cache_runtime()?;
     valkey_suggested_link_recent_with_valkey(
@@ -89,10 +77,6 @@ pub fn valkey_suggested_link_recent(limit: usize) -> Result<Vec<LinkGraphSuggest
 }
 
 /// Read recent suggested-link proposals from explicit Valkey endpoint.
-///
-/// # Errors
-///
-/// Returns an error when inputs are invalid or Valkey operations fail.
 pub fn valkey_suggested_link_recent_with_valkey(
     limit: usize,
     valkey_url: &str,
@@ -116,26 +100,22 @@ pub fn valkey_suggested_link_recent_with_valkey(
     let rows = redis::cmd("LRANGE")
         .arg(&stream_key)
         .arg(0)
-        .arg(i64::try_from(bounded_limit.saturating_sub(1)).unwrap_or(i64::MAX))
+        .arg((bounded_limit - 1) as i64)
         .query::<Vec<String>>(&mut conn)
         .map_err(|err| format!("failed to LRANGE suggested_link stream: {err}"))?;
 
     let mut out: Vec<LinkGraphSuggestedLink> = Vec::new();
     for row in rows {
-        if let Ok(parsed) = serde_json::from_str::<LinkGraphSuggestedLink>(&row)
-            && parsed.schema == LINK_GRAPH_SUGGESTED_LINK_SCHEMA_VERSION
-        {
-            out.push(normalize_record_for_read(parsed));
+        if let Ok(parsed) = serde_json::from_str::<LinkGraphSuggestedLink>(&row) {
+            if parsed.schema == LINK_GRAPH_SUGGESTED_LINK_SCHEMA_VERSION {
+                out.push(normalize_record_for_read(parsed));
+            }
         }
     }
     Ok(out)
 }
 
 /// Read recent suggested-link proposals as latest unique states.
-///
-/// # Errors
-///
-/// Returns an error when runtime configuration is invalid or Valkey operations fail.
 pub fn valkey_suggested_link_recent_latest(
     limit: usize,
     state_filter: Option<LinkGraphSuggestedLinkState>,
@@ -152,10 +132,6 @@ pub fn valkey_suggested_link_recent_latest(
 }
 
 /// Read recent suggested-link proposals as latest unique states from explicit Valkey endpoint.
-///
-/// # Errors
-///
-/// Returns an error when inputs are invalid or Valkey operations fail.
 pub fn valkey_suggested_link_recent_latest_with_valkey(
     limit: usize,
     valkey_url: &str,
@@ -182,7 +158,7 @@ pub fn valkey_suggested_link_recent_latest_with_valkey(
     let rows = redis::cmd("LRANGE")
         .arg(&stream_key)
         .arg(0)
-        .arg(i64::try_from(bounded_scan_limit.saturating_sub(1)).unwrap_or(i64::MAX))
+        .arg((bounded_scan_limit - 1) as i64)
         .query::<Vec<String>>(&mut conn)
         .map_err(|err| format!("failed to LRANGE suggested_link stream: {err}"))?;
 
@@ -199,10 +175,10 @@ pub fn valkey_suggested_link_recent_latest_with_valkey(
         if !seen.insert(normalized.suggestion_id.clone()) {
             continue;
         }
-        if let Some(expected) = state_filter
-            && normalized.promotion_state != expected
-        {
-            continue;
+        if let Some(expected) = state_filter {
+            if normalized.promotion_state != expected {
+                continue;
+            }
         }
         out.push(normalized);
         if out.len() >= bounded_limit {

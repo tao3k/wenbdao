@@ -1,9 +1,19 @@
-use xiuxian_wendao::{LinkGraphSaliencyTouchRequest, valkey_saliency_touch_with_valkey};
+use super::support::{
+    TEST_VALKEY_URL, assert_snapshot_eq, clear_prefix, unique_prefix, valkey_connection,
+};
+use serde::Serialize;
+use xiuxian_wendao::link_graph::{
+    LinkGraphSaliencyTouchRequest, valkey_saliency_touch_with_valkey,
+};
 
-use super::support::{TEST_VALKEY_URL, clear_prefix, unique_prefix, valkey_connection};
+#[derive(Serialize)]
+struct InboundEdgeSnapshot {
+    current_saliency: String,
+    zscore: String,
+}
 
 #[test]
-fn test_saliency_touch_updates_inbound_edge_zset() -> Result<(), Box<dyn std::error::Error>> {
+fn test_saliency_touch_updates_inbound_edge_zset() -> Result<(), String> {
     let prefix = unique_prefix();
     if clear_prefix(&prefix).is_err() {
         return Ok(());
@@ -15,7 +25,8 @@ fn test_saliency_touch_updates_inbound_edge_zset() -> Result<(), Box<dyn std::er
     redis::cmd("SADD")
         .arg(&inbound_key)
         .arg("note-a")
-        .query::<i64>(&mut conn)?;
+        .query::<i64>(&mut conn)
+        .map_err(|err| err.to_string())?;
 
     let state = valkey_saliency_touch_with_valkey(
         LinkGraphSaliencyTouchRequest {
@@ -31,15 +42,27 @@ fn test_saliency_touch_updates_inbound_edge_zset() -> Result<(), Box<dyn std::er
         TEST_VALKEY_URL,
         Some(&prefix),
     )
-    .map_err(|err| err.clone())?;
+    .map_err(|err| err.to_string())?;
 
     let zscore: Option<f64> = redis::cmd("ZSCORE")
         .arg(&out_key)
         .arg("note-b")
-        .query(&mut conn)?;
-    assert!(zscore.is_some());
-    let score = zscore.ok_or("missing zscore for updated edge")?;
-    assert!((score - state.current_saliency).abs() < 1e-9);
+        .query(&mut conn)
+        .map_err(|err| err.to_string())?;
+    let score = zscore.ok_or_else(|| "missing zscore for updated edge".to_string())?;
+
+    let snapshot = InboundEdgeSnapshot {
+        current_saliency: format!("{:.6}", state.current_saliency),
+        zscore: format!("{:.6}", score),
+    };
+    let actual = format!(
+        "{}\n",
+        serde_json::to_string_pretty(&snapshot).map_err(|err| err.to_string())?
+    );
+    assert_snapshot_eq(
+        "link_graph/saliency/saliency_touch_updates_inbound_edge_zset.json",
+        actual.as_str(),
+    );
 
     clear_prefix(&prefix)?;
     Ok(())

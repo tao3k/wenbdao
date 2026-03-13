@@ -1,14 +1,17 @@
 use schemars::JsonSchema;
 use serde::Deserialize;
-use serde_json::{Value, json};
 use xiuxian_zhenfa::{ZhenfaContext, ZhenfaError, zhenfa_tool};
 
 use crate::link_graph::LinkGraphPlannedSearchPayload;
+use crate::link_graph::LinkGraphRelatedFilter;
 use crate::{
     AssetRequest, LinkGraphIndex, LinkGraphSearchOptions, SkillVfsResolver, WendaoAssetHandle,
 };
 
+mod audit;
 mod xml_lite;
+
+pub use audit::{audit_search_payload, evaluate_alignment};
 
 const DEFAULT_SEARCH_LIMIT: usize = 20;
 const MAX_SEARCH_LIMIT: usize = 200;
@@ -26,6 +29,9 @@ pub(crate) struct WendaoSearchArgs {
     include_provisional: Option<bool>,
     #[serde(default)]
     provisional_limit: Option<usize>,
+    /// Optional style anchors for CCS (Context Completeness Score) audit.
+    #[serde(default)]
+    anchors: Option<Vec<String>>,
 }
 
 /// Typed extension accessors for Wendao native tools.
@@ -80,13 +86,18 @@ impl WendaoContextExt for ZhenfaContext {
 }
 
 /// Search the Wendao graph index and return stripped XML-Lite `<hit>` records.
+/// Native tool for searching the wendao graph index.
+#[allow(missing_docs)]
 #[zhenfa_tool(
     name = "wendao.search",
     description = "Search the Wendao graph index and return stripped XML-Lite <hit> records.",
     tool_struct = "WendaoSearchTool",
-    cache_key = "wendao_search_cache_key"
+    mutation_scope = "wendao.search"
 )]
-pub fn wendao_search(ctx: &ZhenfaContext, args: WendaoSearchArgs) -> Result<String, ZhenfaError> {
+pub async fn wendao_search(
+    ctx: &ZhenfaContext,
+    args: WendaoSearchArgs,
+) -> Result<String, ZhenfaError> {
     let query = args.query.trim();
     if query.is_empty() {
         return Err(ZhenfaError::invalid_arguments(
@@ -97,13 +108,67 @@ pub fn wendao_search(ctx: &ZhenfaContext, args: WendaoSearchArgs) -> Result<Stri
     validate_root_dir_argument(args.root_dir.as_deref())?;
     let options = args.options.unwrap_or_default();
     let index = ctx.link_graph_index()?;
+    let limit = normalize_limit(args.limit);
+
+    // First-pass search
     let payload = index.search_planned_payload_with_agentic(
         query,
-        normalize_limit(args.limit),
-        options,
+        limit,
+        options.clone(),
         args.include_provisional,
         args.provisional_limit,
     );
+
+    // Apply CCS audit and compensation loop if anchors provided
+    if let Some(anchors) = args.anchors {
+        if !anchors.is_empty() {
+            let evidence: Vec<String> = payload
+                .results
+                .iter()
+                .flat_map(|hit| vec![hit.stem.clone(), hit.title.clone()])
+                .collect();
+
+            let audit_result = audit::audit_search_payload(&evidence, &anchors);
+
+            // Apply compensation if CCS < threshold
+            let (mut final_payload, compensated) = if let Some(comp) = &audit_result.compensation {
+                let mut compensated_options = options.clone();
+                // Expand max_distance for broader retrieval
+                if let Some(ref mut related) = compensated_options.filters.related {
+                    related.max_distance =
+                        Some(related.max_distance.unwrap_or(2) + comp.max_distance_delta);
+                } else {
+                    compensated_options.filters.related = Some(LinkGraphRelatedFilter {
+                        max_distance: Some(comp.max_distance_delta + 2),
+                        ..Default::default()
+                    });
+                }
+
+                // Re-search with compensated parameters
+                let compensated_payload = index.search_planned_payload_with_agentic(
+                    query,
+                    limit,
+                    compensated_options,
+                    args.include_provisional,
+                    args.provisional_limit,
+                );
+                (compensated_payload, true)
+            } else {
+                (payload, false)
+            };
+
+            use crate::link_graph::LinkGraphCcsAudit;
+            final_payload.ccs_audit = Some(LinkGraphCcsAudit {
+                ccs_score: audit_result.ccs_score,
+                passed: audit_result.passed,
+                compensated,
+                missing_anchors: audit_result.missing_anchors,
+            });
+
+            return Ok(xml_lite::render_xml_lite(&final_payload));
+        }
+    }
+
     Ok(xml_lite::render_xml_lite(&payload))
 }
 
@@ -114,27 +179,6 @@ pub fn wendao_search(ctx: &ZhenfaContext, args: WendaoSearchArgs) -> Result<Stri
 #[must_use]
 pub fn render_xml_lite_hits(payload: &LinkGraphPlannedSearchPayload) -> String {
     xml_lite::render_xml_lite(payload)
-}
-
-fn wendao_search_cache_key(ctx: &ZhenfaContext, args: &WendaoSearchArgs) -> Option<String> {
-    let index = ctx.link_graph_index().ok()?;
-    let query = args.query.trim();
-    if query.is_empty() {
-        return None;
-    }
-    let options = args.options.clone().unwrap_or_default();
-    let canonical_payload = json!({
-        "root": index.root().to_string_lossy(),
-        "query": query,
-        "limit": normalize_limit(args.limit),
-        "include_provisional": args.include_provisional,
-        "provisional_limit": args.provisional_limit,
-        "options": options
-    });
-    Some(format!(
-        "wendao.search::{}",
-        canonical_json_string(canonical_payload)
-    ))
 }
 
 fn normalize_limit(raw: Option<usize>) -> usize {
@@ -152,27 +196,4 @@ fn validate_root_dir_argument(root_dir: Option<&str>) -> Result<(), ZhenfaError>
         }
     }
     Ok(())
-}
-
-fn canonical_json_string(value: Value) -> String {
-    match serde_json::to_string(&canonicalize_json(value)) {
-        Ok(serialized) => serialized,
-        Err(_error) => "{}".to_string(),
-    }
-}
-
-fn canonicalize_json(value: Value) -> Value {
-    match value {
-        Value::Object(map) => {
-            let mut entries: Vec<(String, Value)> = map.into_iter().collect();
-            entries.sort_by(|left, right| left.0.cmp(&right.0));
-            let mut canonical = serde_json::Map::new();
-            for (key, nested) in entries {
-                canonical.insert(key, canonicalize_json(nested));
-            }
-            Value::Object(canonical)
-        }
-        Value::Array(items) => Value::Array(items.into_iter().map(canonicalize_json).collect()),
-        other => other,
-    }
 }

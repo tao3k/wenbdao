@@ -1,5 +1,19 @@
+use regex::Regex;
 use serde_yaml::Value;
-use xiuxian_skills::split_frontmatter;
+use std::sync::LazyLock;
+
+fn compile_regex(pattern: &str) -> Regex {
+    match Regex::new(pattern) {
+        Ok(regex) => regex,
+        Err(_compile_err) => match Regex::new(r"$^") {
+            Ok(fallback) => fallback,
+            Err(fallback_err) => panic!("hardcoded fallback regex must compile: {fallback_err}"),
+        },
+    }
+}
+
+static FRONTMATTER_REGEX: LazyLock<Regex> =
+    LazyLock::new(|| compile_regex(r"(?s)\A---\s*\n(.*?)\n(?:---|\.\.\.)\s*\n?"));
 
 fn normalize_whitespace(raw: &str) -> String {
     raw.split_whitespace().collect::<Vec<_>>().join(" ")
@@ -18,11 +32,14 @@ fn value_to_non_negative_f64(value: &Value) -> Option<f64> {
 }
 
 pub(super) fn parse_frontmatter(content: &str) -> (Option<Value>, &str) {
-    let Some(parts) = split_frontmatter(content) else {
+    let Some(caps) = FRONTMATTER_REGEX.captures(content) else {
         return (None, content);
     };
-    let parsed = serde_yaml::from_str::<Value>(parts.yaml).ok();
-    (parsed, parts.body)
+    let body = caps.get(0).map_or(content, |m| &content[m.end()..]);
+    let parsed = caps
+        .get(1)
+        .and_then(|m| serde_yaml::from_str::<Value>(m.as_str()).ok());
+    (parsed, body)
 }
 
 pub(super) fn extract_tags(frontmatter: Option<&Value>) -> Vec<String> {
@@ -85,21 +102,6 @@ pub(super) fn extract_title(
     fallback_stem.to_string()
 }
 
-pub(super) fn extract_doc_type(frontmatter: Option<&Value>) -> Option<String> {
-    let value = frontmatter?;
-    for key in ["type", "kind"] {
-        let Some(raw) = value.get(key).and_then(Value::as_str) else {
-            continue;
-        };
-        let cleaned = raw.trim();
-        if cleaned.is_empty() {
-            continue;
-        }
-        return Some(cleaned.to_string());
-    }
-    None
-}
-
 pub(super) fn extract_saliency_params(frontmatter: Option<&Value>) -> (f64, f64) {
     let default_base = crate::link_graph::saliency::DEFAULT_SALIENCY_BASE;
     let default_decay = crate::link_graph::saliency::DEFAULT_DECAY_RATE;
@@ -136,4 +138,16 @@ pub(super) fn extract_lead(body: &str) -> String {
 
 pub(super) fn count_words(body: &str) -> usize {
     body.split_whitespace().count()
+}
+
+pub(super) fn extract_doc_type(frontmatter: Option<&Value>) -> Option<String> {
+    let Some(value) = frontmatter else {
+        return None;
+    };
+    value
+        .get("type")
+        .or_else(|| value.get("kind"))
+        .and_then(Value::as_str)
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
 }

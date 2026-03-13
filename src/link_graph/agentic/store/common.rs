@@ -2,18 +2,18 @@ use super::super::types::LinkGraphSuggestedLinkState;
 use std::time::{SystemTime, UNIX_EPOCH};
 use xxhash_rust::xxh3::xxh3_64;
 
-pub(super) fn redis_client(valkey_url: &str) -> Result<redis::Client, String> {
+pub fn redis_client(valkey_url: &str) -> Result<redis::Client, String> {
     redis::Client::open(valkey_url)
         .map_err(|err| format!("invalid valkey url for link_graph suggested_link store: {err}"))
 }
 
-pub(super) fn now_unix_f64() -> f64 {
+pub fn now_unix_f64() -> f64 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .map_or(0.0, |delta| delta.as_secs_f64())
 }
 
-pub(super) fn normalize_optional_string(value: Option<String>) -> Option<String> {
+pub fn normalize_optional_string(value: Option<String>) -> Option<String> {
     value.and_then(|raw| {
         let normalized = raw.trim().to_string();
         if normalized.is_empty() {
@@ -24,7 +24,7 @@ pub(super) fn normalize_optional_string(value: Option<String>) -> Option<String>
     })
 }
 
-pub(super) fn suggestion_id_from_parts(
+pub fn suggestion_id_from_parts(
     source_id: &str,
     target_id: &str,
     relation: &str,
@@ -38,7 +38,7 @@ pub(super) fn suggestion_id_from_parts(
     format!("sl_{:016x}", xxh3_64(raw.as_bytes()))
 }
 
-pub(super) fn state_label(state: LinkGraphSuggestedLinkState) -> &'static str {
+pub fn state_label(state: LinkGraphSuggestedLinkState) -> &'static str {
     match state {
         LinkGraphSuggestedLinkState::Provisional => "provisional",
         LinkGraphSuggestedLinkState::Promoted => "promoted",
@@ -46,7 +46,7 @@ pub(super) fn state_label(state: LinkGraphSuggestedLinkState) -> &'static str {
     }
 }
 
-pub(super) fn push_stream_entry(
+pub fn push_stream_entry(
     conn: &mut redis::Connection,
     stream_key: &str,
     payload: &str,

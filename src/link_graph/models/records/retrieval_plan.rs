@@ -1,4 +1,3 @@
-use super::super::semantic_policy::LinkGraphSemanticSearchPolicy;
 use serde::{Deserialize, Serialize};
 
 /// Canonical schema version for `LinkGraph` retrieval-plan records.
@@ -133,14 +132,12 @@ pub struct LinkGraphRetrievalPlanRecord {
     pub graph_confidence_score: f64,
     /// Graph confidence bucket.
     pub graph_confidence_level: LinkGraphConfidenceLevel,
-    /// Semantic ignition policy that will apply if vector escalation runs.
-    pub semantic_policy: LinkGraphSemanticSearchPolicy,
     /// Bounded policy budget.
     pub budget: LinkGraphRetrievalBudget,
 }
 
 /// Construction payload for [`LinkGraphRetrievalPlanRecord`].
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LinkGraphRetrievalPlanInput {
     /// Retrieval mode requested by caller/runtime policy.
     pub requested_mode: LinkGraphRetrievalMode,
@@ -158,8 +155,6 @@ pub struct LinkGraphRetrievalPlanInput {
     pub graph_confidence_score: f64,
     /// Confidence bucket for the score.
     pub graph_confidence_level: LinkGraphConfidenceLevel,
-    /// Semantic ignition policy that will apply if vector escalation runs.
-    pub semantic_policy: LinkGraphSemanticSearchPolicy,
     /// Bounded retrieval budget derived by runtime policy.
     pub budget: LinkGraphRetrievalBudget,
 }
@@ -183,7 +178,6 @@ impl LinkGraphRetrievalPlanRecord {
             source_hint_count: input.source_hint_count,
             graph_confidence_score: input.graph_confidence_score.clamp(0.0, 1.0),
             graph_confidence_level: input.graph_confidence_level,
-            semantic_policy: input.semantic_policy.normalized(),
             budget: input.budget,
         }
     }

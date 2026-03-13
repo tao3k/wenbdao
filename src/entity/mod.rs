@@ -4,8 +4,12 @@
 
 mod query;
 mod records;
-mod types;
+/// Core entity and relation type definitions.
+pub mod types;
 
 pub use query::{EntitySearchQuery, MultiHopOptions};
 pub use records::{Entity, GraphStats, Relation};
-pub use types::{EntityType, RelationType};
+pub use types::*;
+
+#[cfg(test)]
+mod tests;

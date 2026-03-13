@@ -1,0 +1,15 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/support/scenario_framework.rs
+expression: result
+---
+{
+  "category": "hybrid",
+  "files": [
+    "backend_error.json",
+    "delegates_and_recovers_trace.json",
+    "respects_min_vector_score.json",
+    "skips_empty_requests.json"
+  ],
+  "scenario_id": "031_hybrid_semantic_ignition",
+  "status": "validated"
+}

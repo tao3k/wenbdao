@@ -1,7 +1,7 @@
 use crate::link_graph::models::{
     LinkGraphEdgeType, LinkGraphLinkFilter, LinkGraphMatchStrategy, LinkGraphPprSubgraphMode,
     LinkGraphRelatedFilter, LinkGraphRelatedPprOptions, LinkGraphScope, LinkGraphSearchFilters,
-    LinkGraphSemanticDocumentScope, LinkGraphSortTerm,
+    LinkGraphSortTerm,
 };
 
 #[derive(Debug, Clone, Default)]
@@ -27,8 +27,6 @@ pub(super) struct ParsedDirectiveState {
     pub edge_types: Vec<LinkGraphEdgeType>,
     pub per_doc_section_cap: Option<usize>,
     pub min_section_words: Option<usize>,
-    pub semantic_document_scope: Option<LinkGraphSemanticDocumentScope>,
-    pub semantic_min_vector_score: Option<f64>,
 
     pub created_after: Option<i64>,
     pub created_before: Option<i64>,

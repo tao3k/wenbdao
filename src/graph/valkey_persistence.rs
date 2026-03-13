@@ -10,6 +10,7 @@ use crate::entity::{Entity, Relation};
 use chrono::Utc;
 use log::info;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use xxhash_rust::xxh3::xxh3_64;
 
 const GRAPH_VALKEY_URL_ENV: &str = "XIUXIAN_WENDAO_GRAPH_VALKEY_URL";
@@ -69,11 +70,11 @@ impl KnowledgeGraph {
         let valkey_url = resolve_graph_valkey_url()?;
         let snapshot_key = graph_snapshot_key(graph_scope);
         let entities = {
-            let guard = read_lock(&self.entities);
+            let guard = read_lock::<HashMap<String, Entity>>(&self.entities);
             guard.values().cloned().collect::<Vec<_>>()
         };
         let relations = {
-            let guard = read_lock(&self.relations);
+            let guard = read_lock::<HashMap<String, Relation>>(&self.relations);
             guard.values().cloned().collect::<Vec<_>>()
         };
         let snapshot = GraphSnapshot {
@@ -153,7 +154,7 @@ impl KnowledgeGraph {
             self.add_entity(entity)?;
         }
         for relation in snapshot.relations {
-            self.add_relation(&relation)?;
+            self.add_relation(relation)?;
         }
 
         let stats = self.get_stats();

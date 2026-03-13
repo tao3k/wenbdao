@@ -7,11 +7,22 @@ mod types;
 pub use calc::compute_link_graph_saliency;
 pub(crate) use keys::{edge_in_key, edge_out_key, saliency_key};
 pub use store::{
-    valkey_saliency_del, valkey_saliency_get, valkey_saliency_get_with_valkey,
-    valkey_saliency_touch, valkey_saliency_touch_with_valkey,
+    valkey_saliency_del, valkey_saliency_get, valkey_saliency_get_many,
+    valkey_saliency_get_many_with_valkey, valkey_saliency_get_with_valkey, valkey_saliency_touch,
+    valkey_saliency_touch_with_valkey,
 };
-pub use touch::touch_search_hits_async;
+pub use touch::{
+    SearchHitCoactivationLink, touch_search_hits_async, touch_search_hits_async_with_valkey,
+    touch_search_hits_with_coactivation_async,
+    touch_search_hits_with_coactivation_async_with_valkey,
+};
 pub use types::{
     DEFAULT_DECAY_RATE, DEFAULT_SALIENCY_BASE, LINK_GRAPH_SALIENCY_SCHEMA_VERSION,
     LinkGraphSaliencyPolicy, LinkGraphSaliencyState, LinkGraphSaliencyTouchRequest,
 };
+
+/// Map a saliency state into a normalized learning signal.
+#[must_use]
+pub fn learned_saliency_signal_from_state(state: &LinkGraphSaliencyState) -> f64 {
+    state.current_saliency
+}

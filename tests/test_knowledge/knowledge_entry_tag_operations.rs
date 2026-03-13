@@ -1,4 +1,4 @@
-use xiuxian_wendao::{KnowledgeCategory, KnowledgeEntry};
+use super::*;
 
 #[test]
 fn test_knowledge_entry_tag_operations() {

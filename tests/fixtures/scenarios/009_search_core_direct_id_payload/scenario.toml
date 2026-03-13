@@ -1,0 +1,17 @@
+[scenario]
+id = "009_search_core_direct_id_payload"
+name = "Search Core Direct ID Payload"
+description = "Direct ID match with payload context"
+category = "search_core"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+
+[expected]
+type = "json_snapshot"
+files = ["result.json"]
+
+[runner]
+build_page_index = true
+collect_links = true

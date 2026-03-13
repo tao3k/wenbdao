@@ -1,0 +1,12 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/support/scenario_framework.rs
+expression: result
+---
+{
+  "category": "tree_scope_filters",
+  "files": [
+    "result.json"
+  ],
+  "scenario_id": "061_tree_scope_tree_hops_limit_section_expansion",
+  "status": "validated"
+}

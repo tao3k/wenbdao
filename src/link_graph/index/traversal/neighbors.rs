@@ -1,131 +1,162 @@
-use super::super::{LinkGraphDirection, LinkGraphIndex, LinkGraphNeighbor};
-use super::merge_direction;
-use std::collections::{HashMap, HashSet, VecDeque};
+use super::super::LinkGraphIndex;
+use crate::link_graph::models::{
+    LinkGraphDirection, LinkGraphNeighbor, LinkGraphRelatedPprDiagnostics,
+    LinkGraphRelatedPprOptions,
+};
+use std::collections::{HashSet, VecDeque};
 
 impl LinkGraphIndex {
-    /// Traverse neighbors for a note stem/id/path.
+    /// Return the neighbor count for a note.
+    #[must_use]
+    pub fn neighbor_count(&self, stem_or_id: &str, direction: LinkGraphDirection) -> usize {
+        let Some(doc_id) = self.resolve_doc_id(stem_or_id) else {
+            return 0;
+        };
+        match direction {
+            LinkGraphDirection::Outgoing => self.outgoing.get(doc_id).map_or(0, HashSet::len),
+            LinkGraphDirection::Incoming => self.incoming.get(doc_id).map_or(0, HashSet::len),
+            LinkGraphDirection::Both => {
+                let out_set = self.outgoing.get(doc_id);
+                let in_set = self.incoming.get(doc_id);
+                match (out_set, in_set) {
+                    (Some(out), Some(in_)) => out.union(in_).count(),
+                    (Some(out), None) => out.len(),
+                    (None, Some(in_)) => in_.len(),
+                    (None, None) => 0,
+                }
+            }
+        }
+    }
+
+    /// Return neighbors for a note within a specific hop distance.
     #[must_use]
     pub fn neighbors(
         &self,
         stem_or_id: &str,
         direction: LinkGraphDirection,
-        hops: usize,
+        max_distance: usize,
         limit: usize,
     ) -> Vec<LinkGraphNeighbor> {
-        self.neighbors_with_overlay(stem_or_id, direction, hops, limit)
-            .0
-    }
-
-    /// Traverse neighbors for a note stem/id/path and include promoted overlay telemetry.
-    #[must_use]
-    pub fn neighbors_with_overlay(
-        &self,
-        stem_or_id: &str,
-        direction: LinkGraphDirection,
-        hops: usize,
-        limit: usize,
-    ) -> (
-        Vec<LinkGraphNeighbor>,
-        super::super::LinkGraphPromotedOverlayTelemetry,
-    ) {
-        let (overlay, telemetry) = self.promoted_overlay_telemetry();
-        let rows = if let Some(overlay) = overlay {
-            overlay.neighbors_core(stem_or_id, direction, hops, limit)
-        } else {
-            self.neighbors_core(stem_or_id, direction, hops, limit)
-        };
-        (rows, telemetry)
-    }
-
-    fn neighbors_core(
-        &self,
-        stem_or_id: &str,
-        direction: LinkGraphDirection,
-        hops: usize,
-        limit: usize,
-    ) -> Vec<LinkGraphNeighbor> {
-        let Some(start_id) = self.resolve_doc_id(stem_or_id).map(str::to_string) else {
+        let Some(start_id) = self.resolve_doc_id(stem_or_id).map(|s| s.to_string()) else {
             return Vec::new();
         };
 
-        let max_hops = hops.max(1);
-        let max_items = limit.max(1);
+        let mut visited = HashSet::new();
+        let mut queue = VecDeque::new();
+        let mut results = Vec::new();
 
-        let mut queue: VecDeque<(String, usize, LinkGraphDirection)> = VecDeque::new();
-        queue.push_back((start_id.clone(), 0, LinkGraphDirection::Both));
-        let mut visited: HashSet<String> = HashSet::new();
         visited.insert(start_id.clone());
+        queue.push_back((start_id.clone(), 0, LinkGraphDirection::Both));
 
-        let mut neighbors: HashMap<String, LinkGraphNeighbor> = HashMap::new();
-
-        while let Some((current_id, depth, root_direction)) = queue.pop_front() {
-            if depth >= max_hops {
+        while let Some((current_id, distance, _)) = queue.pop_front() {
+            if distance >= max_distance || results.len() >= limit {
                 continue;
             }
 
-            let mut next_nodes: Vec<(String, LinkGraphDirection)> = Vec::new();
-            if matches!(
-                direction,
-                LinkGraphDirection::Both | LinkGraphDirection::Outgoing
-            ) && let Some(targets) = self.outgoing.get(&current_id)
-            {
-                for target in targets {
-                    let effective = if depth == 0 {
-                        LinkGraphDirection::Outgoing
-                    } else {
-                        root_direction
-                    };
-                    next_nodes.push((target.clone(), effective));
-                }
-            }
-            if matches!(
-                direction,
-                LinkGraphDirection::Both | LinkGraphDirection::Incoming
-            ) && let Some(sources) = self.incoming.get(&current_id)
-            {
-                for source in sources {
-                    let effective = if depth == 0 {
-                        LinkGraphDirection::Incoming
-                    } else {
-                        root_direction
-                    };
-                    next_nodes.push((source.clone(), effective));
+            let next_distance = distance + 1;
+
+            if direction == LinkGraphDirection::Outgoing || direction == LinkGraphDirection::Both {
+                if let Some(neighbors) = self.outgoing.get(&current_id) {
+                    for neighbor_id in neighbors {
+                        if !visited.insert(neighbor_id.clone()) {
+                            continue;
+                        }
+                        if let Some(doc) = self.docs_by_id.get(neighbor_id) {
+                            results.push(LinkGraphNeighbor {
+                                stem: doc.stem.clone(),
+                                title: doc.title.clone(),
+                                path: doc.path.clone(),
+                                distance: next_distance,
+                                direction: LinkGraphDirection::Outgoing,
+                            });
+                            queue.push_back((
+                                neighbor_id.clone(),
+                                next_distance,
+                                LinkGraphDirection::Outgoing,
+                            ));
+                        }
+                    }
                 }
             }
 
-            for (next_id, next_direction) in next_nodes {
-                if next_id == start_id {
-                    continue;
-                }
-                let Some(doc) = self.docs_by_id.get(&next_id) else {
-                    continue;
-                };
-                let distance = depth + 1;
-                if let Some(existing) = neighbors.get_mut(&next_id) {
-                    existing.distance = existing.distance.min(distance);
-                    existing.direction = merge_direction(existing.direction, next_direction);
-                } else {
-                    neighbors.insert(
-                        next_id.clone(),
-                        LinkGraphNeighbor {
-                            stem: doc.stem.clone(),
-                            direction: next_direction,
-                            distance,
-                            title: doc.title.clone(),
-                            path: doc.path.clone(),
-                        },
-                    );
-                }
-                if distance < max_hops && !visited.contains(&next_id) {
-                    visited.insert(next_id.clone());
-                    queue.push_back((next_id, distance, next_direction));
+            if direction == LinkGraphDirection::Incoming || direction == LinkGraphDirection::Both {
+                if let Some(neighbors) = self.incoming.get(&current_id) {
+                    for neighbor_id in neighbors {
+                        if !visited.insert(neighbor_id.clone()) {
+                            continue;
+                        }
+                        if let Some(doc) = self.docs_by_id.get(neighbor_id) {
+                            results.push(LinkGraphNeighbor {
+                                stem: doc.stem.clone(),
+                                title: doc.title.clone(),
+                                path: doc.path.clone(),
+                                distance: next_distance,
+                                direction: LinkGraphDirection::Incoming,
+                            });
+                            queue.push_back((
+                                neighbor_id.clone(),
+                                next_distance,
+                                LinkGraphDirection::Incoming,
+                            ));
+                        }
+                    }
                 }
             }
         }
 
-        let mut out: Vec<LinkGraphNeighbor> = neighbors.into_values().collect();
-        out.sort_by(|a, b| a.distance.cmp(&b.distance).then(a.path.cmp(&b.path)));
-        out.truncate(max_items);
-        out
+        results.sort_by(|a, b| {
+            a.distance
+                .cmp(&b.distance)
+                .then_with(|| a.stem.cmp(&b.stem))
+        });
+        results.truncate(limit);
+        results
+    }
+
+    /// Find related notes from explicit seed notes and return PPR diagnostics.
+    #[must_use]
+    pub fn related_from_seeds_with_diagnostics(
+        &self,
+        seeds: &[String],
+        max_distance: usize,
+        limit: usize,
+        ppr: Option<&LinkGraphRelatedPprOptions>,
+    ) -> (
+        Vec<LinkGraphNeighbor>,
+        Option<LinkGraphRelatedPprDiagnostics>,
+    ) {
+        let seed_ids = self.resolve_doc_ids(seeds);
+        if seed_ids.is_empty() {
+            return (Vec::new(), None);
+        }
+        let Some(computation) = self.related_ppr_compute(&seed_ids, max_distance.max(1), ppr)
+        else {
+            return (Vec::new(), None);
+        };
+        (
+            self.build_related_neighbors_from_ranked(computation.ranked_doc_ids, limit),
+            Some(computation.diagnostics),
+        )
+    }
+
+    fn build_related_neighbors_from_ranked(
+        &self,
+        ranked: Vec<(String, usize, f64)>,
+        limit: usize,
+    ) -> Vec<LinkGraphNeighbor> {
+        ranked
+            .into_iter()
+            .take(limit)
+            .filter_map(|(doc_id, distance, _score)| {
+                let doc = self.docs_by_id.get(&doc_id)?;
+                Some(LinkGraphNeighbor {
+                    stem: doc.stem.clone(),
+                    title: doc.title.clone(),
+                    path: doc.path.clone(),
+                    distance,
+                    direction: LinkGraphDirection::Both,
+                })
+            })
+            .collect()
     }
 }

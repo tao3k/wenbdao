@@ -1,0 +1,22 @@
+# Scenario: Page Index Refresh
+# Description: Incremental page index refresh on file changes
+
+[scenario]
+id = "004_page_index_refresh"
+name = "Page Index Refresh"
+description = "Incremental page index update when files change"
+category = "page_index"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+update_path = "update"
+
+[expected]
+type = "json_snapshot"
+files = ["incremental_refresh.json"]
+
+[runner]
+build_page_index = true
+collect_links = false
+test_incremental_refresh = true

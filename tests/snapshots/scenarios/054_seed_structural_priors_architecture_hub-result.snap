@@ -1,0 +1,12 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/support/scenario_framework.rs
+expression: result
+---
+{
+  "category": "seed_and_priors",
+  "files": [
+    "result.json"
+  ],
+  "scenario_id": "054_seed_structural_priors_architecture_hub",
+  "status": "validated"
+}

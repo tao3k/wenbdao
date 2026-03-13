@@ -11,7 +11,11 @@ fn fixture_path(fixture_root: &str, relative: &str) -> PathBuf {
         .join(relative)
 }
 
-pub(crate) fn read_fixture(fixture_root: &str, relative: &str) -> String {
+/// Read one fixture file content from the tests/fixtures directory.
+///
+/// # Panics
+/// Panics if the fixture file is not found or cannot be read.
+pub fn read_fixture(fixture_root: &str, relative: &str) -> String {
     let path = fixture_path(fixture_root, relative);
     fs::read_to_string(path.as_path())
         .unwrap_or_else(|error| panic!("failed to read fixture {}: {error}", path.display()))

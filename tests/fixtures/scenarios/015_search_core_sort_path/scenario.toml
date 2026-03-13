@@ -1,0 +1,17 @@
+[scenario]
+id = "015_search_core_sort_path"
+name = "Search Core Sort Path"
+description = "Search results sorted by path"
+category = "search_core"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+
+[expected]
+type = "json_snapshot"
+files = ["result.json"]
+
+[runner]
+build_page_index = true
+collect_links = true

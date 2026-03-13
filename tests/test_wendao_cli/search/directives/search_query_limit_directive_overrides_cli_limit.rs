@@ -1,18 +1,16 @@
-use crate::test_wendao_cli::support::wendao_cmd;
-use serde_json::Value;
-
-use super::fixture_contract_support::{
-    SearchDirectivesFixture, assert_search_directives_fixture, search_payload_snapshot,
-};
+use super::*;
 
 #[test]
 fn test_wendao_search_query_limit_directive_overrides_cli_limit()
 -> Result<(), Box<dyn std::error::Error>> {
-    let fixture = SearchDirectivesFixture::build("query_limit_directive_overrides_cli_limit")?;
+    let tmp = TempDir::new()?;
+    write_file(&tmp.path().join("docs/a.md"), "# A\n\nshared keyword\n")?;
+    write_file(&tmp.path().join("docs/b.md"), "# B\n\nshared keyword\n")?;
+    write_file(&tmp.path().join("docs/c.md"), "# C\n\nshared keyword\n")?;
 
     let output = wendao_cmd()
         .arg("--root")
-        .arg(fixture.root())
+        .arg(tmp.path())
         .arg("search")
         .arg("query:shared keyword limit:1 sort:path_asc")
         .arg("--limit")
@@ -26,11 +24,15 @@ fn test_wendao_search_query_limit_directive_overrides_cli_limit()
     );
 
     let payload: Value = serde_json::from_str(&String::from_utf8(output.stdout)?)?;
-    let actual = search_payload_snapshot(&payload);
-    assert_search_directives_fixture(
-        "query_limit_directive_overrides_cli_limit",
-        "result.json",
-        &actual,
+    assert_eq!(
+        payload.get("query").and_then(Value::as_str),
+        Some("shared keyword")
     );
+    assert_eq!(payload.get("limit").and_then(Value::as_u64), Some(1));
+    let rows = payload
+        .get("results")
+        .and_then(Value::as_array)
+        .ok_or("missing results")?;
+    assert_eq!(rows.len(), 1);
     Ok(())
 }

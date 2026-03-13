@@ -1,8 +1,7 @@
+use crate::WendaoResourceUri;
+use crate::enhancer::{WendaoResourceLinkTarget, classify_skill_reference, parse_frontmatter};
+use crate::entity::{Entity, EntityType, Relation, RelationType};
 use crate::skill_vfs::zhixing::{Error, Result};
-use crate::{
-    Entity, EntityType, Relation, RelationType, WendaoResourceLinkTarget, WendaoResourceUri,
-    classify_skill_reference, parse_frontmatter,
-};
 use serde_json::json;
 use std::collections::BTreeSet;
 use std::path::Path;
@@ -99,7 +98,7 @@ impl ZhixingWendaoIndexer {
                     }
 
                     self.graph
-                        .add_relation(&build_reference_relation(&ReferenceRelationInput {
+                        .add_relation(build_reference_relation(&ReferenceRelationInput {
                             skill_name: skill_name.as_str(),
                             reference_name: reference_name.as_str(),
                             source_path: file.path(),
@@ -118,6 +117,14 @@ impl ZhixingWendaoIndexer {
         }
 
         Ok((entities_added, relations_linked))
+    }
+
+    /// Trigger graph indexing for only the embedded skill references.
+    ///
+    /// # Errors
+    /// Returns an error when graph operations fail.
+    pub fn index_embedded_skill_references_only(&self) -> Result<(usize, usize)> {
+        self.index_embedded_skill_references()
     }
 }
 
@@ -221,7 +228,7 @@ impl ZhixingWendaoIndexer {
             }
             self.graph
                 .add_relation(
-                    &Relation::new(
+                    Relation::new(
                         skill_name.to_string(),
                         intent_name,
                         RelationType::Governs,

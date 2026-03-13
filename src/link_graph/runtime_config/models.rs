@@ -12,13 +12,15 @@ use super::constants::{
     DEFAULT_LINK_GRAPH_AGENTIC_EXPANSION_TIME_BUDGET_MS,
     DEFAULT_LINK_GRAPH_AGENTIC_SEARCH_PROVISIONAL_LIMIT,
     DEFAULT_LINK_GRAPH_AGENTIC_SUGGESTED_LINK_MAX_ENTRIES, DEFAULT_LINK_GRAPH_CANDIDATE_MULTIPLIER,
-    DEFAULT_LINK_GRAPH_HYBRID_MIN_HITS, DEFAULT_LINK_GRAPH_HYBRID_MIN_TOP_SCORE,
-    DEFAULT_LINK_GRAPH_MAX_SOURCES, DEFAULT_LINK_GRAPH_RELATED_MAX_CANDIDATES,
-    DEFAULT_LINK_GRAPH_RELATED_MAX_PARTITIONS, DEFAULT_LINK_GRAPH_RELATED_TIME_BUDGET_MS,
-    DEFAULT_LINK_GRAPH_RETRIEVAL_MODE, DEFAULT_LINK_GRAPH_ROWS_PER_SOURCE,
-    DEFAULT_LINK_GRAPH_VALKEY_KEY_PREFIX,
+    DEFAULT_LINK_GRAPH_COACTIVATION_ALPHA_SCALE, DEFAULT_LINK_GRAPH_COACTIVATION_ENABLED,
+    DEFAULT_LINK_GRAPH_COACTIVATION_MAX_NEIGHBORS_PER_DIRECTION,
+    DEFAULT_LINK_GRAPH_COACTIVATION_TOUCH_QUEUE_DEPTH, DEFAULT_LINK_GRAPH_HYBRID_MIN_HITS,
+    DEFAULT_LINK_GRAPH_HYBRID_MIN_TOP_SCORE, DEFAULT_LINK_GRAPH_MAX_SOURCES,
+    DEFAULT_LINK_GRAPH_RELATED_MAX_CANDIDATES, DEFAULT_LINK_GRAPH_RELATED_MAX_PARTITIONS,
+    DEFAULT_LINK_GRAPH_RELATED_TIME_BUDGET_MS, DEFAULT_LINK_GRAPH_RETRIEVAL_MODE,
+    DEFAULT_LINK_GRAPH_ROWS_PER_SOURCE, DEFAULT_LINK_GRAPH_VALKEY_KEY_PREFIX,
 };
-use crate::link_graph::models::{LinkGraphRetrievalMode, LinkGraphSemanticSearchPolicy};
+use crate::link_graph::models::LinkGraphRetrievalMode;
 
 #[derive(Debug, Clone)]
 pub(crate) struct LinkGraphCacheRuntimeConfig {
@@ -64,15 +66,33 @@ impl Default for LinkGraphRelatedRuntimeConfig {
     }
 }
 
-#[derive(Debug, Clone)]
-pub(crate) struct LinkGraphRetrievalPolicyRuntimeConfig {
+#[derive(Debug, Clone, Copy)]
+pub struct LinkGraphCoactivationRuntimeConfig {
+    pub enabled: bool,
+    pub alpha_scale: f64,
+    pub max_neighbors_per_direction: usize,
+    pub touch_queue_depth: usize,
+}
+
+impl Default for LinkGraphCoactivationRuntimeConfig {
+    fn default() -> Self {
+        Self {
+            enabled: DEFAULT_LINK_GRAPH_COACTIVATION_ENABLED,
+            alpha_scale: DEFAULT_LINK_GRAPH_COACTIVATION_ALPHA_SCALE,
+            max_neighbors_per_direction:
+                DEFAULT_LINK_GRAPH_COACTIVATION_MAX_NEIGHBORS_PER_DIRECTION,
+            touch_queue_depth: DEFAULT_LINK_GRAPH_COACTIVATION_TOUCH_QUEUE_DEPTH,
+        }
+    }
+}
+
+pub struct LinkGraphRetrievalPolicyRuntimeConfig {
     pub mode: LinkGraphRetrievalMode,
     pub candidate_multiplier: usize,
     pub max_sources: usize,
     pub hybrid_min_hits: usize,
     pub hybrid_min_top_score: f64,
     pub graph_rows_per_source: usize,
-    pub semantic_policy: LinkGraphSemanticSearchPolicy,
 }
 
 impl Default for LinkGraphRetrievalPolicyRuntimeConfig {
@@ -85,13 +105,12 @@ impl Default for LinkGraphRetrievalPolicyRuntimeConfig {
             hybrid_min_hits: DEFAULT_LINK_GRAPH_HYBRID_MIN_HITS,
             hybrid_min_top_score: DEFAULT_LINK_GRAPH_HYBRID_MIN_TOP_SCORE,
             graph_rows_per_source: DEFAULT_LINK_GRAPH_ROWS_PER_SOURCE,
-            semantic_policy: LinkGraphSemanticSearchPolicy::default(),
         }
     }
 }
 
 #[derive(Debug, Clone)]
-pub(crate) struct LinkGraphAgenticRuntimeConfig {
+pub struct LinkGraphAgenticRuntimeConfig {
     pub suggested_link_max_entries: usize,
     pub suggested_link_ttl_seconds: Option<u64>,
     pub search_include_provisional_default: bool,

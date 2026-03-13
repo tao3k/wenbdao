@@ -33,6 +33,7 @@ pub(super) fn attachments_for_parsed_note(parsed: &ParsedNote) -> Vec<LinkGraphA
                 attachment_name: attachment_name(attachment_path),
                 attachment_ext: ext.clone(),
                 kind: LinkGraphAttachmentKind::from_extension(&ext),
+                vision_annotation: None,
             }
         })
         .collect();

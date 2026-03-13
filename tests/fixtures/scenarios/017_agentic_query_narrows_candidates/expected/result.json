@@ -1,0 +1,36 @@
+{
+  "candidate_notes": 2,
+  "capped_by_pair_limit": false,
+  "config": {
+    "max_candidates": 10,
+    "max_pairs_per_worker": 3,
+    "max_workers": 3,
+    "time_budget_ms": 1000.0
+  },
+  "elapsed_ms_non_negative": true,
+  "evaluated_pairs": 1,
+  "query": "alpha",
+  "selected_pairs": 1,
+  "selected_pairs_matches_worker_sum": true,
+  "timed_out": false,
+  "total_notes": 4,
+  "total_possible_pairs": 1,
+  "unique_pair_count": 1,
+  "worker_count": 1,
+  "worker_pair_sum": 1,
+  "workers": [
+    {
+      "pair_count": 1,
+      "pair_count_matches_pairs_len": true,
+      "pairs": [
+        {
+          "left_id": "docs/a",
+          "priority": 0.0,
+          "right_id": "docs/b"
+        }
+      ],
+      "seed_ids": ["docs/a", "docs/b"],
+      "worker_id": 0
+    }
+  ]
+}

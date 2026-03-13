@@ -1,9 +1,4 @@
-use std::io::Write as StdWrite;
-
-use tempfile::NamedTempFile;
-use xiuxian_wendao::dependency_indexer::parse_pyproject_dependencies;
-
-use super::support::{BENCH_SLACK_ENV, benchmark_budget, generate_pyproject_toml_with_extras};
+use super::*;
 
 #[test]
 fn test_pyproject_extras_parsing_performance() -> Result<(), Box<dyn std::error::Error>> {
@@ -24,7 +19,7 @@ fn test_pyproject_extras_parsing_performance() -> Result<(), Box<dyn std::error:
     let elapsed = start.elapsed();
 
     // Should complete in under 1 second
-    let max_duration = benchmark_budget(
+    let max_duration = super::benchmark_budget(
         std::time::Duration::from_secs(1),
         std::time::Duration::from_millis(1500),
     );
@@ -34,7 +29,7 @@ fn test_pyproject_extras_parsing_performance() -> Result<(), Box<dyn std::error:
         "pyproject.toml with extras parsing took {:.2}s, expected < {:.2}s (set {} >= 1.0 to tune)",
         elapsed.as_secs_f64(),
         max_secs,
-        BENCH_SLACK_ENV
+        super::BENCH_SLACK_ENV
     );
 
     println!(

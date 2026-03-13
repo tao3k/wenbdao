@@ -1,14 +1,11 @@
 use super::super::fingerprint::LinkGraphFingerprint;
 use super::schema::{LINK_GRAPH_VALKEY_CACHE_SCHEMA_VERSION, cache_schema_fingerprint};
 use crate::link_graph::index::{IndexedSection, LinkGraphIndex};
-use crate::link_graph::models::{
-    LinkGraphAttachment, LinkGraphDocument, LinkGraphPassage, PageIndexMeta, PageIndexNode,
-};
+use crate::link_graph::models::{LinkGraphAttachment, LinkGraphDocument, LinkGraphPassage};
 use crate::link_graph::saliency::{DEFAULT_DECAY_RATE, DEFAULT_SALIENCY_BASE};
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
-use std::sync::Arc;
 
 fn snapshot_default_saliency_base() -> f64 {
     DEFAULT_SALIENCY_BASE
@@ -96,72 +93,6 @@ impl SnapshotDocument {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct SnapshotPageIndexMeta {
-    line_range: (usize, usize),
-    token_count: usize,
-    is_thinned: bool,
-}
-
-impl From<&PageIndexMeta> for SnapshotPageIndexMeta {
-    fn from(value: &PageIndexMeta) -> Self {
-        Self {
-            line_range: value.line_range,
-            token_count: value.token_count,
-            is_thinned: value.is_thinned,
-        }
-    }
-}
-
-impl From<SnapshotPageIndexMeta> for PageIndexMeta {
-    fn from(value: SnapshotPageIndexMeta) -> Self {
-        Self {
-            line_range: value.line_range,
-            token_count: value.token_count,
-            is_thinned: value.is_thinned,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-struct SnapshotPageIndexNode {
-    node_id: String,
-    title: String,
-    level: usize,
-    text: String,
-    summary: Option<String>,
-    children: Vec<SnapshotPageIndexNode>,
-    metadata: SnapshotPageIndexMeta,
-}
-
-impl From<&PageIndexNode> for SnapshotPageIndexNode {
-    fn from(value: &PageIndexNode) -> Self {
-        Self {
-            node_id: value.node_id.clone(),
-            title: value.title.clone(),
-            level: value.level,
-            text: value.text.to_string(),
-            summary: value.summary.clone(),
-            children: value.children.iter().map(Self::from).collect(),
-            metadata: SnapshotPageIndexMeta::from(&value.metadata),
-        }
-    }
-}
-
-impl SnapshotPageIndexNode {
-    fn into_node(self) -> PageIndexNode {
-        PageIndexNode {
-            node_id: self.node_id,
-            title: self.title,
-            level: self.level,
-            text: Arc::<str>::from(self.text),
-            summary: self.summary,
-            children: self.children.into_iter().map(Self::into_node).collect(),
-            metadata: self.metadata.into(),
-        }
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
 pub(super) struct LinkGraphIndexSnapshot {
     schema_version: String,
     #[serde(default)]
@@ -174,8 +105,6 @@ pub(super) struct LinkGraphIndexSnapshot {
     #[serde(default)]
     passages_by_id: HashMap<String, LinkGraphPassage>,
     sections_by_doc: HashMap<String, Vec<IndexedSection>>,
-    #[serde(default)]
-    trees_by_doc: HashMap<String, Vec<SnapshotPageIndexNode>>,
     #[serde(default)]
     attachments_by_doc: HashMap<String, Vec<LinkGraphAttachment>>,
     alias_to_doc_id: HashMap<String, String>,
@@ -192,16 +121,6 @@ impl LinkGraphIndexSnapshot {
             .iter()
             .map(|(k, v)| (k.clone(), SnapshotDocument::from(v)))
             .collect();
-        let trees_by_doc = index
-            .trees_by_doc
-            .iter()
-            .map(|(doc_id, roots)| {
-                (
-                    doc_id.clone(),
-                    roots.iter().map(SnapshotPageIndexNode::from).collect(),
-                )
-            })
-            .collect();
         Self {
             schema_version: LINK_GRAPH_VALKEY_CACHE_SCHEMA_VERSION.to_string(),
             schema_fingerprint: Some(cache_schema_fingerprint().to_string()),
@@ -212,7 +131,6 @@ impl LinkGraphIndexSnapshot {
             docs_by_id,
             passages_by_id: index.passages_by_id.clone(),
             sections_by_doc: index.sections_by_doc.clone(),
-            trees_by_doc,
             attachments_by_doc: index.attachments_by_doc.clone(),
             alias_to_doc_id: index.alias_to_doc_id.clone(),
             outgoing: index.outgoing.clone(),
@@ -228,19 +146,6 @@ impl LinkGraphIndexSnapshot {
             .into_iter()
             .map(|(k, v)| (k, v.into_document()))
             .collect();
-        let trees_by_doc = self
-            .trees_by_doc
-            .into_iter()
-            .map(|(doc_id, roots)| {
-                (
-                    doc_id,
-                    roots
-                        .into_iter()
-                        .map(SnapshotPageIndexNode::into_node)
-                        .collect(),
-                )
-            })
-            .collect();
         let mut index = LinkGraphIndex {
             root: self.root,
             include_dirs: self.include_dirs,
@@ -248,17 +153,17 @@ impl LinkGraphIndexSnapshot {
             docs_by_id,
             passages_by_id: self.passages_by_id,
             sections_by_doc: self.sections_by_doc,
-            trees_by_doc,
             attachments_by_doc: self.attachments_by_doc,
+            trees_by_doc: HashMap::new(),
+            node_parent_map: HashMap::new(),
             alias_to_doc_id: self.alias_to_doc_id,
             outgoing: self.outgoing,
             incoming: self.incoming,
             rank_by_id: self.rank_by_id,
             edge_count: self.edge_count,
+            virtual_nodes: HashMap::new(),
         };
-        if index.trees_by_doc.is_empty() {
-            index.rebuild_all_page_indices();
-        }
+        index.rebuild_all_page_indices();
         index
     }
 

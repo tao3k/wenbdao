@@ -1,0 +1,17 @@
+[scenario]
+id = "022_build_scope_skill_metadata"
+name = "Build Scope: skill metadata"
+description = "build_scope scenario"
+category = "build_scope"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+
+[expected]
+type = "json_snapshot"
+files = ["result.json"]
+
+[runner]
+build_page_index = true
+collect_links = true

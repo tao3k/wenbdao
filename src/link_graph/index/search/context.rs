@@ -1,39 +1,28 @@
 use super::super::{
-    LinkGraphIndex, LinkGraphMatchStrategy, LinkGraphScope, LinkGraphSearchOptions,
-    normalize_path_filter, normalize_with_case, tokenize,
+    LinkGraphIndex, LinkGraphMatchStrategy, LinkGraphSearchOptions, normalize_path_filter,
+    normalize_with_case, tokenize,
 };
 use regex::{Regex, RegexBuilder};
 
 #[derive(Debug, Clone)]
-pub(super) struct SearchExecutionContext {
-    pub(super) bounded: usize,
-    pub(super) case_sensitive: bool,
-    pub(super) raw_query: String,
-    pub(super) clean_query: String,
-    pub(super) query_tokens: Vec<String>,
-    pub(super) include_paths: Vec<String>,
-    pub(super) exclude_paths: Vec<String>,
-    pub(super) tag_all: Vec<String>,
-    pub(super) tag_any: Vec<String>,
-    pub(super) tag_not: Vec<String>,
-    pub(super) mention_filters: Vec<String>,
-    pub(super) regex: Option<Regex>,
-}
-
-#[derive(Debug, Clone, Copy)]
-pub(super) struct SearchRuntimePolicy {
-    pub(super) scope: LinkGraphScope,
-    pub(super) structural_edges_enabled: bool,
-    pub(super) semantic_edges_enabled: bool,
-    pub(super) collapse_to_doc: bool,
-    pub(super) per_doc_section_cap: usize,
-    pub(super) min_section_words: usize,
-    pub(super) max_heading_level: usize,
-    pub(super) max_tree_hops: Option<usize>,
+pub struct SearchExecutionContext {
+    pub bounded: usize,
+    pub case_sensitive: bool,
+    pub raw_query: String,
+    pub clean_query: String,
+    pub query_tokens: Vec<String>,
+    pub include_paths: Vec<String>,
+    pub exclude_paths: Vec<String>,
+    pub tag_all: Vec<String>,
+    pub tag_any: Vec<String>,
+    pub tag_not: Vec<String>,
+    pub mention_filters: Vec<String>,
+    pub regex: Option<Regex>,
 }
 
 impl LinkGraphIndex {
     pub(super) fn prepare_execution_context(
+        &self,
         query: &str,
         limit: usize,
         options: &LinkGraphSearchOptions,
@@ -113,4 +102,46 @@ impl LinkGraphIndex {
             regex,
         })
     }
+
+    pub(super) fn resolve_search_runtime_policy(
+        &self,
+        options: &LinkGraphSearchOptions,
+        _context: &SearchExecutionContext,
+    ) -> SearchRuntimePolicy {
+        let scope = LinkGraphIndex::effective_scope(&options.filters);
+        let structural_edges_enabled = LinkGraphIndex::allows_structural_edges(&options.filters);
+        let semantic_edges_enabled = LinkGraphIndex::allows_semantic_edges(&options.filters);
+        let collapse_to_doc = options.filters.collapse_to_doc.unwrap_or(true);
+        let per_doc_section_cap =
+            LinkGraphIndex::effective_per_doc_section_cap(&options.filters, scope);
+        let min_section_words =
+            LinkGraphIndex::effective_min_section_words(&options.filters, scope);
+        let max_heading_level = LinkGraphIndex::effective_max_heading_level(&options.filters);
+        let max_tree_hops = options.filters.max_tree_hops;
+
+        SearchRuntimePolicy {
+            scope,
+            structural_edges_enabled,
+            semantic_edges_enabled,
+            collapse_to_doc,
+            per_doc_section_cap,
+            min_section_words,
+            max_heading_level,
+            max_tree_hops,
+        }
+    }
 }
+
+#[derive(Debug, Clone)]
+pub struct SearchRuntimePolicy {
+    pub scope: LinkGraphScope,
+    pub structural_edges_enabled: bool,
+    pub semantic_edges_enabled: bool,
+    pub collapse_to_doc: bool,
+    pub per_doc_section_cap: usize,
+    pub min_section_words: usize,
+    pub max_heading_level: usize,
+    pub max_tree_hops: Option<usize>,
+}
+
+use crate::link_graph::LinkGraphScope;

@@ -26,7 +26,6 @@ pub(crate) fn execute(cli: &Cli, index: Option<&LinkGraphIndex>) -> Result<()> {
         | Command::Neighbors(_)
         | Command::Related(_)
         | Command::Metadata(_)
-        | Command::PageIndex(_)
         | Command::Resolve(_) => graph::handle(cli, index),
         Command::Saliency { .. } => saliency::handle(cli),
         Command::Hmas { .. } => hmas::handle(cli),

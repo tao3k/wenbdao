@@ -2,8 +2,8 @@ use super::enums::{LinkGraphSortField, LinkGraphSortOrder};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-/// One sort term (field + order).
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+/// Result sorting term.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct LinkGraphSortTerm {
     /// Sort field.

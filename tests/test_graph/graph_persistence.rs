@@ -52,7 +52,7 @@ fn test_save_and_load_graph() -> Result<(), Box<dyn std::error::Error>> {
             RelationType::Uses,
             "Claude Code uses Python".to_string(),
         );
-        assert!(graph.add_relation(&relation).is_ok());
+        assert!(graph.add_relation(relation).is_ok());
         graph.save_to_file(&graph_path_str)?;
     }
 
@@ -139,7 +139,7 @@ fn test_export_import_roundtrip() -> Result<(), Box<dyn std::error::Error>> {
             rtype.clone(),
             format!("{source} -> {target}"),
         );
-        assert!(graph1.add_relation(&relation).is_ok());
+        assert!(graph1.add_relation(relation).is_ok());
     }
 
     graph1.save_to_file(&graph_path_str)?;

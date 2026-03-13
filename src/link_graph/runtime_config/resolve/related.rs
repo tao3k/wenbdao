@@ -8,12 +8,12 @@ use crate::link_graph::runtime_config::settings::{
     parse_positive_usize,
 };
 
-pub(crate) fn resolve_link_graph_related_runtime() -> LinkGraphRelatedRuntimeConfig {
+pub fn resolve_link_graph_related_runtime() -> LinkGraphRelatedRuntimeConfig {
     let settings = merged_wendao_settings();
     let mut resolved = LinkGraphRelatedRuntimeConfig::default();
 
     if let Some(value) = first_non_empty(&[
-        get_setting_string(&settings, "link_graph.related_ppr.max_candidates"),
+        get_setting_string(&settings, "link_graph.related.max_candidates"),
         std::env::var(LINK_GRAPH_RELATED_MAX_CANDIDATES_ENV).ok(),
     ])
     .as_deref()
@@ -23,7 +23,7 @@ pub(crate) fn resolve_link_graph_related_runtime() -> LinkGraphRelatedRuntimeCon
     }
 
     if let Some(value) = first_non_empty(&[
-        get_setting_string(&settings, "link_graph.related_ppr.max_partitions"),
+        get_setting_string(&settings, "link_graph.related.max_partitions"),
         std::env::var(LINK_GRAPH_RELATED_MAX_PARTITIONS_ENV).ok(),
     ])
     .as_deref()
@@ -33,7 +33,7 @@ pub(crate) fn resolve_link_graph_related_runtime() -> LinkGraphRelatedRuntimeCon
     }
 
     if let Some(value) = first_non_empty(&[
-        get_setting_string(&settings, "link_graph.related_ppr.time_budget_ms"),
+        get_setting_string(&settings, "link_graph.related.time_budget_ms"),
         std::env::var(LINK_GRAPH_RELATED_TIME_BUDGET_MS_ENV).ok(),
     ])
     .as_deref()

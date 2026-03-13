@@ -1,0 +1,12 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/support/scenario_framework.rs
+expression: result
+---
+{
+  "category": "mixed_topology",
+  "files": [
+    "result.json"
+  ],
+  "scenario_id": "036_mixed_topo_weighted_seed_exposes_linked_entities",
+  "status": "validated"
+}

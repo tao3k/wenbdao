@@ -1,0 +1,17 @@
+[scenario]
+id = "036_mixed_topo_weighted_seed_exposes_linked_entities"
+name = "weighted seed exposes linked entities"
+description = "mixed_topology scenario"
+category = "mixed_topology"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+
+[expected]
+type = "json_snapshot"
+files = ["result.json"]
+
+[runner]
+build_page_index = true
+collect_links = true

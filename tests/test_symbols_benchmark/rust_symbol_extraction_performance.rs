@@ -1,9 +1,4 @@
-use std::io::Write as IoWrite;
-
-use tempfile::NamedTempFile;
-use xiuxian_wendao::dependency_indexer::extract_symbols;
-
-use super::support::generate_rust_test_file;
+use super::*;
 
 #[test]
 fn test_rust_symbol_extraction_performance() -> Result<(), Box<dyn std::error::Error>> {

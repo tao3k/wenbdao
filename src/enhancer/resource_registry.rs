@@ -1,5 +1,5 @@
 use super::markdown_config::{
-    MarkdownConfigMemoryIndex, extract_markdown_config_blocks,
+    MarkdownConfigBlock, MarkdownConfigMemoryIndex, extract_markdown_config_blocks,
     extract_markdown_config_link_targets_by_id,
 };
 use crate::WendaoResourceUri;
@@ -77,9 +77,9 @@ pub enum WendaoResourceRegistryError {
 /// Per-file view for markdown config links extracted from embedded resources.
 #[derive(Debug, Clone, Default)]
 pub struct WendaoResourceFile {
-    path: String,
-    links_by_id: HashMap<String, Vec<String>>,
-    link_targets_by_id: HashMap<String, Vec<WendaoResourceLinkTarget>>,
+    pub(crate) path: String,
+    pub(crate) links_by_id: HashMap<String, Vec<String>>,
+    pub(crate) link_targets_by_id: HashMap<String, Vec<WendaoResourceLinkTarget>>,
 }
 
 impl WendaoResourceFile {
@@ -140,8 +140,8 @@ impl WendaoResourceFile {
 /// Embedded markdown registry parsed by Wendao AST utilities.
 #[derive(Debug, Clone, Default)]
 pub struct WendaoResourceRegistry {
-    files_by_path: HashMap<String, WendaoResourceFile>,
-    config_index: MarkdownConfigMemoryIndex,
+    pub(crate) files_by_path: HashMap<String, WendaoResourceFile>,
+    pub(crate) config_index: MarkdownConfigMemoryIndex,
 }
 
 impl WendaoResourceRegistry {
@@ -168,7 +168,11 @@ impl WendaoResourceRegistry {
         let mut registry = Self::new();
         let mut markdown_files = Vec::new();
         collect_embedded_markdown_files(embedded, &mut markdown_files);
-        markdown_files.sort_by(|left, right| left.path().cmp(right.path()));
+        markdown_files.sort_by(
+            |left: &&include_dir::File<'_>, right: &&include_dir::File<'_>| {
+                left.path().cmp(right.path())
+            },
+        );
 
         let mut missing_links: Vec<MissingEmbeddedLink> = Vec::new();
 
@@ -188,43 +192,37 @@ impl WendaoResourceRegistry {
                 semantic_skill_name_from_descriptor(relative_path.as_str(), markdown);
             let raw_link_targets =
                 extract_markdown_config_link_targets_by_id(markdown, &relative_path);
-            let link_targets_by_id = raw_link_targets
-                .iter()
-                .map(|(id, targets)| {
-                    (
-                        id.clone(),
-                        targets
-                            .iter()
-                            .map(|target| WendaoResourceLinkTarget {
-                                target_path: semantic_lift_target(
-                                    target.target.as_str(),
-                                    relative_path.as_str(),
-                                    semantic_skill_name.as_deref(),
-                                ),
-                                reference_type: target.reference_type.clone(),
-                            })
-                            .collect::<Vec<_>>(),
-                    )
-                })
-                .collect::<HashMap<_, _>>();
-            let links_by_id = raw_link_targets
-                .iter()
-                .map(|(id, targets)| {
-                    (
-                        id.clone(),
-                        targets
-                            .iter()
-                            .map(|target| {
-                                semantic_lift_target(
-                                    target.target.as_str(),
-                                    relative_path.as_str(),
-                                    semantic_skill_name.as_deref(),
-                                )
-                            })
-                            .collect::<Vec<_>>(),
-                    )
-                })
-                .collect::<HashMap<_, _>>();
+            let mut link_targets_by_id: HashMap<String, Vec<WendaoResourceLinkTarget>> =
+                HashMap::new();
+            for (id, targets) in &raw_link_targets {
+                let lifted = targets
+                    .iter()
+                    .map(|target| WendaoResourceLinkTarget {
+                        target_path: semantic_lift_target(
+                            target.target.as_str(),
+                            relative_path.as_str(),
+                            semantic_skill_name.as_deref(),
+                        ),
+                        reference_type: target.reference_type.clone(),
+                    })
+                    .collect::<Vec<_>>();
+                link_targets_by_id.insert(id.clone(), lifted);
+            }
+
+            let mut links_by_id: HashMap<String, Vec<String>> = HashMap::new();
+            for (id, targets) in &raw_link_targets {
+                let lifted = targets
+                    .iter()
+                    .map(|target| {
+                        semantic_lift_target(
+                            target.target.as_str(),
+                            relative_path.as_str(),
+                            semantic_skill_name.as_deref(),
+                        )
+                    })
+                    .collect::<Vec<_>>();
+                links_by_id.insert(id.clone(), lifted);
+            }
 
             for (id, targets) in &raw_link_targets {
                 for target in targets {
@@ -263,7 +261,7 @@ impl WendaoResourceRegistry {
 
     /// O(1) config block lookup by exact `id`.
     #[must_use]
-    pub fn get(&self, id: &str) -> Option<&super::markdown_config::MarkdownConfigBlock> {
+    pub fn get(&self, id: &str) -> Option<&MarkdownConfigBlock> {
         self.config_index.get(id)
     }
 
@@ -299,7 +297,7 @@ fn semantic_skill_name_from_descriptor(path: &str, markdown: &str) -> Option<Str
     {
         return None;
     }
-    crate::parse_frontmatter(markdown)
+    crate::enhancer::parse_frontmatter(markdown)
         .name
         .map(|value| value.trim().to_ascii_lowercase())
         .filter(|value| !value.is_empty())

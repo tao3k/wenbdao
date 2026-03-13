@@ -2,6 +2,7 @@ use super::core::{read_lock, write_lock};
 use super::{GraphError, KnowledgeGraph};
 use crate::entity::{Relation, RelationType};
 use log::info;
+use std::collections::{HashMap, HashSet};
 
 impl KnowledgeGraph {
     /// Add a relation.
@@ -9,10 +10,11 @@ impl KnowledgeGraph {
     /// # Errors
     ///
     /// Returns [`GraphError::InvalidRelation`] if source/target entities do not exist.
-    pub fn add_relation(&self, relation: &Relation) -> Result<(), GraphError> {
-        let mut relations = write_lock(&self.relations);
-        let mut outgoing = write_lock(&self.outgoing_relations);
-        let mut incoming = write_lock(&self.incoming_relations);
+    #[allow(clippy::needless_pass_by_value)]
+    pub fn add_relation(&self, relation: Relation) -> Result<(), GraphError> {
+        let mut relations = write_lock::<HashMap<String, Relation>>(&self.relations);
+        let mut outgoing = write_lock::<HashMap<String, HashSet<String>>>(&self.outgoing_relations);
+        let mut incoming = write_lock::<HashMap<String, HashSet<String>>>(&self.incoming_relations);
 
         if relations.contains_key(&relation.id) {
             info!("Relation already exists: {}", relation.id);
@@ -20,7 +22,7 @@ impl KnowledgeGraph {
         }
 
         {
-            let entities_by_name = read_lock(&self.entities_by_name);
+            let entities_by_name = read_lock::<HashMap<String, String>>(&self.entities_by_name);
             if !entities_by_name.contains_key(&relation.source) {
                 return Err(GraphError::InvalidRelation(
                     relation.source.clone(),
@@ -62,7 +64,7 @@ impl KnowledgeGraph {
         entity_name: Option<&str>,
         relation_type: Option<RelationType>,
     ) -> Vec<Relation> {
-        let relations = read_lock(&self.relations);
+        let relations = read_lock::<HashMap<String, Relation>>(&self.relations);
         let mut results: Vec<Relation> = relations.values().cloned().collect();
 
         if let Some(name) = entity_name {
@@ -79,9 +81,30 @@ impl KnowledgeGraph {
         results
     }
 
+    /// Remove all relations where the given entity is the source.
+    pub fn remove_relations_for_source(&self, source_name: &str) -> Result<(), GraphError> {
+        let mut relations = write_lock::<HashMap<String, Relation>>(&self.relations);
+        let mut outgoing = write_lock::<HashMap<String, HashSet<String>>>(&self.outgoing_relations);
+        let mut incoming = write_lock::<HashMap<String, HashSet<String>>>(&self.incoming_relations);
+
+        if let Some(rel_ids) = outgoing.remove(source_name) {
+            for id in rel_ids {
+                if let Some(rel) = relations.remove(&id) {
+                    if let Some(in_set) = incoming.get_mut(&rel.target) {
+                        in_set.remove(&id);
+                    }
+                }
+            }
+        }
+        Ok(())
+    }
+
     /// Get all relations as a vector.
     #[must_use]
     pub fn get_all_relations(&self) -> Vec<Relation> {
-        read_lock(&self.relations).values().cloned().collect()
+        read_lock::<HashMap<String, Relation>>(&self.relations)
+            .values()
+            .cloned()
+            .collect()
     }
 }

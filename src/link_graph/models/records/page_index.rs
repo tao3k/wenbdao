@@ -5,6 +5,8 @@ use std::sync::Arc;
 pub struct PageIndexNode {
     /// Stable semantic node identifier scoped to a single document.
     pub node_id: String,
+    /// Stable parent anchor identifier when this node is nested under another heading.
+    pub parent_id: Option<String>,
     /// Display title for this node.
     pub title: String,
     /// Heading depth normalized to the range `1..=6`.

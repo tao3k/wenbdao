@@ -1,9 +1,4 @@
-use std::io::Write as StdWrite;
-
-use tempfile::NamedTempFile;
-use xiuxian_wendao::dependency_indexer::parse_pyproject_dependencies;
-
-use super::support::{BENCH_SLACK_ENV, benchmark_budget, generate_pyproject_toml};
+use super::*;
 
 #[test]
 fn test_pyproject_parsing_performance() -> Result<(), Box<dyn std::error::Error>> {
@@ -24,7 +19,7 @@ fn test_pyproject_parsing_performance() -> Result<(), Box<dyn std::error::Error>
     let elapsed = start.elapsed();
 
     // Should parse 20 files with 100 deps each in under 1 second
-    let max_duration = benchmark_budget(
+    let max_duration = super::benchmark_budget(
         std::time::Duration::from_secs(1),
         std::time::Duration::from_millis(1500),
     );
@@ -35,7 +30,7 @@ fn test_pyproject_parsing_performance() -> Result<(), Box<dyn std::error::Error>
         elapsed.as_secs_f64(),
         DEP_COUNT,
         max_secs,
-        BENCH_SLACK_ENV
+        super::BENCH_SLACK_ENV
     );
 
     println!(

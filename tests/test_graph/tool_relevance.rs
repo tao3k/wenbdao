@@ -1,4 +1,4 @@
-use xiuxian_wendao::graph::{KnowledgeGraph, SkillDoc};
+use super::*;
 
 #[test]
 fn test_query_tool_relevance_finds_tools_by_keyword() {

@@ -14,7 +14,7 @@ impl LinkGraphIndex {
     /// The config is read from merged `wendao.yaml` settings first, then
     /// environment fallback, via `resolve_link_graph_agentic_runtime()`.
     #[must_use]
-    pub fn resolve_agentic_expansion_config() -> LinkGraphAgenticExpansionConfig {
+    pub fn resolve_agentic_expansion_config(&self) -> LinkGraphAgenticExpansionConfig {
         let runtime = resolve_link_graph_agentic_runtime();
         LinkGraphAgenticExpansionConfig {
             max_workers: runtime.expansion_max_workers,
@@ -30,10 +30,10 @@ impl LinkGraphIndex {
     /// The config is read from merged `wendao.yaml` settings first, then
     /// environment fallback, via `resolve_link_graph_agentic_runtime()`.
     #[must_use]
-    pub fn resolve_agentic_execution_config() -> LinkGraphAgenticExecutionConfig {
+    pub fn resolve_agentic_execution_config(&self) -> LinkGraphAgenticExecutionConfig {
         let runtime = resolve_link_graph_agentic_runtime();
         LinkGraphAgenticExecutionConfig {
-            expansion: Self::resolve_agentic_expansion_config(),
+            expansion: self.resolve_agentic_expansion_config(),
             worker_time_budget_ms: runtime.execution_worker_time_budget_ms,
             persist_suggestions: runtime.execution_persist_suggestions_default,
             persist_retry_attempts: runtime.execution_persist_retry_attempts,
@@ -49,7 +49,7 @@ impl LinkGraphIndex {
     /// Build a bounded sub-agent expansion plan using runtime default config.
     #[must_use]
     pub fn agentic_expansion_plan(&self, query: Option<&str>) -> LinkGraphAgenticExpansionPlan {
-        self.agentic_expansion_plan_with_config(query, Self::resolve_agentic_expansion_config())
+        self.agentic_expansion_plan_with_config(query, self.resolve_agentic_expansion_config())
     }
 
     /// Build a bounded sub-agent expansion plan with explicit runtime budgets.
@@ -71,7 +71,7 @@ impl LinkGraphIndex {
         &self,
         query: Option<&str>,
     ) -> LinkGraphAgenticExecutionResult {
-        self.agentic_expansion_execute_with_config(query, Self::resolve_agentic_execution_config())
+        self.agentic_expansion_execute_with_config(query, self.resolve_agentic_execution_config())
     }
 
     /// Execute bounded sub-agent expansion workers with explicit runtime config.

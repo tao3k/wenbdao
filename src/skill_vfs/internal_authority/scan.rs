@@ -4,11 +4,22 @@ use std::path::{Path, PathBuf};
 use anyhow::Result;
 
 use xiuxian_skills::{
-    InternalSkillManifest, InternalSkillNativeAliasMountReport, InternalSkillNativeAliasSpec,
-    InternalSkillWorkflowType, compile_internal_skill_manifest_aliases,
+    InternalSkillManifest, InternalSkillManifestScan, InternalSkillNativeAliasMountReport,
+    InternalSkillNativeAliasSpec, InternalSkillWorkflowType,
+    compile_internal_skill_manifest_aliases,
 };
 
-use super::super::SkillVfsResolver;
+impl From<AuthorizedInternalSkillManifestScan> for InternalSkillManifestScan {
+    fn from(auth: AuthorizedInternalSkillManifestScan) -> Self {
+        Self {
+            discovered_paths: auth.discovered_paths,
+            manifests: auth.manifests,
+            issues: auth.issues,
+        }
+    }
+}
+
+use super::super::{SkillVfsResolver, WendaoResourceUri};
 use super::catalog::InternalSkillIntentCatalog;
 use super::report::{InternalSkillAuthorityReport, build_authority_report};
 
@@ -127,7 +138,14 @@ fn build_authorized_internal_manifest_scan(
     };
 
     for manifest_uri in authorized_manifests {
-        let source_path = match resolver.resolve_path(manifest_uri.as_str()) {
+        let parsed_uri = match WendaoResourceUri::parse(manifest_uri.as_str()) {
+            Ok(uri) => uri,
+            Err(error) => {
+                scan.issues.push(format!("{manifest_uri} -> {error}"));
+                continue;
+            }
+        };
+        let source_path = match resolver.resolve_parsed_uri(&parsed_uri) {
             Ok(path) => {
                 scan.discovered_paths.push(path.clone());
                 path

@@ -1,0 +1,14 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/support/scenario_framework.rs
+expression: result
+---
+{
+  "category": "hybrid",
+  "files": [
+    "custom_columns.json",
+    "doc_fallback.json",
+    "duplicate_rows.json"
+  ],
+  "scenario_id": "029_hybrid_quantum_anchor_batch",
+  "status": "validated"
+}

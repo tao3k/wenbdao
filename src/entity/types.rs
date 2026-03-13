@@ -1,153 +1,180 @@
 use serde::{Deserialize, Serialize};
+use std::fmt;
 
-/// Entity type enumeration.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
-#[serde(rename_all = "snake_case")]
+/// Predefined entity categories for knowledge graph.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum EntityType {
-    #[serde(rename = "PERSON")]
-    /// A human individual.
+    /// Person or character.
     Person,
-    #[serde(rename = "ORGANIZATION")]
-    /// A company, team, or institution.
-    Organization,
-    #[serde(rename = "CONCEPT")]
-    /// An abstract idea or topic.
-    #[default]
-    Concept,
-    #[serde(rename = "PROJECT")]
-    /// A project, repository, or initiative.
-    Project,
-    #[serde(rename = "TOOL")]
-    /// A software tool or library.
-    Tool,
-    #[serde(rename = "SKILL")]
-    /// A reusable capability or skill.
-    Skill,
-    #[serde(rename = "LOCATION")]
-    /// A physical or logical location.
+    /// Geographic location or place.
     Location,
-    #[serde(rename = "EVENT")]
-    /// A time-bounded event.
+    /// Organization, group, or sect.
+    Organization,
+    /// Cultivation technique, skill, or manual.
+    Technique,
+    /// Spiritual item, weapon, or material.
+    Artifact,
+    /// Concept, law, or abstract idea.
+    Concept,
+    /// Historical event or incident.
     Event,
-    #[serde(rename = "DOCUMENT")]
-    /// A document or note.
+    /// Document or source file.
     Document,
-    #[serde(rename = "CODE")]
-    /// A code artifact.
+    /// Skill descriptor.
+    Skill,
+    /// Project.
+    Project,
+    /// Tool.
+    Tool,
+    /// Code.
     Code,
-    #[serde(rename = "API")]
-    /// An API surface.
+    /// API.
     Api,
-    #[serde(rename = "ERROR")]
-    /// An error category or instance.
+    /// Error.
     Error,
-    #[serde(rename = "PATTERN")]
-    /// A design or implementation pattern.
+    /// Pattern.
     Pattern,
-    #[serde(rename = "OTHER")]
-    /// A custom entity type represented by free-form text.
+    /// Other uncategorized entity.
     Other(String),
 }
 
-impl std::fmt::Display for EntityType {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for EntityType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            EntityType::Person => write!(f, "PERSON"),
-            EntityType::Organization => write!(f, "ORGANIZATION"),
-            EntityType::Concept => write!(f, "CONCEPT"),
-            EntityType::Project => write!(f, "PROJECT"),
-            EntityType::Tool => write!(f, "TOOL"),
-            EntityType::Skill => write!(f, "SKILL"),
-            EntityType::Location => write!(f, "LOCATION"),
-            EntityType::Event => write!(f, "EVENT"),
-            EntityType::Document => write!(f, "DOCUMENT"),
-            EntityType::Code => write!(f, "CODE"),
-            EntityType::Api => write!(f, "API"),
-            EntityType::Error => write!(f, "ERROR"),
-            EntityType::Pattern => write!(f, "PATTERN"),
-            EntityType::Other(s) => write!(f, "OTHER({s})"),
+            Self::Person => write!(f, "PERSON"),
+            Self::Location => write!(f, "LOCATION"),
+            Self::Organization => write!(f, "ORGANIZATION"),
+            Self::Technique => write!(f, "TECHNIQUE"),
+            Self::Artifact => write!(f, "ARTIFACT"),
+            Self::Concept => write!(f, "CONCEPT"),
+            Self::Event => write!(f, "EVENT"),
+            Self::Document => write!(f, "DOCUMENT"),
+            Self::Skill => write!(f, "SKILL"),
+            Self::Project => write!(f, "PROJECT"),
+            Self::Tool => write!(f, "TOOL"),
+            Self::Code => write!(f, "CODE"),
+            Self::Api => write!(f, "API"),
+            Self::Error => write!(f, "ERROR"),
+            Self::Pattern => write!(f, "PATTERN"),
+            Self::Other(s) => write!(f, "{}", s.to_uppercase()),
         }
     }
 }
 
-/// Relation type enumeration.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
-#[serde(rename_all = "snake_case")]
+impl EntityType {
+    /// Parse entity type from string.
+    #[must_use]
+    pub fn from_str(s: &str) -> Self {
+        match s.to_uppercase().as_str() {
+            "PERSON" => Self::Person,
+            "LOCATION" => Self::Location,
+            "ORGANIZATION" => Self::Organization,
+            "TECHNIQUE" => Self::Technique,
+            "ARTIFACT" => Self::Artifact,
+            "CONCEPT" => Self::Concept,
+            "EVENT" => Self::Event,
+            "DOCUMENT" => Self::Document,
+            "SKILL" => Self::Skill,
+            "PROJECT" => Self::Project,
+            "TOOL" => Self::Tool,
+            "CODE" => Self::Code,
+            "API" => Self::Api,
+            "ERROR" => Self::Error,
+            "PATTERN" => Self::Pattern,
+            _ => Self::Other(s.to_string()),
+        }
+    }
+}
+
+/// Predefined relation types for knowledge graph.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum RelationType {
-    #[serde(rename = "WORKS_FOR")]
-    /// Employment/affiliation relation.
-    WorksFor,
-    #[serde(rename = "PART_OF")]
-    /// Membership/composition relation.
-    PartOf,
-    #[serde(rename = "USES")]
-    /// Usage/dependency relation.
-    Uses,
-    #[serde(rename = "DEPENDS_ON")]
-    /// Hard dependency relation.
-    DependsOn,
-    #[serde(rename = "SIMILAR_TO")]
-    /// Similarity relation.
-    SimilarTo,
-    #[serde(rename = "LOCATED_IN")]
-    /// Spatial or logical containment relation.
+    /// Entity is located in another entity.
     LocatedIn,
-    #[serde(rename = "CREATED_BY")]
-    /// Authorship/ownership relation.
+    /// Entity is a member of an organization.
+    MemberOf,
+    /// Entity created another entity.
     CreatedBy,
-    #[serde(rename = "DOCUMENTED_IN")]
-    /// Documentation linkage relation.
+    /// Entity is documented in a source.
     DocumentedIn,
-    #[serde(rename = "RELATED_TO")]
-    /// Generic relatedness relation.
-    #[default]
+    /// Generic related relationship.
     RelatedTo,
-    #[serde(rename = "IMPLEMENTS")]
-    /// Implementation relation.
+    /// Entity implements a technique.
     Implements,
-    #[serde(rename = "EXTENDS")]
-    /// Inheritance/extension relation.
+    /// Entity extends or is a child of another.
     Extends,
-    #[serde(rename = "CONTAINS")]
-    /// Container/content relation.
+    /// Entity contains another.
     Contains,
-    #[serde(rename = "REFERENCES")]
-    /// Semantic reference relation between skill definitions and target entities.
-    References,
-    #[serde(rename = "GOVERNS")]
-    /// Governing relation between one skill and controlled tools/intents/workflows.
+    /// Skill governs an intent.
     Governs,
-    #[serde(rename = "MANIFESTS")]
-    /// Manifestation relation between one skill and persona entities.
+    /// Works for.
+    WorksFor,
+    /// Part of.
+    PartOf,
+    /// Uses.
+    Uses,
+    /// Depends on.
+    DependsOn,
+    /// Similar to.
+    SimilarTo,
+    /// References.
+    References,
+    /// Manifests.
     Manifests,
-    #[serde(rename = "ATTACHED_TO")]
-    /// Attachment relation between one skill and binary/reference assets.
+    /// Attached to.
     AttachedTo,
-    #[serde(rename = "OTHER")]
-    /// A custom relation represented by free-form text.
+    /// Other custom relation.
     Other(String),
 }
 
-impl std::fmt::Display for RelationType {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for RelationType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            RelationType::WorksFor => write!(f, "WORKS_FOR"),
-            RelationType::PartOf => write!(f, "PART_OF"),
-            RelationType::Uses => write!(f, "USES"),
-            RelationType::DependsOn => write!(f, "DEPENDS_ON"),
-            RelationType::SimilarTo => write!(f, "SIMILAR_TO"),
-            RelationType::LocatedIn => write!(f, "LOCATED_IN"),
-            RelationType::CreatedBy => write!(f, "CREATED_BY"),
-            RelationType::DocumentedIn => write!(f, "DOCUMENTED_IN"),
-            RelationType::RelatedTo => write!(f, "RELATED_TO"),
-            RelationType::Implements => write!(f, "IMPLEMENTS"),
-            RelationType::Extends => write!(f, "EXTENDS"),
-            RelationType::Contains => write!(f, "CONTAINS"),
-            RelationType::References => write!(f, "REFERENCES"),
-            RelationType::Governs => write!(f, "GOVERNS"),
-            RelationType::Manifests => write!(f, "MANIFESTS"),
-            RelationType::AttachedTo => write!(f, "ATTACHED_TO"),
-            RelationType::Other(s) => write!(f, "OTHER({s})"),
+            Self::LocatedIn => write!(f, "LOCATED_IN"),
+            Self::MemberOf => write!(f, "MEMBER_OF"),
+            Self::CreatedBy => write!(f, "CREATED_BY"),
+            Self::DocumentedIn => write!(f, "DOCUMENTED_IN"),
+            Self::RelatedTo => write!(f, "RELATED_TO"),
+            Self::Implements => write!(f, "IMPLEMENTS"),
+            Self::Extends => write!(f, "EXTENDS"),
+            Self::Contains => write!(f, "CONTAINS"),
+            Self::Governs => write!(f, "GOVERNS"),
+            Self::WorksFor => write!(f, "WORKS_FOR"),
+            Self::PartOf => write!(f, "PART_OF"),
+            Self::Uses => write!(f, "USES"),
+            Self::DependsOn => write!(f, "DEPENDS_ON"),
+            Self::SimilarTo => write!(f, "SIMILAR_TO"),
+            Self::References => write!(f, "REFERENCES"),
+            Self::Manifests => write!(f, "MANIFESTS"),
+            Self::AttachedTo => write!(f, "ATTACHED_TO"),
+            Self::Other(s) => write!(f, "{}", s.to_uppercase()),
+        }
+    }
+}
+
+impl RelationType {
+    /// Parse relation type from string.
+    #[must_use]
+    pub fn from_str(s: &str) -> Self {
+        match s.to_uppercase().as_str() {
+            "LOCATED_IN" => Self::LocatedIn,
+            "MEMBER_OF" => Self::MemberOf,
+            "CREATED_BY" => Self::CreatedBy,
+            "DOCUMENTED_IN" => Self::DocumentedIn,
+            "RELATED_TO" => Self::RelatedTo,
+            "IMPLEMENTS" => Self::Implements,
+            "EXTENDS" => Self::Extends,
+            "CONTAINS" => Self::Contains,
+            "GOVERNS" => Self::Governs,
+            "WORKS_FOR" => Self::WorksFor,
+            "PART_OF" => Self::PartOf,
+            "USES" => Self::Uses,
+            "DEPENDS_ON" => Self::DependsOn,
+            "SIMILAR_TO" => Self::SimilarTo,
+            "REFERENCES" => Self::References,
+            "MANIFESTS" => Self::Manifests,
+            "ATTACHED_TO" => Self::AttachedTo,
+            _ => Self::Other(s.to_string()),
         }
     }
 }

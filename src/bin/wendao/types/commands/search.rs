@@ -1,4 +1,4 @@
-use super::super::enums::RelatedPprSubgraphModeArg;
+use super::super::enums::{LinkGraphScopeArg, RelatedPprSubgraphModeArg};
 use clap::Args;
 
 #[derive(Args, Debug, Default)]
@@ -99,6 +99,20 @@ pub(crate) struct SearchArgs {
     pub modified_after: Option<i64>,
     #[arg(long = "modified-before")]
     pub modified_before: Option<i64>,
+
+    #[arg(long, value_enum)]
+    pub scope: Option<LinkGraphScopeArg>,
+    #[arg(long)]
+    pub max_heading_level: Option<usize>,
+    #[arg(long)]
+    pub max_tree_hops: Option<usize>,
+    #[arg(long)]
+    pub collapse_to_doc: Option<bool>,
+    #[arg(long)]
+    pub per_doc_section_cap: Option<usize>,
+    #[arg(long)]
+    pub min_section_words: Option<usize>,
+
     /// Include provisional suggested-link rows in search response payload.
     ///
     /// Supports optional explicit value:

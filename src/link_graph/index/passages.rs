@@ -2,6 +2,7 @@ use super::{IndexedSection, LinkGraphIndex};
 use crate::link_graph::models::LinkGraphPassage;
 
 impl LinkGraphIndex {
+    #[allow(dead_code)]
     pub(super) fn rebuild_all_passages(&mut self) {
         self.passages_by_id.clear();
         let doc_ids: Vec<String> = self.sections_by_doc.keys().cloned().collect();
@@ -10,7 +11,7 @@ impl LinkGraphIndex {
         }
     }
 
-    pub(super) fn rebuild_passages_for_doc(&mut self, doc_id: &str) {
+    pub(in crate::link_graph::index) fn rebuild_passages_for_doc(&mut self, doc_id: &str) {
         self.remove_passages_for_doc(doc_id);
         let Some(sections) = self.sections_by_doc.get(doc_id).cloned() else {
             return;
@@ -30,7 +31,7 @@ impl LinkGraphIndex {
         }
     }
 
-    pub(super) fn remove_passages_for_doc(&mut self, doc_id: &str) {
+    pub(in crate::link_graph::index) fn remove_passages_for_doc(&mut self, doc_id: &str) {
         self.passages_by_id
             .retain(|_, passage| passage.parent_doc_id != doc_id);
     }

@@ -1,6 +1,6 @@
 use super::KnowledgeGraph;
 use super::core::read_lock;
-use crate::entity::GraphStats;
+use crate::entity::{Entity, GraphStats, Relation};
 use std::collections::HashMap;
 
 fn saturating_usize_to_i64(value: usize) -> i64 {
@@ -11,9 +11,9 @@ impl KnowledgeGraph {
     /// Get graph statistics.
     #[must_use]
     pub fn get_stats(&self) -> GraphStats {
-        let entities = read_lock(&self.entities);
-        let relations = read_lock(&self.relations);
-        let entities_by_type = read_lock(&self.entities_by_type);
+        let entities = read_lock::<HashMap<String, Entity>>(&self.entities);
+        let relations = read_lock::<HashMap<String, Relation>>(&self.relations);
+        let entities_by_type = read_lock::<HashMap<String, Vec<String>>>(&self.entities_by_type);
 
         let mut entities_by_type_count: HashMap<String, i64> = HashMap::new();
         for (etype, eids) in entities_by_type.iter() {

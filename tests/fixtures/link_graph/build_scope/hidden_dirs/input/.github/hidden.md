@@ -1,3 +1,0 @@
-# Hidden
-
-[[docs/a]]

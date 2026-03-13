@@ -1,0 +1,12 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/support/scenario_framework.rs
+expression: result
+---
+{
+  "category": "search_core",
+  "files": [
+    "result.json"
+  ],
+  "scenario_id": "007_search_core_baseline",
+  "status": "validated"
+}

@@ -1,0 +1,102 @@
+{
+  "config": {
+    "agent_id": "test-worker",
+    "created_at_unix": 1700001234.0,
+    "evidence_prefix": "execution test",
+    "expansion": {
+      "max_candidates": 4,
+      "max_pairs_per_worker": 1,
+      "max_workers": 1,
+      "time_budget_ms": 1000.0
+    },
+    "idempotency_scan_limit": 128,
+    "persist_retry_attempts": 2,
+    "persist_suggestions": false,
+    "relation": "related_to",
+    "worker_time_budget_ms": 1000.0
+  },
+  "elapsed_ms_non_negative": true,
+  "errors": [],
+  "failed_proposals": 0,
+  "persist_attempts": 0,
+  "persisted_proposals": 0,
+  "plan": {
+    "candidate_notes": 2,
+    "capped_by_pair_limit": false,
+    "config": {
+      "max_candidates": 4,
+      "max_pairs_per_worker": 1,
+      "max_workers": 1,
+      "time_budget_ms": 1000.0
+    },
+    "elapsed_ms_non_negative": true,
+    "evaluated_pairs": 1,
+    "query": "alpha",
+    "selected_pairs": 1,
+    "selected_pairs_matches_worker_sum": true,
+    "timed_out": false,
+    "total_notes": 4,
+    "total_possible_pairs": 1,
+    "unique_pair_count": 1,
+    "worker_count": 1,
+    "worker_pair_sum": 1,
+    "workers": [
+      {
+        "pair_count": 1,
+        "pair_count_matches_pairs_len": true,
+        "pairs": [
+          {
+            "left_id": "docs/a",
+            "priority": 0.0,
+            "right_id": "docs/b"
+          }
+        ],
+        "seed_ids": ["docs/a", "docs/b"],
+        "worker_id": 0
+      }
+    ]
+  },
+  "prepared_proposals": 1,
+  "query": "alpha",
+  "skipped_duplicates": 0,
+  "timed_out": false,
+  "worker_runs": [
+    {
+      "elapsed_ms_non_negative": true,
+      "estimated_completion_tokens": 0,
+      "estimated_prompt_tokens_positive": true,
+      "failed_proposals": 0,
+      "pair_budget": 1,
+      "persist_attempts": 0,
+      "persisted_proposals": 0,
+      "phases": [
+        {
+          "duration_ms_non_negative": true,
+          "item_count": 1,
+          "phase": "worker.prepare"
+        },
+        {
+          "duration_ms_non_negative": true,
+          "item_count": 1,
+          "phase": "worker.dedupe"
+        },
+        {
+          "duration_ms_non_negative": true,
+          "item_count": 0,
+          "phase": "worker.persist"
+        },
+        {
+          "duration_ms_non_negative": true,
+          "item_count": 1,
+          "phase": "worker.total"
+        }
+      ],
+      "phases_len": 4,
+      "prepared_proposals": 1,
+      "processed_pairs": 1,
+      "skipped_duplicates": 0,
+      "timed_out": false,
+      "worker_id": 0
+    }
+  ]
+}

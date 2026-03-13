@@ -1,13 +1,12 @@
 use std::collections::BTreeSet;
 use std::path::Path;
 
-use anyhow::{Context, Result, anyhow};
+use anyhow::{Result, anyhow};
 
 use super::super::{SkillVfsResolver, WendaoResourceUri};
 use crate::link_graph::LinkGraphIndex;
 
 const INTERNAL_SKILL_DOC_NAME: &str = "SKILL.md";
-const REFERENCES_DIR: &str = "references";
 const QIANJI_TOML_FILE: &str = "qianji.toml";
 
 /// Deduplicated internal manifest intents declared by root `SKILL.md` documents.
@@ -51,7 +50,8 @@ impl SkillVfsResolver {
     pub fn collect_internal_manifest_intents(&self) -> Result<InternalSkillIntentCatalog> {
         let mut intended_manifests = BTreeSet::new();
         for root in self.internal_roots() {
-            let index = LinkGraphIndex::build(root.as_path()).map_err(|error| {
+            let path: &Path = root.as_path();
+            let index = LinkGraphIndex::build(path).map_err(|error| {
                 anyhow!(
                     "build link graph index for internal skill root `{}`: {error}",
                     root.display()
@@ -75,11 +75,13 @@ pub(crate) fn extend_manifest_intents_from_index(
         .into_iter()
         .filter(|doc| is_internal_skill_doc_path(doc.path.as_str()))
     {
-        let (note_links, attachments) = index
-            .intent_targets(doc.id.as_str())
-            .map_err(anyhow::Error::msg)
-            .with_context(|| format!("collect raw intent targets from `{}`", doc.path))?;
-        for raw_target in note_links.into_iter().chain(attachments.into_iter()) {
+        let (note_links, attachments) = index.intent_targets(doc.id.as_str());
+        let note_links_iter: Vec<String> = note_links;
+        let attachments_iter: Vec<String> = attachments;
+        for raw_target in note_links_iter
+            .into_iter()
+            .chain(attachments_iter.into_iter())
+        {
             let Some(manifest_uri) = normalize_manifest_intent(raw_target.as_str()) else {
                 continue;
             };
@@ -125,18 +127,15 @@ fn normalize_manifest_intent(raw_target: &str) -> Option<String> {
     }
 
     let entity_path = Path::new(uri.entity_name());
-    let mut segments = uri.entity_name().split('/').collect::<Vec<_>>();
+    let segments = uri
+        .entity_name()
+        .split('/')
+        .filter(|segment| !segment.trim().is_empty())
+        .collect::<Vec<_>>();
     if segments.len() < 2 {
-        return None;
-    }
-    if segments.first().copied() != Some(REFERENCES_DIR) {
         return None;
     }
     if entity_path.file_name().and_then(|value| value.to_str()) != Some(QIANJI_TOML_FILE) {
-        return None;
-    }
-    segments.retain(|segment| !segment.trim().is_empty());
-    if segments.len() < 2 {
         return None;
     }
 

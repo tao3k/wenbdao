@@ -1,9 +1,30 @@
-use xiuxian_wendao::{LinkGraphSaliencyPolicy, compute_link_graph_saliency};
+use super::support::assert_snapshot_eq;
+use serde::Serialize;
+use xiuxian_wendao::link_graph::{LinkGraphSaliencyPolicy, compute_link_graph_saliency};
+
+#[derive(Serialize)]
+struct ActivationBoostSnapshot {
+    without_activation: String,
+    with_activation: String,
+}
 
 #[test]
-fn test_compute_link_graph_saliency_activation_boosts_score() {
+fn test_compute_link_graph_saliency_activation_boosts_score() -> Result<(), String> {
     let policy = LinkGraphSaliencyPolicy::default();
     let without_activation = compute_link_graph_saliency(5.0, 0.02, 0, 2.0, policy);
     let with_activation = compute_link_graph_saliency(5.0, 0.02, 8, 2.0, policy);
-    assert!(with_activation > without_activation);
+
+    let snapshot = ActivationBoostSnapshot {
+        without_activation: format!("{:.6}", without_activation),
+        with_activation: format!("{:.6}", with_activation),
+    };
+    let actual = format!(
+        "{}\n",
+        serde_json::to_string_pretty(&snapshot).map_err(|err| err.to_string())?
+    );
+    assert_snapshot_eq(
+        "link_graph/saliency/compute_link_graph_saliency_activation_boosts_score.json",
+        actual.as_str(),
+    );
+    Ok(())
 }

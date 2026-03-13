@@ -14,6 +14,17 @@ impl SkillNamespaceIndex {
     ///
     /// Returns [`SkillVfsError`] when descriptor I/O or frontmatter parsing fails.
     pub fn build_from_roots(roots: &[PathBuf]) -> Result<Self, SkillVfsError> {
+        Self::build_from_roots_with_internal_flag(roots, false)
+    }
+
+    /// Build namespace index with an explicit internal-skill flag for reference URIs.
+    ///
+    /// # Errors
+    /// Returns [`SkillVfsError`] when descriptor I/O or frontmatter parsing fails.
+    pub fn build_from_roots_with_internal_flag(
+        roots: &[PathBuf],
+        is_internal: bool,
+    ) -> Result<Self, SkillVfsError> {
         let mut index = Self::default();
         let scanner = SkillScanner::new();
 
@@ -46,7 +57,12 @@ impl SkillNamespaceIndex {
                         skill_doc,
                         references_dir,
                     });
-                index.preload_references_for_semantic(&semantic_name);
+
+                // When building with internal flag, we need to pass it to preloader
+                index.preload_references_for_semantic_with_internal_flag(
+                    &semantic_name,
+                    is_internal,
+                );
             }
         }
 
