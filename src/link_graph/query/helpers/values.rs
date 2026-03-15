@@ -24,6 +24,9 @@ pub(in crate::link_graph::query) fn parse_edge_type(raw: &str) -> Option<LinkGra
         "semantic" => Some(LinkGraphEdgeType::Semantic),
         "provisional" => Some(LinkGraphEdgeType::Provisional),
         "verified" => Some(LinkGraphEdgeType::Verified),
+        "property_drawer" | "propertydrawer" | "property-drawer" => {
+            Some(LinkGraphEdgeType::PropertyDrawer)
+        }
         _ => None,
     }
 }

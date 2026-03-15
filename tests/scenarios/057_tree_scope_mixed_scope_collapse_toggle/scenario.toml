@@ -1,0 +1,12 @@
+[scenario]
+id = "057_tree_scope_mixed_scope_collapse_toggle"
+name = "mixed scope collapse toggle"
+description = "tree_scope_filters scenario"
+category = "tree_scope_filters"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+
+build_page_index = true
+collect_links = true

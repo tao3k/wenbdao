@@ -48,13 +48,21 @@ impl ScenarioRunner for GraphRunner {
     }
 
     fn run(&self, scenario: &Scenario, temp_dir: &Path) -> Result<Value, Box<dyn Error>> {
+        // Get expected files (optional, for backward compatibility)
+        let expected_files = scenario
+            .config
+            .expected
+            .as_ref()
+            .map(|e| e.files.clone())
+            .unwrap_or_default();
+
         // Check if scenario has input
         if !scenario.has_input() {
             return Ok(json!({
                 "scenario_id": scenario.id(),
                 "category": scenario.category(),
                 "status": "no_input",
-                "files": scenario.config.expected.files,
+                "files": expected_files,
             }));
         }
 
@@ -70,7 +78,7 @@ impl ScenarioRunner for GraphRunner {
             "scenario_id": scenario.id(),
             "category": scenario.category(),
             "status": "validated",
-            "files": scenario.config.expected.files,
+            "files": expected_files,
         }))
     }
 }

@@ -1,0 +1,24 @@
+---
+source: test
+expression: value
+---
+{
+  "count": 1,
+  "blocks": [
+    {
+      "block_id": "block-para-0",
+      "kind": "Paragraph",
+      "byte_range": [
+        0,
+        31
+      ],
+      "line_range": [
+        1,
+        1
+      ],
+      "content_hash": "26fca956961b9885",
+      "content": "Simple paragraph at root level.",
+      "structural_path": []
+    }
+  ]
+}

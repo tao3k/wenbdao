@@ -56,11 +56,6 @@ pub mod storage;
 pub mod sync;
 mod types;
 
-#[path = "../tests/support/fixture_json_assertions.rs"]
-pub mod fixture_json_assertions;
-#[path = "../tests/support/fixture_read.rs"]
-pub mod fixture_read;
-
 // ---------------------------------------------------------------------------
 // PyO3 binding modules (one per domain)
 // ---------------------------------------------------------------------------

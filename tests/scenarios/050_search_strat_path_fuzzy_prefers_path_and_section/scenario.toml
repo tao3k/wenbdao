@@ -1,0 +1,12 @@
+[scenario]
+id = "050_search_strat_path_fuzzy_prefers_path_and_section"
+name = "path fuzzy prefers path and section"
+description = "search_match_strategies scenario"
+category = "search_match_strategies"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+
+build_page_index = true
+collect_links = true

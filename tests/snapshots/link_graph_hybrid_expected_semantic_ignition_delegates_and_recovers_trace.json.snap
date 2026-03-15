@@ -1,0 +1,27 @@
+---
+source: test
+expression: value
+---
+{
+  "calls": 1,
+  "result": {
+    "contexts": [
+      {
+        "anchor_id": "docs/alpha#alpha---details---leaf",
+        "semantic_path": [
+          "Alpha",
+          "Details",
+          "Leaf"
+        ],
+        "trace_label": "[Path: Alpha > Details > Leaf]",
+        "related_clusters": [
+          "docs/beta",
+          "docs/gamma"
+        ],
+        "saliency_score": 0.661786030434,
+        "vector_score": 0.75,
+        "topology_score": 0.455953434781
+      }
+    ]
+  }
+}

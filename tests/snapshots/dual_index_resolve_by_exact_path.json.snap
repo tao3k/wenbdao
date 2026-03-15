@@ -1,0 +1,15 @@
+---
+source: test
+expression: value
+---
+{
+  "resolved_path": [
+    "Architecture",
+    "System"
+  ],
+  "resolved_id": "doc#system",
+  "match_type": "Exact",
+  "similarity": 1.0,
+  "doc_id": "test_doc.md",
+  "title": "System"
+}

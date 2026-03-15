@@ -1,0 +1,109 @@
+---
+source: test
+expression: value
+---
+{
+  "skill_doc_path": "zhixing/skills/agenda-management/SKILL.md",
+  "skill_markdown_preview": [
+    "---",
+    "type: skill",
+    "name: agenda-management",
+    "description: High-fidelity scheduling and cognitive alignment via the Triangular Synaptic Flow.",
+    "metadata:",
+    "  author: CyberXiuXian",
+    "  version: \"1.1.0\"",
+    "  routing_keywords:",
+    "    - \"agenda\"",
+    "    - \"schedule\""
+  ],
+  "resource_text_preview": {
+    "skill_doc": [
+      "---",
+      "type: skill",
+      "name: agenda-management",
+      "description: High-fidelity scheduling and cognitive alignment via the Triangular Synaptic Flow.",
+      "metadata:",
+      "  author: CyberXiuXian",
+      "  version: \"1.1.0\"",
+      "  routing_keywords:",
+      "    - \"agenda\"",
+      "    - \"schedule\""
+    ],
+    "rules_md": [
+      "---",
+      "type: knowledge",
+      "metadata:",
+      "  title: Scheduling Rules",
+      "  routing_keywords:",
+      "    - \"carryover\"",
+      "    - \"cognitive load\"",
+      "    - \"task prioritization\"",
+      "  intents:",
+      "    - \"Apply anti-overload constraints\""
+    ],
+    "rules_uri": [
+      "---",
+      "type: knowledge",
+      "metadata:",
+      "  title: Scheduling Rules",
+      "  routing_keywords:",
+      "    - \"carryover\"",
+      "    - \"cognitive load\"",
+      "    - \"task prioritization\"",
+      "  intents:",
+      "    - \"Apply anti-overload constraints\""
+    ]
+  },
+  "links_index": {
+    "agenda_classifier": [
+      "wendao://skills/agenda-management/references/prompts/classifier.md"
+    ],
+    "agenda_flow": [
+      "wendao://skills/agenda-management/references/agenda_flow.toml"
+    ],
+    "agenda_validation_genesis_rules": [
+      "wendao://skills/agenda-management/references/prompts/agenda_validation_genesis_rules.md"
+    ],
+    "critique_agenda.j2": [
+      "wendao://skills/agenda-management/references/critique_agenda.j2"
+    ],
+    "draft_agenda.j2": [
+      "wendao://skills/agenda-management/references/draft_agenda.j2"
+    ],
+    "final_agenda.j2": [
+      "wendao://skills/agenda-management/references/final_agenda.j2"
+    ],
+    "rules": [
+      "wendao://skills/agenda-management/references/rules.md"
+    ],
+    "steward": [
+      "wendao://skills/agenda-management/references/steward.md"
+    ],
+    "teacher": [
+      "wendao://skills/agenda-management/references/teacher.md"
+    ]
+  },
+  "links_for_id": {
+    "agenda_flow": [
+      "wendao://skills/agenda-management/references/agenda_flow.toml"
+    ],
+    "draft_agenda.j2": [
+      "wendao://skills/agenda-management/references/draft_agenda.j2"
+    ],
+    "missing": []
+  },
+  "links_for_reference_type": {
+    "template": [
+      "wendao://skills/agenda-management/references/critique_agenda.j2",
+      "wendao://skills/agenda-management/references/draft_agenda.j2",
+      "wendao://skills/agenda-management/references/final_agenda.j2"
+    ],
+    "persona": [
+      "wendao://skills/agenda-management/references/steward.md",
+      "wendao://skills/agenda-management/references/teacher.md"
+    ],
+    "qianji-flow": [
+      "wendao://skills/agenda-management/references/agenda_flow.toml"
+    ]
+  }
+}

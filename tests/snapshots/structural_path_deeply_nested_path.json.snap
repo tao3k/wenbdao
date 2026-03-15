@@ -1,0 +1,29 @@
+---
+source: test
+expression: value
+---
+{
+  "count": 1,
+  "blocks": [
+    {
+      "block_id": "block-para-0",
+      "kind": "Paragraph",
+      "byte_range": [
+        0,
+        33
+      ],
+      "line_range": [
+        1,
+        1
+      ],
+      "content_hash": "5be921804d080120",
+      "content": "Content in deeply nested section.",
+      "structural_path": [
+        "Architecture",
+        "System",
+        "Storage",
+        "Configuration"
+      ]
+    }
+  ]
+}

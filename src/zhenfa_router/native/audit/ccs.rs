@@ -26,7 +26,7 @@ const SYNAPSE_AUDIT_THRESHOLD: f32 = 0.05;
 /// * `evidence` - Extracted text from search hits (stems, summaries)
 ///
 /// # Returns
-/// AuditVerdict with drift score and missing anchors
+/// `AuditVerdict` with drift score and missing anchors
 #[must_use]
 pub fn evaluate_alignment(anchors: &[String], evidence: &[String]) -> AuditVerdict {
     if anchors.is_empty() {
@@ -69,7 +69,7 @@ pub fn evaluate_alignment(anchors: &[String], evidence: &[String]) -> AuditVerdi
 /// * `anchors` - Required style anchors from persona profile
 ///
 /// # Returns
-/// AuditResult with CCS score and optional compensation request
+/// `AuditResult` with CCS score and optional compensation request
 #[must_use]
 pub fn audit_search_payload(evidence: &[String], anchors: &[String]) -> AuditResult {
     let verdict = evaluate_alignment(anchors, evidence);

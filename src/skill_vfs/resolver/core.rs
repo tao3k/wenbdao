@@ -85,11 +85,13 @@ impl SkillVfsResolver {
     }
 
     /// Access the mounted internal skill roots.
+    #[must_use]
     pub fn internal_roots(&self) -> &[PathBuf] {
         &self.internal_roots
     }
 
     /// List all semantic URIs for discovered internal manifests.
+    #[must_use]
     pub fn list_internal_manifest_uris(&self) -> Vec<String> {
         self.index
             .all_uris()
@@ -111,7 +113,7 @@ impl SkillVfsResolver {
         crate::skill_vfs::internal_manifest::load_internal_skill_manifest_from_path(&path).map_err(
             |e| SkillVfsError::ReadResource {
                 path,
-                source: std::io::Error::new(std::io::ErrorKind::Other, e.to_string()),
+                source: std::io::Error::other(e.to_string()),
             },
         )
     }

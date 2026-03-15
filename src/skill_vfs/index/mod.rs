@@ -70,6 +70,7 @@ impl SkillNamespaceIndex {
     }
 
     /// Return all unique semantic resource URIs currently indexed.
+    #[must_use]
     pub fn all_uris(&self) -> Vec<String> {
         self.paths_by_uri.keys().cloned().collect()
     }

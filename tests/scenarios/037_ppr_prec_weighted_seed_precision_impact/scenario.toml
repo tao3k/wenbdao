@@ -1,0 +1,12 @@
+[scenario]
+id = "037_ppr_prec_weighted_seed_precision_impact"
+name = "weighted seed precision impact"
+description = "ppr_precision scenario (no input)"
+category = "ppr_precision"
+
+[input]
+type = "none"
+paths = []
+
+build_page_index = false
+collect_links = false

@@ -1,0 +1,20 @@
+# Scenario: Page Index Hierarchy
+# Build page index from markdown with nested heading hierarchy
+
+[scenario]
+id = "001_page_index_hierarchy"
+name = "Page Index Hierarchy"
+description = "Build page index tree from markdown with nested heading levels (H1 > H2 > H3)"
+category = "page_index"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+
+[runner]
+build_page_index = true
+collect_links = false
+
+[assert]
+node_count = 3
+root_title = "Alpha"

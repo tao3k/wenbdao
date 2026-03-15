@@ -1,0 +1,22 @@
+---
+source: test
+expression: value
+---
+{
+  "nodes": [
+    {
+      "node_id": "notes/plain#plain",
+      "title": "plain",
+      "level": 1,
+      "text": "Just body text without headings.\nStill part of the same section.",
+      "summary": null,
+      "line_range": [
+        1,
+        2
+      ],
+      "token_count": 11,
+      "is_thinned": false,
+      "children": []
+    }
+  ]
+}

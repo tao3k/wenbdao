@@ -1,0 +1,51 @@
+---
+source: test
+expression: value
+---
+{
+  "total_entries": 4,
+  "doc_ids": [
+    "test_doc.md"
+  ],
+  "entries": [
+    {
+      "path": [
+        "Architecture"
+      ],
+      "title": "Architecture",
+      "level": 1,
+      "node_id": "doc#arch",
+      "has_hash": true
+    },
+    {
+      "path": [
+        "Architecture",
+        "System"
+      ],
+      "title": "System",
+      "level": 2,
+      "node_id": "doc#system",
+      "has_hash": true
+    },
+    {
+      "path": [
+        "Architecture",
+        "System",
+        "Leaf Section"
+      ],
+      "title": "Leaf Section",
+      "level": 3,
+      "node_id": "doc#Leaf Section",
+      "has_hash": true
+    },
+    {
+      "path": [
+        "Introduction"
+      ],
+      "title": "Introduction",
+      "level": 1,
+      "node_id": "doc#Introduction",
+      "has_hash": true
+    }
+  ]
+}

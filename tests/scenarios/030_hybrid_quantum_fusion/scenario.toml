@@ -1,0 +1,12 @@
+[scenario]
+id = "030_hybrid_quantum_fusion"
+name = "Hybrid: quantum fusion"
+description = "Hybrid quantum fusion scenario"
+category = "hybrid"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+
+build_page_index = true
+collect_links = true

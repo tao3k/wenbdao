@@ -15,8 +15,9 @@ pub use query::{
     LinkGraphSortTerm, LinkGraphTagFilter,
 };
 pub use records::{
-    LINK_GRAPH_POLICY_REASON_VOCAB, LINK_GRAPH_REASON_BACKEND_UNAVAILABLE,
-    LINK_GRAPH_REASON_GRAPH_INSUFFICIENT, LINK_GRAPH_REASON_GRAPH_ONLY_PAYLOAD_MODE_CONFLICT,
+    BlockAddress, LINK_GRAPH_POLICY_REASON_VOCAB,
+    LINK_GRAPH_REASON_BACKEND_UNAVAILABLE, LINK_GRAPH_REASON_GRAPH_INSUFFICIENT,
+    LINK_GRAPH_REASON_GRAPH_ONLY_PAYLOAD_MODE_CONFLICT,
     LINK_GRAPH_REASON_GRAPH_ONLY_PAYLOAD_OVERRIDDEN, LINK_GRAPH_REASON_GRAPH_ONLY_POLICY_MISSING,
     LINK_GRAPH_REASON_GRAPH_ONLY_REQUESTED, LINK_GRAPH_REASON_GRAPH_ONLY_REQUESTED_EMPTY,
     LINK_GRAPH_REASON_GRAPH_ONLY_SEARCH_TIMEOUT, LINK_GRAPH_REASON_GRAPH_POLICY_MISSING,
@@ -28,7 +29,8 @@ pub use records::{
     LinkGraphPlannedSearchPayload, LinkGraphPromotedOverlayTelemetry,
     LinkGraphRelatedPprDiagnostics, LinkGraphRetrievalBudget, LinkGraphRetrievalMode,
     LinkGraphRetrievalPlanInput, LinkGraphRetrievalPlanRecord, LinkGraphSemanticDocument,
-    LinkGraphSemanticDocumentKind, LinkGraphStats, PageIndexMeta, PageIndexNode, QuantumAnchorHit,
-    QuantumContext, QuantumFusionOptions, QuantumFusionTelemetry, QuantumSemanticSearchRequest,
+    LinkGraphSemanticDocumentKind, LinkGraphStats, MarkdownBlock, MarkdownBlockKind, PageIndexMeta,
+    PageIndexNode, QuantumAnchorHit, QuantumContext, QuantumFusionOptions, QuantumFusionTelemetry,
+    QuantumSemanticSearchRequest,
 };
 pub use semantic_policy::{LinkGraphSemanticDocumentScope, LinkGraphSemanticSearchPolicy};

@@ -1,0 +1,12 @@
+[scenario]
+id = "062_tree_scope_tree_level_and_min_words"
+name = "tree level and min words"
+description = "tree_scope_filters scenario"
+category = "tree_scope_filters"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+
+build_page_index = true
+collect_links = true

@@ -1,0 +1,12 @@
+[scenario]
+id = "007_search_core_baseline"
+name = "Search Core Baseline"
+description = "Baseline search returns ranked matches"
+category = "search_core"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+
+build_page_index = true
+collect_links = true

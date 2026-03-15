@@ -1,0 +1,15 @@
+# Scenario: Page Index Thinning
+# Description: Thin small parent sections in page index
+
+[scenario]
+id = "003_page_index_thinning"
+name = "Page Index Thinning"
+description = "Thin small parent sections that don't meet minimum word threshold"
+category = "page_index"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+
+build_page_index = true
+collect_links = false

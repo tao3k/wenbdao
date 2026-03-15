@@ -108,17 +108,19 @@ impl LinkGraphIndex {
         let mut incoming: HashMap<String, HashSet<String>> = HashMap::new();
         let mut edge_count = 0usize;
 
-        for parsed in parsed_notes {
-            let from_id = parsed.doc.id;
-            for raw_target in parsed.link_targets {
-                let normalized = normalize_alias(&raw_target);
+        for parsed in &parsed_notes {
+            let from_id = &parsed.doc.id;
+
+            // Extract structural edges from wiki-links
+            for raw_target in &parsed.link_targets {
+                let normalized = normalize_alias(raw_target);
                 if normalized.is_empty() {
                     continue;
                 }
                 let Some(to_id) = alias_to_doc_id.get(&normalized).cloned() else {
                     continue;
                 };
-                if to_id == from_id {
+                if &to_id == from_id {
                     continue;
                 }
                 let inserted = outgoing
@@ -128,6 +130,40 @@ impl LinkGraphIndex {
                 if inserted {
                     incoming.entry(to_id).or_default().insert(from_id.clone());
                     edge_count += 1;
+                }
+            }
+
+            // Extract property drawer edges from section attributes (Blueprint v2.0)
+            for section in &parsed.sections {
+                let source_node_id = if section.heading_path.is_empty() {
+                    from_id.clone()
+                } else {
+                    format!("{}#{}", from_id, section.heading_path.replace(" / ", "/"))
+                };
+
+                let pd_edges = super::property_drawer_edges::extract_property_drawer_edges(
+                    &source_node_id,
+                    &section.attributes,
+                );
+
+                for edge in pd_edges {
+                    let normalized_target = normalize_alias(&edge.to);
+                    let Some(to_id) = alias_to_doc_id.get(&normalized_target).cloned() else {
+                        continue;
+                    };
+
+                    if to_id == *from_id {
+                        continue;
+                    }
+
+                    let inserted = outgoing
+                        .entry(edge.from.clone())
+                        .or_default()
+                        .insert(to_id.clone());
+                    if inserted {
+                        incoming.entry(to_id).or_default().insert(edge.from.clone());
+                        edge_count += 1;
+                    }
                 }
             }
         }
@@ -165,11 +201,12 @@ impl LinkGraphIndex {
             docs_by_id,
             sections_by_doc,
             passages_by_id: HashMap::new(),
-            attachments_by_doc,
-            trees_by_doc: HashMap::new(),
-            node_parent_map: HashMap::new(),
-            alias_to_doc_id,
-            outgoing,
+        attachments_by_doc,
+        trees_by_doc: HashMap::new(),
+        node_parent_map: HashMap::new(),
+        explicit_id_registry: HashMap::new(),
+        alias_to_doc_id,
+        outgoing,
             incoming,
             rank_by_id,
             edge_count,
@@ -275,17 +312,19 @@ impl LinkGraphIndex {
         let mut incoming: HashMap<String, HashSet<String>> = HashMap::new();
         let mut edge_count = 0usize;
 
-        for parsed in parsed_notes {
-            let from_id = parsed.doc.id;
-            for raw_target in parsed.link_targets {
-                let normalized = normalize_alias(&raw_target);
+        for parsed in &parsed_notes {
+            let from_id = &parsed.doc.id;
+
+            // Extract structural edges from wiki-links
+            for raw_target in &parsed.link_targets {
+                let normalized = normalize_alias(raw_target);
                 if normalized.is_empty() {
                     continue;
                 }
                 let Some(to_id) = alias_to_doc_id.get(&normalized).cloned() else {
                     continue;
                 };
-                if to_id == from_id {
+                if &to_id == from_id {
                     continue;
                 }
                 let inserted = outgoing
@@ -295,6 +334,40 @@ impl LinkGraphIndex {
                 if inserted {
                     incoming.entry(to_id).or_default().insert(from_id.clone());
                     edge_count += 1;
+                }
+            }
+
+            // Extract property drawer edges from section attributes (Blueprint v2.0)
+            for section in &parsed.sections {
+                let source_node_id = if section.heading_path.is_empty() {
+                    from_id.clone()
+                } else {
+                    format!("{}#{}", from_id, section.heading_path.replace(" / ", "/"))
+                };
+
+                let pd_edges = super::property_drawer_edges::extract_property_drawer_edges(
+                    &source_node_id,
+                    &section.attributes,
+                );
+
+                for edge in pd_edges {
+                    let normalized_target = normalize_alias(&edge.to);
+                    let Some(to_id) = alias_to_doc_id.get(&normalized_target).cloned() else {
+                        continue;
+                    };
+
+                    if to_id == *from_id {
+                        continue;
+                    }
+
+                    let inserted = outgoing
+                        .entry(edge.from.clone())
+                        .or_default()
+                        .insert(to_id.clone());
+                    if inserted {
+                        incoming.entry(to_id).or_default().insert(edge.from.clone());
+                        edge_count += 1;
+                    }
                 }
             }
         }
@@ -334,6 +407,7 @@ impl LinkGraphIndex {
             attachments_by_doc,
             trees_by_doc: HashMap::new(),
             node_parent_map: HashMap::new(),
+            explicit_id_registry: HashMap::new(),
             alias_to_doc_id,
             outgoing,
             incoming,

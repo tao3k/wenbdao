@@ -1,0 +1,33 @@
+---
+source: test
+expression: value
+---
+{
+  "count": 2,
+  "validated_hits": [
+    {
+      "anchor_id": "test_doc.md#storage-id",
+      "vector_score": 0.85,
+      "is_valid": true,
+      "doc_id": "test_doc.md",
+      "anchor": "storage-id",
+      "structural_path": [
+        "Architecture",
+        "Storage"
+      ],
+      "reranked_score": 0.95
+    },
+    {
+      "anchor_id": "test_doc.md#network-id",
+      "vector_score": 0.8,
+      "is_valid": true,
+      "doc_id": "test_doc.md",
+      "anchor": "network-id",
+      "structural_path": [
+        "Architecture",
+        "Network"
+      ],
+      "reranked_score": 0.9
+    }
+  ]
+}

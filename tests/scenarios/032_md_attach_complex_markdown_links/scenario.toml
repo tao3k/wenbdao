@@ -1,0 +1,12 @@
+[scenario]
+id = "032_md_attach_complex_markdown_links"
+name = "complex markdown links"
+description = "markdown_attachments scenario"
+category = "markdown_attachments"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+
+build_page_index = true
+collect_links = true

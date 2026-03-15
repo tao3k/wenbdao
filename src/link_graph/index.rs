@@ -75,9 +75,15 @@ pub(crate) struct IndexedSection {
     pub(crate) heading_level: usize,
     pub(crate) line_start: usize,
     pub(crate) line_end: usize,
+    pub(crate) byte_start: usize,
+    pub(crate) byte_end: usize,
     pub(crate) section_text: String,
     pub(crate) section_text_lower: String,
     pub(crate) entities: Vec<String>,
+    /// Property drawer attributes extracted from heading (e.g., :ID: arch-v1).
+    pub(crate) attributes: std::collections::HashMap<String, String>,
+    /// Execution log entries from :LOGBOOK: drawer (Blueprint v2.4).
+    pub(crate) logbook: Vec<super::parser::LogbookEntry>,
 }
 
 impl IndexedSection {
@@ -89,9 +95,13 @@ impl IndexedSection {
             heading_level: value.heading_level,
             line_start: value.line_start,
             line_end: value.line_end,
+            byte_start: value.byte_start,
+            byte_end: value.byte_end,
             section_text: value.section_text.clone(),
             section_text_lower: value.section_text_lower.clone(),
             entities: value.entities.clone(),
+            attributes: value.attributes.clone(),
+            logbook: value.logbook.clone(),
         }
     }
 }
@@ -134,11 +144,13 @@ pub struct LinkGraphIndex {
     docs_by_id: HashMap<String, LinkGraphDocument>,
     sections_by_doc: HashMap<String, Vec<IndexedSection>>,
     passages_by_id: HashMap<String, LinkGraphPassage>,
-    attachments_by_doc: HashMap<String, Vec<LinkGraphAttachment>>,
-    trees_by_doc: HashMap<String, Vec<PageIndexNode>>,
-    /// Map page-index node ids to parent node ids (None for roots).
-    node_parent_map: HashMap<String, Option<String>>,
-    alias_to_doc_id: HashMap<String, String>,
+                        attachments_by_doc: HashMap<String, Vec<LinkGraphAttachment>>,
+                        trees_by_doc: HashMap<String, Vec<PageIndexNode>>,
+                        /// Map page-index node ids to parent node ids (None for roots).
+                        node_parent_map: HashMap<String, Option<String>>,
+                        /// Explicit anchor registry (`doc_id#ID`) for fast semantic resolution.
+                        explicit_id_registry: HashMap<String, PageIndexNode>,
+                        alias_to_doc_id: HashMap<String, String>,
     outgoing: HashMap<String, HashSet<String>>,
     incoming: HashMap<String, HashSet<String>>,
     rank_by_id: HashMap<String, f64>,
@@ -214,12 +226,36 @@ impl LinkGraphIndex {
         self.trees_by_doc.get(doc_id)
     }
 
-    pub(crate) fn get_node_parent_map(&self) -> &HashMap<String, Option<String>> {
-        &self.node_parent_map
-    }
+                                                 pub(crate) fn get_node_parent_map(&self) -> &HashMap<String, Option<String>> {
+                                                     &self.node_parent_map
+                                                 }
+
+                                                 pub(crate) fn explicit_id_registry(&self) -> &HashMap<String, PageIndexNode> {
+                                                     &self.explicit_id_registry
+                                                 }
 
     pub(crate) fn resolve_doc_id_pub(&self, stem_or_id: &str) -> Option<&str> {
         self.resolve_doc_id(stem_or_id)
+    }
+
+    /// Get document relative path by stem or ID.
+    #[must_use]
+    pub fn doc_path(&self, stem_or_id: &str) -> Option<&str> {
+        let doc_id = self.resolve_doc_id(stem_or_id)?;
+        self.docs_by_id.get(doc_id).map(|doc| doc.path.as_str())
+    }
+
+    /// Get document title by stem or ID.
+    #[must_use]
+    pub fn doc_title(&self, stem_or_id: &str) -> Option<&str> {
+        let doc_id = self.resolve_doc_id(stem_or_id)?;
+        self.docs_by_id.get(doc_id).map(|doc| doc.title.as_str())
+    }
+
+    /// Get all page index trees for Triple-A addressing.
+    #[must_use]
+    pub fn all_page_index_trees(&self) -> &HashMap<String, Vec<PageIndexNode>> {
+        &self.trees_by_doc
     }
 
     /// Extract semantic intent targets for a document.
@@ -229,5 +265,30 @@ impl LinkGraphIndex {
         };
         // This is a simplification, actual implementation might need more parsing
         (doc.tags.clone(), Vec::new())
+    }
+
+    /// Build a RegistryIndex for O(1) ID lookups.
+    ///
+    /// The registry index provides fast access to nodes with explicit `:ID:` attributes.
+    #[must_use]
+    pub fn build_registry_index(&self) -> super::addressing::RegistryIndex {
+        super::addressing::RegistryIndex::build_from_trees(&self.trees_by_doc)
+    }
+
+    /// Build a RegistryIndex with collision detection.
+    ///
+    /// Returns both the registry index and any ID collisions detected.
+    /// This is the recommended method for semantic validation.
+    #[must_use]
+    pub fn build_registry_index_with_collisions(&self) -> super::addressing::RegistryBuildResult {
+        super::addressing::RegistryIndex::build_from_trees_with_collisions(&self.trees_by_doc)
+    }
+
+    /// Build a TopologyIndex for fuzzy path discovery.
+    ///
+    /// The topology index enables structural path lookup and fuzzy matching.
+    #[must_use]
+    pub fn build_topology_index(&self) -> super::addressing::TopologyIndex {
+        super::addressing::TopologyIndex::build_from_trees(&self.trees_by_doc)
     }
 }

@@ -1,0 +1,12 @@
+[scenario]
+id = "063_tree_scope_verified_edges_keep_graph_filters"
+name = "verified edges keep graph filters"
+description = "tree_scope_filters scenario"
+category = "tree_scope_filters"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+
+build_page_index = true
+collect_links = true

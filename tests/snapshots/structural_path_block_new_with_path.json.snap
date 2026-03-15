@@ -1,0 +1,22 @@
+---
+source: test
+expression: value
+---
+{
+  "block_id": "block-code-0",
+  "kind": "CodeFence { language: \"rust\" }",
+  "byte_range": [
+    0,
+    100
+  ],
+  "line_range": [
+    1,
+    10
+  ],
+  "content_hash": "a472c7a31645d310",
+  "content": "fn main() {}",
+  "structural_path": [
+    "Root",
+    "Child"
+  ]
+}

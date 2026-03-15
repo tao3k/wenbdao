@@ -1,8 +1,7 @@
 //! Test support module for xiuxian-wendao.
 //!
-//! This module provides wendao-specific test utilities.
+//! Provides wendao-specific scenario runners for the unified test framework.
 
 pub mod runners;
 
-// Re-export wendao-specific runners
 pub use runners::{GraphRunner, PageIndexRunner, SearchRunner};

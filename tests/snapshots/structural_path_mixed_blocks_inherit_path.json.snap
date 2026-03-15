@@ -1,0 +1,99 @@
+---
+source: test
+expression: value
+---
+{
+  "count": 5,
+  "blocks": [
+    {
+      "block_id": "block-para-0",
+      "kind": "Paragraph",
+      "byte_range": [
+        0,
+        23
+      ],
+      "line_range": [
+        1,
+        1
+      ],
+      "content_hash": "981c661d2884f46a",
+      "content": "Introduction paragraph.",
+      "structural_path": [
+        "Guide",
+        "Getting Started"
+      ]
+    },
+    {
+      "block_id": "block-code-0",
+      "kind": "CodeFence(python)",
+      "byte_range": [
+        25,
+        53
+      ],
+      "line_range": [
+        3,
+        5
+      ],
+      "content_hash": "4d627022594f74eb",
+      "content": "```python\nprint(\"hello\")\n```",
+      "structural_path": [
+        "Guide",
+        "Getting Started"
+      ]
+    },
+    {
+      "block_id": "block-ulist-0",
+      "kind": "UnorderedList",
+      "byte_range": [
+        55,
+        82
+      ],
+      "line_range": [
+        7,
+        8
+      ],
+      "content_hash": "dc4f704ad08eb900",
+      "content": "- List item 1\n- List item 2",
+      "structural_path": [
+        "Guide",
+        "Getting Started"
+      ]
+    },
+    {
+      "block_id": "block-quote-0",
+      "kind": "BlockQuote",
+      "byte_range": [
+        84,
+        98
+      ],
+      "line_range": [
+        10,
+        10
+      ],
+      "content_hash": "76c8350d6c962c60",
+      "content": "> A blockquote",
+      "structural_path": [
+        "Guide",
+        "Getting Started"
+      ]
+    },
+    {
+      "block_id": "block-para-1",
+      "kind": "Paragraph",
+      "byte_range": [
+        100,
+        116
+      ],
+      "line_range": [
+        12,
+        12
+      ],
+      "content_hash": "182780a5444d5646",
+      "content": "Final paragraph.",
+      "structural_path": [
+        "Guide",
+        "Getting Started"
+      ]
+    }
+  ]
+}

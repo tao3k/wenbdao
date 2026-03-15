@@ -1,0 +1,12 @@
+[scenario]
+id = "031_md_attach_attachment_search_filters"
+name = "attachment search filters"
+description = "markdown_attachments scenario"
+category = "markdown_attachments"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+
+build_page_index = true
+collect_links = true

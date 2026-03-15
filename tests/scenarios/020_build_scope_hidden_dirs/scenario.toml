@@ -1,0 +1,12 @@
+[scenario]
+id = "020_build_scope_hidden_dirs"
+name = "Build Scope: hidden dirs"
+description = "build_scope scenario"
+category = "build_scope"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+
+build_page_index = true
+collect_links = true

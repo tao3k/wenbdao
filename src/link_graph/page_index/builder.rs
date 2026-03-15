@@ -1,5 +1,6 @@
 use crate::link_graph::index::IndexedSection;
 use crate::link_graph::models::{PageIndexMeta, PageIndexNode};
+use crate::link_graph::parser::extract_blocks;
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -58,15 +59,47 @@ fn build_node(
 ) -> PageIndexNode {
     let title = effective_title(section, doc_title, has_named_headings);
     let slug = effective_slug(section, &title);
-    let sequence = slug_counts.entry(slug.clone()).or_insert(0);
-    *sequence += 1;
-    let node_id = if *sequence == 1 {
-        format!("{doc_id}#{slug}")
+
+    // Check for explicit :ID: attribute to use as anchor
+    let explicit_id = section.attributes.get("ID");
+    let node_id = if let Some(id) = explicit_id {
+        // Use explicit ID: doc_id#explicit-id
+        format!("{doc_id}#{id}")
     } else {
-        format!("{doc_id}#{slug}-{}", *sequence - 1)
+        // Generate deterministic ID from slug
+        let sequence = slug_counts.entry(slug.clone()).or_insert(0);
+        *sequence += 1;
+        if *sequence == 1 {
+            format!("{doc_id}#{slug}")
+        } else {
+            format!("{doc_id}#{slug}-{}", *sequence - 1)
+        }
     };
+
     let line_start = section.line_start;
     let line_end = section.line_end;
+
+    // Build structural path from heading hierarchy
+    let structural_path = if section.heading_path.is_empty() {
+        Vec::new()
+    } else {
+        section
+            .heading_path
+            .split(" / ")
+            .map(|s| s.trim().to_string())
+            .collect()
+    };
+
+    // Calculate content hash (Blake3 truncated to 16 chars)
+    let content_hash = calculate_content_hash(&section.section_text);
+
+    // Extract block-level elements for fine-grained addressing
+    let blocks = extract_blocks(
+        &section.section_text,
+        section.byte_start,
+        section.line_start,
+        &structural_path,
+    );
 
     PageIndexNode {
         node_id,
@@ -76,12 +109,28 @@ fn build_node(
         text: Arc::<str>::from(section.section_text.as_str()),
         summary: None,
         children: Vec::new(),
+        blocks,
         metadata: PageIndexMeta {
             line_range: (line_start, line_end),
+            byte_range: Some((section.byte_start, section.byte_end)),
+            structural_path,
+            content_hash: Some(content_hash),
+            attributes: section.attributes.clone(),
             token_count: count_tokens(&section.section_text),
             is_thinned: false,
+            logbook: section.logbook.clone(),
         },
     }
+}
+
+/// Calculate Blake3 content hash, truncated to 16 hex characters.
+fn calculate_content_hash(text: &str) -> String {
+    use blake3::Hasher;
+    let mut hasher = Hasher::new();
+    hasher.update(text.as_bytes());
+    let hash = hasher.finalize();
+    // Use first 8 bytes (16 hex chars) for compact storage
+    hash.to_hex()[..16].to_string()
 }
 
 fn close_last_open_node(roots: &mut Vec<PageIndexNode>, stack: &mut Vec<PageIndexNode>) {

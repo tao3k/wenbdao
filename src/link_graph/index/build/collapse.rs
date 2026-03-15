@@ -150,10 +150,10 @@ pub fn collapse_clusters(
         }
 
         // Get virtual node edges
-        let vnode = virtual_nodes
-            .iter()
-            .find(|vn| vn.id == *virtual_id)
-            .expect("virtual node should exist");
+        let Some(vnode) = virtual_nodes.iter().find(|vn| vn.id == *virtual_id) else {
+            debug_assert!(false, "virtual node should exist");
+            continue;
+        };
 
         // Add edges from virtual node to external nodes
         outgoing

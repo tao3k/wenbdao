@@ -16,6 +16,7 @@
 use crate::link_graph::models::{
     LinkGraphAttachment, LinkGraphAttachmentKind, LinkGraphDocument, VisionAnnotation,
 };
+use regex::Regex;
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -23,8 +24,8 @@ use std::sync::atomic::{AtomicBool, Ordering};
 
 use log::warn;
 use xiuxian_llm::llm::vision::{
-    DeepseekRuntime, PreparedVisionImage, get_deepseek_runtime,
-    infer_deepseek_ocr_truth, preprocess_image,
+    DeepseekRuntime, PreparedVisionImage, get_deepseek_runtime, infer_deepseek_ocr_truth,
+    preprocess_image,
 };
 
 /// Default max dimension for image preprocessing.
@@ -84,7 +85,11 @@ impl VisionProvider {
     #[must_use]
     pub fn with_max_dimension(self, max_dimension: u32) -> Self {
         match self {
-            Self::Dots { runtime, stop_signal, .. } => Self::Dots {
+            Self::Dots {
+                runtime,
+                stop_signal,
+                ..
+            } => Self::Dots {
                 runtime,
                 stop_signal,
                 max_dimension,
@@ -119,9 +124,11 @@ impl VisionProvider {
     pub async fn analyze(&self, path: &PathBuf) -> Option<VisionAnnotation> {
         match self {
             Self::NoOp => None,
-            Self::Dots { runtime, stop_signal, max_dimension } => {
-                analyze_with_dots(runtime, stop_signal.as_ref(), *max_dimension, path).await
-            }
+            Self::Dots {
+                runtime,
+                stop_signal,
+                max_dimension,
+            } => analyze_with_dots(runtime, stop_signal.as_ref(), *max_dimension, path).await,
         }
     }
 }
@@ -136,7 +143,7 @@ impl Default for VisionProvider {
 async fn analyze_with_dots(
     runtime: &Arc<DeepseekRuntime>,
     stop_signal: Option<&Arc<AtomicBool>>,
-    max_dimension: u32,
+    _max_dimension: u32,
     path: &PathBuf,
 ) -> Option<VisionAnnotation> {
     // Skip if runtime is disabled
@@ -206,28 +213,30 @@ async fn analyze_with_dots(
 
 /// Extract code entities from OCR text (class names, function names, module names).
 fn extract_entities(text: &str) -> Vec<String> {
+    static PASCAL_CASE_REGEX: std::sync::LazyLock<Option<Regex>> =
+        std::sync::LazyLock::new(|| Regex::new(r"[A-Z][a-zA-Z0-9]{2,}").ok());
+    static BACKTICK_REGEX: std::sync::LazyLock<Option<Regex>> = std::sync::LazyLock::new(|| {
+        Regex::new(r"`([a-zA-Z_][a-zA-Z0-9_]*(?:::[a-zA-Z_][a-zA-Z0-9_]*)*)`").ok()
+    });
     let mut entities = HashSet::new();
-
-    // Match PascalCase identifiers (class names)
-    for cap in regex::Regex::new(r"[A-Z][a-zA-Z0-9]{2,}")
-        .unwrap()
-        .captures_iter(text)
-    {
-        if let Some(m) = cap.get(0) {
-            entities.insert(m.as_str().to_string());
+    if let Some(pascal_regex) = PASCAL_CASE_REGEX.as_ref() {
+        for cap in pascal_regex.captures_iter(text) {
+            if let Some(m) = cap.get(0) {
+                entities.insert(m.as_str().to_string());
+            }
         }
+    } else {
+        warn!("wendao.vision.regex_unavailable: pattern=pascal_case");
     }
-
-    // Match backtick-quoted identifiers (code references)
-    for cap in regex::Regex::new(r"`([a-zA-Z_][a-zA-Z0-9_]*(?:::[a-zA-Z_][a-zA-Z0-9_]*)*)`")
-        .unwrap()
-        .captures_iter(text)
-    {
-        if let Some(m) = cap.get(1) {
-            entities.insert(m.as_str().to_string());
+    if let Some(backtick_regex) = BACKTICK_REGEX.as_ref() {
+        for cap in backtick_regex.captures_iter(text) {
+            if let Some(m) = cap.get(1) {
+                entities.insert(m.as_str().to_string());
+            }
         }
+    } else {
+        warn!("wendao.vision.regex_unavailable: pattern=backtick_identifier");
     }
-
     entities.into_iter().collect()
 }
 
@@ -367,10 +376,12 @@ mod tests {
 
     #[test]
     fn test_extract_entities() {
-        let text = r#"This is a diagram showing `MyClass` and `my_function` interacting with SomeModule"#;
+        let text =
+            r#"This is a diagram showing `MyClass` and `my_function` interacting with SomeModule"#;
         let entities = extract_entities(text);
 
         assert!(entities.contains(&"MyClass".to_string()));
+        assert!(entities.contains(&"my_function".to_string()));
         assert!(entities.contains(&"SomeModule".to_string()));
     }
 

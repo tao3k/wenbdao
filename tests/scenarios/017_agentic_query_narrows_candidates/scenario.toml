@@ -1,0 +1,12 @@
+[scenario]
+id = "017_agentic_query_narrows_candidates"
+name = "Agentic Expansion "
+description = "Agentic expansion scenario: query_narrows_candidates"
+category = "agentic_expansion"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+
+build_page_index = true
+collect_links = true

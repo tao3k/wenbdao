@@ -50,6 +50,28 @@ fn snapshot_page_index_node(node: &PageIndexNode) -> Value {
         "line_range": [node.metadata.line_range.0, node.metadata.line_range.1],
         "token_count": node.metadata.token_count,
         "is_thinned": node.metadata.is_thinned,
+        "blocks": node.blocks.iter().map(snapshot_block).collect::<Vec<_>>(),
         "children": node.children.iter().map(snapshot_page_index_node).collect::<Vec<_>>(),
+    })
+}
+
+fn snapshot_block(block: &xiuxian_wendao::link_graph::MarkdownBlock) -> Value {
+    use xiuxian_wendao::link_graph::MarkdownBlockKind;
+    let kind_str = match &block.kind {
+        MarkdownBlockKind::Paragraph => "Paragraph".to_string(),
+        MarkdownBlockKind::CodeFence { language } => format!("CodeFence({})", language),
+        MarkdownBlockKind::List { ordered: true } => "OrderedList".to_string(),
+        MarkdownBlockKind::List { ordered: false } => "UnorderedList".to_string(),
+        MarkdownBlockKind::BlockQuote => "BlockQuote".to_string(),
+        MarkdownBlockKind::ThematicBreak => "ThematicBreak".to_string(),
+        MarkdownBlockKind::Table => "Table".to_string(),
+        MarkdownBlockKind::HtmlBlock => "HtmlBlock".to_string(),
+    };
+    json!({
+        "block_id": block.block_id,
+        "kind": kind_str,
+        "byte_range": [block.byte_range.0, block.byte_range.1],
+        "line_range": [block.line_range.0, block.line_range.1],
+        "content_hash": block.content_hash,
     })
 }

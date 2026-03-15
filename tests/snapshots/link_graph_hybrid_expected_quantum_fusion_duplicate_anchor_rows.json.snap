@@ -1,0 +1,40 @@
+---
+source: test
+expression: value
+---
+{
+  "contexts": [
+    {
+      "anchor_id": "docs/alpha#alpha---details---leaf",
+      "semantic_path": [
+        "Alpha",
+        "Details",
+        "Leaf"
+      ],
+      "trace_label": "[Path: Alpha > Details > Leaf]",
+      "related_clusters": [
+        "docs/beta",
+        "docs/gamma"
+      ],
+      "saliency_score": 0.766786030434,
+      "vector_score": 0.9,
+      "topology_score": 0.455953434781
+    },
+    {
+      "anchor_id": "docs/alpha#alpha---details---leaf",
+      "semantic_path": [
+        "Alpha",
+        "Details",
+        "Leaf"
+      ],
+      "trace_label": "[Path: Alpha > Details > Leaf]",
+      "related_clusters": [
+        "docs/beta",
+        "docs/gamma"
+      ],
+      "saliency_score": 0.276786030434,
+      "vector_score": 0.2,
+      "topology_score": 0.455953434781
+    }
+  ]
+}

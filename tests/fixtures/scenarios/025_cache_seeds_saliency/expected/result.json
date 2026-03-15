@@ -1,9 +1,0 @@
-{
-  "activation_count": 0,
-  "current_matches_expected": true,
-  "current_saliency": 9.0,
-  "decay_rate": 0.2,
-  "expected_current_saliency": 9.0,
-  "node_id": "docs/a",
-  "saliency_base": 9.0
-}

@@ -1,0 +1,38 @@
+---
+source: test
+expression: value
+---
+{
+  "count": 3,
+  "validated_hits": [
+    {
+      "anchor_id": "test_doc.md#intro-id",
+      "vector_score": 0.8,
+      "is_valid": true,
+      "doc_id": "test_doc.md",
+      "anchor": "intro-id",
+      "structural_path": [
+        "Introduction"
+      ],
+      "reranked_score": 0.9
+    },
+    {
+      "anchor_id": "test_doc.md#deleted-anchor",
+      "vector_score": 0.75,
+      "is_valid": false,
+      "doc_id": "test_doc.md",
+      "anchor": "deleted-anchor",
+      "structural_path": null,
+      "reranked_score": 0.25
+    },
+    {
+      "anchor_id": "other_doc.md#missing",
+      "vector_score": 0.7,
+      "is_valid": false,
+      "doc_id": "other_doc.md",
+      "anchor": "missing",
+      "structural_path": null,
+      "reranked_score": 0.19999999999999996
+    }
+  ]
+}

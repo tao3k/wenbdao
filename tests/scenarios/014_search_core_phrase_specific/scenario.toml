@@ -1,0 +1,12 @@
+[scenario]
+id = "014_search_core_phrase_specific"
+name = "Search Core Phrase Specific"
+description = "Phrase-specific search matching"
+category = "search_core"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+
+build_page_index = true
+collect_links = true

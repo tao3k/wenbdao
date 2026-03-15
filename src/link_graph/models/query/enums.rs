@@ -121,4 +121,6 @@ pub enum LinkGraphEdgeType {
     Provisional,
     /// Verified edges from trusted workflows.
     Verified,
+    /// Property drawer edges (Blueprint v2.0): explicit references from :PROPERTIES: attributes.
+    PropertyDrawer,
 }

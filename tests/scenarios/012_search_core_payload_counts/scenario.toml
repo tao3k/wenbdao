@@ -1,0 +1,12 @@
+[scenario]
+id = "012_search_core_payload_counts"
+name = "Search Core Payload Counts"
+description = "Payload count aggregation in results"
+category = "search_core"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+
+build_page_index = true
+collect_links = true

@@ -439,8 +439,8 @@ fn extract_markdown_links(markdown: &str) -> Vec<String> {
     let mut links = Vec::new();
     for node in root.descendants() {
         match &node.data.borrow().value {
-            NodeValue::Link(link) => links.push(link.url.to_string()),
-            NodeValue::WikiLink(link) => links.push(link.url.to_string()),
+            NodeValue::Link(link) => links.push(link.url.clone()),
+            NodeValue::WikiLink(link) => links.push(link.url.clone()),
             _ => {}
         }
     }
@@ -458,7 +458,7 @@ fn normalize_internal_manifest_uri(raw: &str, fallback_semantic: &str) -> Option
     if segments.len() < 3 {
         return None;
     }
-    let semantic = segments.get(0).copied().unwrap_or(fallback_semantic);
+    let semantic = segments.first().copied().unwrap_or(fallback_semantic);
     if segments.get(1).copied()? != "references" {
         return None;
     }
@@ -534,9 +534,10 @@ fn normalize_path_no_parent(path: &Path) -> Option<PathBuf> {
     for component in path.components() {
         match component {
             std::path::Component::Normal(value) => normalized.push(value),
-            std::path::Component::CurDir => {}
+            std::path::Component::CurDir
+            | std::path::Component::RootDir
+            | std::path::Component::Prefix(_) => {}
             std::path::Component::ParentDir => return None,
-            std::path::Component::RootDir | std::path::Component::Prefix(_) => {}
         }
     }
     Some(normalized)

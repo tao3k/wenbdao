@@ -1,0 +1,12 @@
+[scenario]
+id = "055_sem_policy_parse_directives"
+name = "parse directives"
+description = "semantic_policy scenario (no input)"
+category = "semantic_policy"
+
+[input]
+type = "none"
+paths = []
+
+build_page_index = false
+collect_links = false

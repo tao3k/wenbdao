@@ -1,0 +1,30 @@
+---
+source: test
+expression: value
+---
+{
+  "total_ids": 2,
+  "doc_ids": [
+    "test_doc.md"
+  ],
+  "entries": [
+    {
+      "id": "intro-id",
+      "doc_id": "test_doc.md",
+      "title": "Introduction",
+      "path": [
+        "Introduction"
+      ]
+    },
+    {
+      "id": "leaf-id",
+      "doc_id": "test_doc.md",
+      "title": "Leaf Section",
+      "path": [
+        "Architecture",
+        "System",
+        "Leaf Section"
+      ]
+    }
+  ]
+}

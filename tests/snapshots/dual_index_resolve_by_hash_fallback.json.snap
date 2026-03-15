@@ -1,0 +1,14 @@
+---
+source: test
+expression: value
+---
+{
+  "resolved_path": [
+    "Architecture"
+  ],
+  "resolved_id": "doc#arch",
+  "match_type": "HashFallback",
+  "similarity": 0.8999999761581421,
+  "doc_id": "test_doc.md",
+  "title": "Architecture"
+}

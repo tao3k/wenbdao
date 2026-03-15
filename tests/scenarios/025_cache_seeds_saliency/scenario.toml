@@ -1,0 +1,12 @@
+[scenario]
+id = "025_cache_seeds_saliency"
+name = "Cache Build: seeds saliency"
+description = "cache_build scenario"
+category = "cache_build"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+
+build_page_index = true
+collect_links = true

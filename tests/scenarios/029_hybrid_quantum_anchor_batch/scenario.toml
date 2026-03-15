@@ -1,0 +1,12 @@
+[scenario]
+id = "029_hybrid_quantum_anchor_batch"
+name = "Hybrid: quantum anchor batch"
+description = "Hybrid quantum fusion scenario"
+category = "hybrid"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+
+build_page_index = true
+collect_links = true

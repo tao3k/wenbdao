@@ -1,7 +1,9 @@
 use super::LinkGraphIndex;
 use crate::link_graph::models::PageIndexNode;
 use crate::link_graph::page_index::{
-    DEFAULT_PAGE_INDEX_THINNING_TOKEN_THRESHOLD, build_page_index_tree, thin_page_index_tree,
+    build_page_index_tree,
+    thin_page_index_tree,
+    DEFAULT_PAGE_INDEX_THINNING_TOKEN_THRESHOLD,
 };
 
 impl LinkGraphIndex {
@@ -34,6 +36,7 @@ impl LinkGraphIndex {
     pub(super) fn rebuild_all_page_indices(&mut self) {
         self.trees_by_doc.clear();
         self.node_parent_map.clear();
+        self.explicit_id_registry.clear();
         let doc_ids = self.docs_by_id.keys().cloned().collect::<Vec<_>>();
         for doc_id in doc_ids {
             self.rebuild_page_index_for_doc(&doc_id);
@@ -49,7 +52,6 @@ impl LinkGraphIndex {
             self.remove_page_index_for_doc(doc_id);
             return;
         };
-
         self.remove_page_index_for_doc(doc_id);
         let mut tree = build_page_index_tree(doc_id, &doc_title, &sections);
         thin_page_index_tree(&mut tree, DEFAULT_PAGE_INDEX_THINNING_TOKEN_THRESHOLD);
@@ -66,12 +68,21 @@ impl LinkGraphIndex {
         let prefix = format!("{doc_id}#");
         self.node_parent_map
             .retain(|node_id, _| !node_id.starts_with(&prefix));
+        self.explicit_id_registry
+            .retain(|node_id, _| !node_id.starts_with(&prefix));
     }
 
     fn index_page_index_nodes(&mut self, nodes: &[PageIndexNode], parent_id: Option<&str>) {
         for node in nodes {
             self.node_parent_map
                 .insert(node.node_id.clone(), parent_id.map(str::to_string));
+            if let Some(id) = node.metadata.attributes.get("ID") {
+                if !id.trim().is_empty() {
+                    self.explicit_id_registry
+                        .entry(node.node_id.clone())
+                        .or_insert_with(|| node.clone());
+                }
+            }
             self.index_page_index_nodes(&node.children, Some(node.node_id.as_str()));
         }
     }

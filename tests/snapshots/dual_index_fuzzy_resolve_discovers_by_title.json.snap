@@ -1,0 +1,18 @@
+---
+source: test
+expression: value
+---
+{
+  "count": 1,
+  "matches": [
+    {
+      "path": [
+        "Introduction"
+      ],
+      "doc_id": "test_doc.md",
+      "similarity_score": 0.949999988079071,
+      "match_type": "TitleSubstring",
+      "title": "Introduction"
+    }
+  ]
+}

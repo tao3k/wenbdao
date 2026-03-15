@@ -1,0 +1,12 @@
+[scenario]
+id = "051_search_strat_regex_strategy"
+name = "regex strategy"
+description = "search_match_strategies scenario"
+category = "search_match_strategies"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+
+build_page_index = true
+collect_links = true

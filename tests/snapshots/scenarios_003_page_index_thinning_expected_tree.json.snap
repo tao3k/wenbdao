@@ -1,0 +1,22 @@
+---
+source: test
+expression: value
+---
+{
+  "nodes": [
+    {
+      "node_id": "docs/thin#thin",
+      "title": "Thin",
+      "level": 1,
+      "text": "small intro\n\nNested\nchild text that should be folded into the parent section during thinning.",
+      "summary": null,
+      "line_range": [
+        1,
+        7
+      ],
+      "token_count": 15,
+      "is_thinned": true,
+      "children": []
+    }
+  ]
+}

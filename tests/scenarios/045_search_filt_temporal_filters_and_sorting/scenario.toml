@@ -1,0 +1,12 @@
+[scenario]
+id = "045_search_filt_temporal_filters_and_sorting"
+name = "temporal filters and sorting"
+description = "search_filters scenario"
+category = "search_filters"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+
+build_page_index = true
+collect_links = true

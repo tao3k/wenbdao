@@ -60,14 +60,14 @@ pub fn classify_skill_reference(
     }
 
     // 2. Config block type fallback
-    if let Some(cfg_type) = config_lower {
-        if cfg_type.contains("prompt") || cfg_type.contains("template") {
-            return SkillReferenceSemantics {
-                entity: EntityType::Other("Template".to_string()),
-                relation: RelationType::RelatedTo,
-                reference_type: Some(Arc::from("template")),
-            };
-        }
+    if let Some(cfg_type) = config_lower
+        && (cfg_type.contains("prompt") || cfg_type.contains("template"))
+    {
+        return SkillReferenceSemantics {
+            entity: EntityType::Other("Template".to_string()),
+            relation: RelationType::RelatedTo,
+            reference_type: Some(Arc::from("template")),
+        };
     }
 
     // 3. Path-based heuristics

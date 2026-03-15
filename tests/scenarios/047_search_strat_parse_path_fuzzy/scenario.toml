@@ -1,0 +1,12 @@
+[scenario]
+id = "047_search_strat_parse_path_fuzzy"
+name = "parse path fuzzy"
+description = "search_match_strategies scenario (no input)"
+category = "search_match_strategies"
+
+[input]
+type = "none"
+paths = []
+
+build_page_index = false
+collect_links = false

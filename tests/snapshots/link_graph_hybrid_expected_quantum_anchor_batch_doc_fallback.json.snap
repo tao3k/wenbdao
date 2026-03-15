@@ -1,0 +1,19 @@
+---
+source: test
+expression: value
+---
+{
+  "contexts": [
+    {
+      "anchor_id": "plain",
+      "semantic_path": [
+        "plain"
+      ],
+      "trace_label": "[Path: plain]",
+      "related_clusters": [],
+      "saliency_score": 0.2,
+      "vector_score": 0.4,
+      "topology_score": 0.0
+    }
+  ]
+}

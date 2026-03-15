@@ -89,6 +89,7 @@ impl WendaoResourceUri {
     }
 
     /// Returns true if this URI addresses an internal skill resource.
+    #[must_use]
     pub fn is_internal_skill(&self) -> bool {
         self.is_internal_skill
     }

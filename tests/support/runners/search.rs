@@ -33,13 +33,21 @@ impl ScenarioRunner for SearchRunner {
         // For search scenarios, we validate that the index can be built
         // and return a summary of the scenario configuration
 
+        // Get expected files (optional, for backward compatibility)
+        let expected_files = scenario
+            .config
+            .expected
+            .as_ref()
+            .map(|e| e.files.clone())
+            .unwrap_or_default();
+
         // Check if scenario has input
         if !scenario.has_input() {
             return Ok(json!({
                 "scenario_id": scenario.id(),
                 "category": scenario.category(),
                 "status": "no_input",
-                "files": scenario.config.expected.files,
+                "files": expected_files,
             }));
         }
 
@@ -55,7 +63,7 @@ impl ScenarioRunner for SearchRunner {
             "scenario_id": scenario.id(),
             "category": scenario.category(),
             "status": "validated",
-            "files": scenario.config.expected.files,
+            "files": expected_files,
         }))
     }
 }

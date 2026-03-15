@@ -1,0 +1,12 @@
+[scenario]
+id = "053_seed_seed_accuracy_cluster_grounded"
+name = "seed accuracy cluster grounded"
+description = "seed_and_priors scenario"
+category = "seed_and_priors"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+
+build_page_index = true
+collect_links = true

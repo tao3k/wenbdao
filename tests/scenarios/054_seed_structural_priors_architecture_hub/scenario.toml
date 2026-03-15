@@ -1,0 +1,12 @@
+[scenario]
+id = "054_seed_structural_priors_architecture_hub"
+name = "structural priors architecture hub"
+description = "seed_and_priors scenario"
+category = "seed_and_priors"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+
+build_page_index = true
+collect_links = true

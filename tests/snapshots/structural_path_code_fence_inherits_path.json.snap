@@ -1,0 +1,27 @@
+---
+source: test
+expression: value
+---
+{
+  "count": 1,
+  "blocks": [
+    {
+      "block_id": "block-code-0",
+      "kind": "CodeFence(rust)",
+      "byte_range": [
+        0,
+        48
+      ],
+      "line_range": [
+        1,
+        5
+      ],
+      "content_hash": "e0189412468bcad7",
+      "content": "```rust\nfn main() {\n    println!(\"hello\");\n}\n```",
+      "structural_path": [
+        "Code",
+        "Examples"
+      ]
+    }
+  ]
+}

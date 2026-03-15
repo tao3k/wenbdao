@@ -1,18 +1,28 @@
 //! Markdown link graph index + retrieval algorithms.
 
+pub mod addressing;
 pub mod agentic;
 mod context_snapshot;
 mod index;
 mod models;
 mod narrator;
 mod page_index;
-mod parser;
+pub mod parser;
 pub mod ppr_hybrid;
 mod query;
 mod runtime_config;
 /// GraphMem saliency models, scoring, and Valkey persistence adapters.
 pub mod saliency;
 mod stats_cache;
+
+pub use addressing::{
+    Address, EnhancedResolvedNode, IdCollision, IndexedNode, MatchType, ModificationError,
+    ModificationResult, PathEntry, PathMatch, RegistryBuildResult, RegistryIndex, ResolvedNode,
+    ResolveError, ResolveMode, SkeletonRerankOptions, SkeletonValidatedHit, StructureUpdateSignal,
+    StructuralTransaction, StructuralTransactionCoordinator, TopologyIndex, adjust_line_range,
+    build_hash_index, build_id_index, replace_byte_range, resolve_node, resolve_with_indices,
+    skeleton_rerank, update_section_content,
+};
 
 pub use agentic::{
     LINK_GRAPH_SUGGESTED_LINK_DECISION_SCHEMA_VERSION, LINK_GRAPH_SUGGESTED_LINK_SCHEMA_VERSION,
@@ -62,9 +72,10 @@ pub use models::{
     LinkGraphScope, LinkGraphSearchFilters, LinkGraphSearchOptions, LinkGraphSemanticDocument,
     LinkGraphSemanticDocumentKind, LinkGraphSemanticDocumentScope, LinkGraphSemanticSearchPolicy,
     LinkGraphSortField, LinkGraphSortOrder, LinkGraphSortTerm, LinkGraphStats, LinkGraphTagFilter,
-    PageIndexMeta, PageIndexNode, QuantumAnchorHit, QuantumContext, QuantumFusionOptions,
-    QuantumFusionTelemetry, QuantumSemanticSearchRequest,
+    MarkdownBlock, MarkdownBlockKind, PageIndexMeta, PageIndexNode, QuantumAnchorHit,
+    QuantumContext, QuantumFusionOptions, QuantumFusionTelemetry, QuantumSemanticSearchRequest,
 };
+pub use parser::blocks::extract_blocks;
 pub use narrator::narrate_subgraph;
 pub use query::{ParsedLinkGraphQuery, parse_search_query};
 pub use runtime_config::{

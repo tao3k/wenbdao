@@ -1,0 +1,12 @@
+[scenario]
+id = "052_seed_journal_semantic_pull_surfaces_agenda"
+name = "journal semantic pull surfaces agenda"
+description = "seed_and_priors scenario"
+category = "seed_and_priors"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+
+build_page_index = true
+collect_links = true

@@ -1,0 +1,45 @@
+---
+source: test
+expression: value
+---
+{
+  "count": 2,
+  "blocks": [
+    {
+      "block_id": "block-para-0",
+      "kind": "Paragraph",
+      "byte_range": [
+        0,
+        13
+      ],
+      "line_range": [
+        1,
+        1
+      ],
+      "content_hash": "ede5c0b10f2ec497",
+      "content": "Hello, world!",
+      "structural_path": [
+        "Architecture",
+        "Storage"
+      ]
+    },
+    {
+      "block_id": "block-para-1",
+      "kind": "Paragraph",
+      "byte_range": [
+        15,
+        32
+      ],
+      "line_range": [
+        3,
+        3
+      ],
+      "content_hash": "3b80c40054cdfcc6",
+      "content": "Second paragraph.",
+      "structural_path": [
+        "Architecture",
+        "Storage"
+      ]
+    }
+  ]
+}

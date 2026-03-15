@@ -1,0 +1,12 @@
+[scenario]
+id = "039_refresh_incremental_update_and_delete"
+name = "incremental update and delete"
+description = "refresh scenario"
+category = "refresh"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+
+build_page_index = true
+collect_links = true

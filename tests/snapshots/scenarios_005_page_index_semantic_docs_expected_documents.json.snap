@@ -1,0 +1,67 @@
+---
+source: test
+expression: value
+---
+{
+  "documents": [
+    {
+      "anchor_id": "docs/alpha#alpha",
+      "doc_id": "docs/alpha",
+      "path": "docs/alpha.md",
+      "kind": "section",
+      "semantic_path": [
+        "Alpha"
+      ],
+      "content": "alpha root section carries enough words to remain stable while powering semantic exports for hybrid retrieval.",
+      "line_range": [
+        1,
+        4
+      ]
+    },
+    {
+      "anchor_id": "docs/alpha#alpha---beta",
+      "doc_id": "docs/alpha",
+      "path": "docs/alpha.md",
+      "kind": "section",
+      "semantic_path": [
+        "Alpha",
+        "Beta"
+      ],
+      "content": "beta child section keeps enough detail to survive semantic document export without thinning away.",
+      "line_range": [
+        5,
+        8
+      ]
+    },
+    {
+      "anchor_id": "docs/alpha#alpha---beta---gamma",
+      "doc_id": "docs/alpha",
+      "path": "docs/alpha.md",
+      "kind": "section",
+      "semantic_path": [
+        "Alpha",
+        "Beta",
+        "Gamma"
+      ],
+      "content": "gamma leaf body stays visible for semantic document export tests.",
+      "line_range": [
+        9,
+        11
+      ]
+    },
+    {
+      "anchor_id": "docs/alpha",
+      "doc_id": "docs/alpha",
+      "path": "docs/alpha.md",
+      "kind": "summary",
+      "semantic_path": [
+        "Alpha"
+      ],
+      "content": "alpha root section carries enough words to remain stable while powering semantic exports for hybrid retrieval.",
+      "line_range": [
+        1,
+        4
+      ]
+    }
+  ]
+}

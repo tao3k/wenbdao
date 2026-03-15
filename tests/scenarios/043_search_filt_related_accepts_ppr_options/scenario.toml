@@ -1,0 +1,12 @@
+[scenario]
+id = "043_search_filt_related_accepts_ppr_options"
+name = "related accepts ppr options"
+description = "search_filters scenario"
+category = "search_filters"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+
+build_page_index = true
+collect_links = true
