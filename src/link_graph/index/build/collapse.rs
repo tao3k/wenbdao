@@ -1,6 +1,6 @@
 //! Graph collapse operators for knowledge distillation.
 //!
-//! Collapses dense clusters into VirtualNodes that:
+//! Collapses dense clusters into `VirtualNodes` that:
 //! 1. Inherit all outgoing/incoming edges of member nodes
 //! 2. Store references to original member IDs
 //! 3. Get synthesized stem/title from cluster essence
@@ -29,6 +29,10 @@ pub struct VirtualNode {
     pub avg_saliency: f64,
     /// Synthesized title (e.g., "Cluster: essence-topic").
     pub title: String,
+    /// Internal edge count (edges between members).
+    pub internal_edges: usize,
+    /// Edge density within cluster.
+    pub edge_density: f64,
     /// All outgoing edges from members to non-members.
     pub outgoing_edges: HashSet<String>,
     /// All incoming edges from non-members to members.
@@ -44,7 +48,7 @@ impl VirtualNode {
             hasher.write(m.as_bytes());
         }
         let hash_val = hasher.finish();
-        format!("virtual:cluster:{}:{:08x}", cluster_index, hash_val)
+        format!("virtual:cluster:{cluster_index}:{hash_val:08x}")
     }
 
     /// Generate a title from member titles (first 3 words of top member).
@@ -72,7 +76,7 @@ impl VirtualNode {
 /// * `incoming` - Incoming edge map (will be modified)
 ///
 /// # Returns
-/// Vector of VirtualNodes created
+/// Vector of `VirtualNodes` created
 pub fn collapse_clusters(
     clusters: Vec<DenseCluster>,
     docs_by_id: &HashMap<String, LinkGraphDocument>,
@@ -127,6 +131,8 @@ pub fn collapse_clusters(
             members: cluster.members.clone(),
             avg_saliency: cluster.avg_saliency,
             title: VirtualNode::synthesize_title(&member_titles),
+            internal_edges: cluster.internal_edges,
+            edge_density: cluster.edge_density,
             outgoing_edges: outgoing_edges.clone(),
             incoming_edges: incoming_edges.clone(),
         };
@@ -186,109 +192,5 @@ pub fn collapse_clusters(
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn make_cluster(members: Vec<&str>, avg_saliency: f64) -> DenseCluster {
-        DenseCluster {
-            members: members.iter().map(|s| s.to_string()).collect(),
-            avg_saliency,
-            internal_edges: members.len() * 2,
-            edge_density: 0.5,
-        }
-    }
-
-    fn make_doc(id: &str, stem: &str) -> LinkGraphDocument {
-        LinkGraphDocument {
-            id: id.to_string(),
-            id_lower: id.to_lowercase(),
-            stem: stem.to_string(),
-            stem_lower: stem.to_lowercase(),
-            path: format!("{}.md", id),
-            path_lower: format!("{}.md", id.to_lowercase()),
-            title: stem.to_string(),
-            title_lower: stem.to_lowercase(),
-            tags: Vec::new(),
-            tags_lower: Vec::new(),
-            lead: String::new(),
-            doc_type: None,
-            word_count: 0,
-            search_text: String::new(),
-            search_text_lower: String::new(),
-            saliency_base: 0.5,
-            decay_rate: 0.1,
-            created_ts: None,
-            modified_ts: None,
-        }
-    }
-
-    #[test]
-    fn test_virtual_node_id_generation() {
-        let members = vec!["a.md".to_string(), "b.md".to_string(), "c.md".to_string()];
-        let id = VirtualNode::generate_id(&members, 0);
-        assert!(id.starts_with("virtual:cluster:0:"));
-    }
-
-    #[test]
-    fn test_virtual_node_title_synthesis() {
-        let titles = vec!["Understanding Performance Optimization"];
-        let title = VirtualNode::synthesize_title(&titles);
-        assert!(title.contains("Cluster:"));
-    }
-
-    #[test]
-    fn test_collapse_empty_clusters() {
-        let docs_by_id = HashMap::new();
-        let mut outgoing = HashMap::new();
-        let mut incoming = HashMap::new();
-
-        let result = collapse_clusters(vec![], &docs_by_id, &mut outgoing, &mut incoming);
-        assert!(result.is_empty());
-    }
-
-    #[test]
-    fn test_collapse_single_cluster() {
-        let docs_by_id: HashMap<String, LinkGraphDocument> = [
-            ("a.md".to_string(), make_doc("a.md", "Doc A")),
-            ("b.md".to_string(), make_doc("b.md", "Doc B")),
-            ("c.md".to_string(), make_doc("c.md", "Doc C")),
-        ]
-        .into_iter()
-        .collect();
-        let mut outgoing: HashMap<String, HashSet<String>> = HashMap::new();
-        let mut incoming: HashMap<String, HashSet<String>> = HashMap::new();
-
-        // Setup: a -> d (external), b -> c (internal, c -> e (external)
-        outgoing.insert(
-            "a.md".to_string(),
-            ["d.md".to_string()].into_iter().collect(),
-        );
-        outgoing.insert(
-            "b.md".to_string(),
-            ["c.md".to_string()].into_iter().collect(),
-        );
-        outgoing.insert(
-            "c.md".to_string(),
-            ["e.md".to_string()].into_iter().collect(),
-        );
-
-        // b has incoming from x (external)
-        incoming.insert(
-            "b.md".to_string(),
-            ["x.md".to_string()].into_iter().collect(),
-        );
-
-        let cluster = make_cluster(vec!["a.md", "b.md", "c.md"], 0.85);
-        let result = collapse_clusters(vec![cluster], &docs_by_id, &mut outgoing, &mut incoming);
-
-        assert_eq!(result.len(), 1);
-        let vn = &result[0];
-        assert_eq!(vn.members.len(), 3);
-        assert!((vn.avg_saliency - 0.85).abs() < 0.01);
-
-        // Check edge rewiring
-        assert!(vn.outgoing_edges.contains("d.md"));
-        assert!(vn.outgoing_edges.contains("e.md"));
-        assert!(vn.incoming_edges.contains("x.md"));
-    }
-}
+#[path = "../../../../tests/unit/link_graph/index/build/collapse.rs"]
+mod tests;

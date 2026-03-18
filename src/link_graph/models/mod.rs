@@ -5,9 +5,7 @@ mod query;
 mod records;
 mod semantic_policy;
 
-pub use attachments::{
-    LinkGraphAttachment, LinkGraphAttachmentHit, LinkGraphAttachmentKind, VisionAnnotation,
-};
+pub use attachments::{LinkGraphAttachment, LinkGraphAttachmentHit, LinkGraphAttachmentKind};
 pub use query::{
     LinkGraphDirection, LinkGraphEdgeType, LinkGraphLinkFilter, LinkGraphMatchStrategy,
     LinkGraphPprSubgraphMode, LinkGraphRelatedFilter, LinkGraphRelatedPprOptions, LinkGraphScope,
@@ -15,7 +13,7 @@ pub use query::{
     LinkGraphSortTerm, LinkGraphTagFilter,
 };
 pub use records::{
-    BlockAddress, LINK_GRAPH_POLICY_REASON_VOCAB,
+    BlockAddress, CognitiveTraceRecord, LINK_GRAPH_POLICY_REASON_VOCAB,
     LINK_GRAPH_REASON_BACKEND_UNAVAILABLE, LINK_GRAPH_REASON_GRAPH_INSUFFICIENT,
     LINK_GRAPH_REASON_GRAPH_ONLY_PAYLOAD_MODE_CONFLICT,
     LINK_GRAPH_REASON_GRAPH_ONLY_PAYLOAD_OVERRIDDEN, LINK_GRAPH_REASON_GRAPH_ONLY_POLICY_MISSING,

@@ -19,7 +19,6 @@ pub(super) fn handle(cli: &Cli, index: Option<&LinkGraphIndex>) -> Result<()> {
 
     let sort_terms = parse_sort_terms(&args.sort_terms);
     let match_strategy = match args.match_strategy.to_lowercase().as_str() {
-        "fts" => LinkGraphMatchStrategy::Fts,
         "exact" => LinkGraphMatchStrategy::Exact,
         "regex" | "re" => LinkGraphMatchStrategy::Re,
         _ => LinkGraphMatchStrategy::Fts,

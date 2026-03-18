@@ -2,17 +2,13 @@ use serde::{Deserialize, Serialize};
 /// Scope of semantic documents allowed in retrieval.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+#[derive(Default)]
 pub enum LinkGraphSemanticDocumentScope {
     /// Allow both summary- and section-level semantic documents.
+    #[default]
     All,
     /// Allow only summary-level semantic documents.
     SummaryOnly,
-}
-
-impl Default for LinkGraphSemanticDocumentScope {
-    fn default() -> Self {
-        Self::All
-    }
 }
 
 /// Semantic retrieval policy embedded in search options and retrieval plans.

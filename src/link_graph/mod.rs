@@ -11,15 +11,15 @@ pub mod parser;
 pub mod ppr_hybrid;
 mod query;
 mod runtime_config;
-/// GraphMem saliency models, scoring, and Valkey persistence adapters.
+/// `GraphMem` saliency models, scoring, and Valkey persistence adapters.
 pub mod saliency;
 mod stats_cache;
 
 pub use addressing::{
     Address, EnhancedResolvedNode, IdCollision, IndexedNode, MatchType, ModificationError,
-    ModificationResult, PathEntry, PathMatch, RegistryBuildResult, RegistryIndex, ResolvedNode,
-    ResolveError, ResolveMode, SkeletonRerankOptions, SkeletonValidatedHit, StructureUpdateSignal,
-    StructuralTransaction, StructuralTransactionCoordinator, TopologyIndex, adjust_line_range,
+    ModificationResult, PathEntry, PathMatch, RegistryBuildResult, RegistryIndex, ResolveError,
+    ResolveMode, ResolvedNode, SkeletonRerankOptions, SkeletonValidatedHit, StructuralTransaction,
+    StructuralTransactionCoordinator, StructureUpdateSignal, TopologyIndex, adjust_line_range,
     build_hash_index, build_id_index, replace_byte_range, resolve_node, resolve_with_indices,
     skeleton_rerank, update_section_content,
 };
@@ -52,9 +52,10 @@ pub use index::search::quantum_fusion::vector_ignition::VectorStoreSemanticIgnit
 pub use index::{
     LinkGraphCacheBuildMeta, LinkGraphIndex, LinkGraphRefreshMode, QuantumContextBuildError,
     QuantumSemanticIgnition, QuantumSemanticIgnitionError, QuantumSemanticIgnitionFuture,
+    SymbolRef,
 };
 pub use models::{
-    LINK_GRAPH_POLICY_REASON_VOCAB, LINK_GRAPH_REASON_BACKEND_UNAVAILABLE,
+    CognitiveTraceRecord, LINK_GRAPH_POLICY_REASON_VOCAB, LINK_GRAPH_REASON_BACKEND_UNAVAILABLE,
     LINK_GRAPH_REASON_GRAPH_INSUFFICIENT, LINK_GRAPH_REASON_GRAPH_ONLY_PAYLOAD_MODE_CONFLICT,
     LINK_GRAPH_REASON_GRAPH_ONLY_PAYLOAD_OVERRIDDEN, LINK_GRAPH_REASON_GRAPH_ONLY_POLICY_MISSING,
     LINK_GRAPH_REASON_GRAPH_ONLY_REQUESTED, LINK_GRAPH_REASON_GRAPH_ONLY_REQUESTED_EMPTY,
@@ -75,17 +76,19 @@ pub use models::{
     MarkdownBlock, MarkdownBlockKind, PageIndexMeta, PageIndexNode, QuantumAnchorHit,
     QuantumContext, QuantumFusionOptions, QuantumFusionTelemetry, QuantumSemanticSearchRequest,
 };
-pub use parser::blocks::extract_blocks;
 pub use narrator::narrate_subgraph;
+pub use parser::blocks::extract_blocks;
 pub use query::{ParsedLinkGraphQuery, parse_search_query};
 pub use runtime_config::{
     LinkGraphIndexRuntimeConfig, resolve_link_graph_index_runtime,
     set_link_graph_config_home_override, set_link_graph_wendao_config_override,
 };
 pub use saliency::{
-    LINK_GRAPH_SALIENCY_SCHEMA_VERSION, LinkGraphSaliencyPolicy, LinkGraphSaliencyState,
-    LinkGraphSaliencyTouchRequest, compute_link_graph_saliency, valkey_saliency_del,
-    valkey_saliency_get, valkey_saliency_get_many, valkey_saliency_get_many_with_valkey,
+    LINK_GRAPH_SALIENCY_SCHEMA_VERSION, LinkGraphSaliencyDecaySweepRequest,
+    LinkGraphSaliencyDecaySweepResult, LinkGraphSaliencyPolicy, LinkGraphSaliencyState,
+    LinkGraphSaliencyTouchRequest, compute_link_graph_saliency, valkey_saliency_decay_all,
+    valkey_saliency_decay_all_with_valkey, valkey_saliency_del, valkey_saliency_get,
+    valkey_saliency_get_many, valkey_saliency_get_many_with_valkey,
     valkey_saliency_get_with_valkey, valkey_saliency_touch, valkey_saliency_touch_with_valkey,
 };
 pub use stats_cache::{

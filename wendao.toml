@@ -1,0 +1,35 @@
+# Wendao Kernel Configuration (Project AnchoR Edition)
+# :ID: wendao-config-v1
+
+[link_graph]
+backend = "wendao"
+# Watch all markdown and ZK-style docs
+watch_patterns = ["**/*.md", "**/*.markdown", "**/SKILL.md"]
+include_dirs_auto = true
+include_dirs_auto_candidates = ["docs", "assets/knowledge", "packages"]
+
+# Gateway HTTP server configuration
+[gateway]
+# Port for the Wendao API gateway (default: 9517)
+port = 9517
+# Webhook configuration for semantic drift notifications
+# Priority: webhook_url here > WENDAO_WEBHOOK_URL env var
+webhook_url = "http://127.0.0.1:9999"
+webhook_enabled = true
+# webhook_secret = "your-secret-key"
+
+[link_graph.cache]
+valkey_url = "redis://127.0.0.1:6379/0"
+key_prefix = "xiuxian_wendao:link_graph:index"
+ttl_seconds = 3600
+
+[link_graph.related_ppr]
+max_candidates = 4096
+time_budget_ms = 500.0
+
+[link_graph.agentic.search]
+include_provisional_default = true
+provisional_limit = 100
+
+[link_graph.index.delta]
+full_rebuild_threshold = 512

@@ -1,10 +1,21 @@
 ---
 source: packages/rust/crates/xiuxian-testing/src/scenario.rs
+description: "Scenario 016_agentic_execution_without_persistence [agentic_expansion]: Agentic Expansion "
 expression: result
+info:
+  id: 016_agentic_execution_without_persistence
+  name: "Agentic Expansion "
+  category: agentic_expansion
+  description: "Agentic expansion scenario: execution_without_persistence"
+  input_type: markdown_tree
+  input_paths:
+    - input
+  expected_output_type: ~
+input_file: packages/rust/crates/xiuxian-wendao/tests/scenarios/016_agentic_execution_without_persistence/scenario.toml
 ---
 {
-  "scenario_id": "016_agentic_execution_without_persistence",
   "category": "agentic_expansion",
-  "status": "validated",
-  "files": []
+  "files": [],
+  "scenario_id": "016_agentic_execution_without_persistence",
+  "status": "validated"
 }

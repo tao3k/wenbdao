@@ -1,6 +1,7 @@
 //! Markdown note parsing for link-graph indexing.
 
 pub mod blocks;
+pub mod code_observation;
 mod content;
 mod links;
 mod paths;
@@ -20,6 +21,7 @@ use self::sections::extract_sections;
 use self::time::resolve_note_timestamps;
 
 pub use self::blocks::extract_blocks;
+pub use self::code_observation::{CodeObservation, extract_observations};
 pub use self::paths::{is_supported_note, normalize_alias};
 pub use self::sections::{LogbookEntry, ParsedSection};
 

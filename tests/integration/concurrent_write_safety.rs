@@ -6,7 +6,7 @@
 //! - The order of independent edits doesn't affect the final result
 //! - Content hash verification prevents lost updates
 
-use xiuxian_wendao::link_graph::{replace_byte_range, ModificationError};
+use xiuxian_wendao::link_graph::{ModificationError, replace_byte_range};
 
 /// Test that two non-overlapping byte range edits can be applied concurrently.
 ///
@@ -100,7 +100,10 @@ fn test_hash_verification_prevents_lost_updates() {
     // Edit with wrong hash fails (content was modified by another agent)
     let wrong_hash = "wronghash";
     let result = replace_byte_range(original, 7, 12, "Python", Some(wrong_hash));
-    assert!(matches!(result, Err(ModificationError::HashMismatch { .. })));
+    assert!(matches!(
+        result,
+        Err(ModificationError::HashMismatch { .. })
+    ));
 }
 
 /// Test that structural path enables path-aware conflict detection.

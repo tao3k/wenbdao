@@ -1,10 +1,20 @@
 ---
 source: packages/rust/crates/xiuxian-testing/src/scenario.rs
+description: "Scenario 047_search_strat_parse_path_fuzzy [search_match_strategies]: parse path fuzzy"
 expression: result
+info:
+  id: 047_search_strat_parse_path_fuzzy
+  name: parse path fuzzy
+  category: search_match_strategies
+  description: search_match_strategies scenario (no input)
+  input_type: none
+  input_paths: []
+  expected_output_type: ~
+input_file: packages/rust/crates/xiuxian-wendao/tests/scenarios/047_search_strat_parse_path_fuzzy/scenario.toml
 ---
 {
-  "scenario_id": "047_search_strat_parse_path_fuzzy",
   "category": "search_match_strategies",
-  "status": "no_input",
-  "files": []
+  "files": [],
+  "scenario_id": "047_search_strat_parse_path_fuzzy",
+  "status": "no_input"
 }

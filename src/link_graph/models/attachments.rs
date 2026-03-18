@@ -115,7 +115,7 @@ pub struct LinkGraphAttachment {
     pub attachment_ext: String,
     /// Attachment kind inferred from extension.
     pub kind: LinkGraphAttachmentKind,
-    /// Vision annotation (optional, injected by VisionIngress).
+    /// Vision annotation (optional, injected by `VisionIngress`).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub vision_annotation: Option<VisionAnnotation>,
 }

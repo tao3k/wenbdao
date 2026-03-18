@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use super::MarkdownBlock;
-use crate::link_graph::parser::LogbookEntry;
+use crate::link_graph::parser::{CodeObservation, LogbookEntry};
 
 /// One hierarchical `PageIndex` node derived from a markdown heading section.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -38,7 +38,7 @@ pub struct PageIndexMeta {
     pub line_range: (usize, usize),
     /// Optional byte range for precise AST-level mutations.
     pub byte_range: Option<(usize, usize)>,
-    /// Hierarchical structural path (e.g., ["Heading", "Architecture", "Storage"]).
+    /// Hierarchical structural path (e.g., `["Heading", "Architecture", "Storage"]`).
     pub structural_path: Vec<String>,
     /// Content-based fingerprint (Blake3 hash) for self-healing and deduplication.
     pub content_hash: Option<String>,
@@ -50,4 +50,6 @@ pub struct PageIndexMeta {
     pub is_thinned: bool,
     /// Execution log entries from :LOGBOOK: drawer (Blueprint v2.4).
     pub logbook: Vec<LogbookEntry>,
+    /// Code observations from :OBSERVE: property drawer (Blueprint v2.7).
+    pub observations: Vec<CodeObservation>,
 }

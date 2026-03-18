@@ -1,4 +1,4 @@
-//! Unit tests for markdown_block module.
+//! Unit tests for `markdown_block` module.
 
 use super::*;
 
@@ -92,14 +92,18 @@ fn test_block_kind_specifier_parse() {
 fn test_block_address_parse() {
     let addr = BlockAddress::parse("Paragraph[2]");
     assert!(addr.is_some());
-    let addr = addr.unwrap();
+    let Some(addr) = addr else {
+        panic!("paragraph block address should parse");
+    };
     assert_eq!(addr.kind, BlockKindSpecifier::Paragraph);
     assert_eq!(addr.index, 2);
     assert!(addr.sub_index.is_none());
 
     let addr = BlockAddress::parse("CodeFence[0]");
     assert!(addr.is_some());
-    let addr = addr.unwrap();
+    let Some(addr) = addr else {
+        panic!("code fence block address should parse");
+    };
     assert_eq!(addr.kind, BlockKindSpecifier::CodeFence);
     assert_eq!(addr.index, 0);
 }
@@ -108,7 +112,9 @@ fn test_block_address_parse() {
 fn test_block_address_parse_with_sub_index() {
     let addr = BlockAddress::parse("List[1]/Item[3]");
     assert!(addr.is_some());
-    let addr = addr.unwrap();
+    let Some(addr) = addr else {
+        panic!("list item block address should parse");
+    };
     assert_eq!(addr.kind, BlockKindSpecifier::List);
     assert_eq!(addr.index, 1);
     assert_eq!(addr.sub_index, Some(3));

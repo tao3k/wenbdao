@@ -1,37 +1,48 @@
 ---
 source: packages/rust/crates/xiuxian-testing/src/scenario.rs
+description: "Scenario 003_page_index_thinning [page_index]: Page Index Thinning"
 expression: result
+info:
+  id: 003_page_index_thinning
+  name: Page Index Thinning
+  category: page_index
+  description: "Thin small parent sections that don't meet minimum word threshold"
+  input_type: markdown_tree
+  input_paths:
+    - input
+  expected_output_type: ~
+input_file: packages/rust/crates/xiuxian-wendao/tests/scenarios/003_page_index_thinning/scenario.toml
 ---
 {
   "nodes": [
     {
-      "node_id": "docs/thin#thin",
-      "title": "Thin",
-      "level": 1,
-      "text": "small intro\n\nNested\nchild text that should be folded into the parent section during thinning.",
-      "summary": null,
-      "line_range": [
-        1,
-        7
-      ],
-      "token_count": 15,
-      "is_thinned": true,
       "blocks": [
         {
           "block_id": "block-para-0",
-          "kind": "Paragraph",
           "byte_range": [
             0,
             11
           ],
+          "content_hash": "75983180b1d24832",
+          "kind": "Paragraph",
           "line_range": [
             1,
             1
-          ],
-          "content_hash": "75983180b1d24832"
+          ]
         }
       ],
-      "children": []
+      "children": [],
+      "is_thinned": true,
+      "level": 1,
+      "line_range": [
+        1,
+        7
+      ],
+      "node_id": "docs/thin#thin",
+      "summary": null,
+      "text": "small intro\n\nNested\nchild text that should be folded into the parent section during thinning.",
+      "title": "Thin",
+      "token_count": 15
     }
   ]
 }

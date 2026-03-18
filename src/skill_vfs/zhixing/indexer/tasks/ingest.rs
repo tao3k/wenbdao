@@ -16,7 +16,7 @@ impl ZhixingWendaoIndexer {
         summary: &mut ZhixingIndexSummary,
     ) -> Result<usize> {
         let agenda_dir = self.notebook_root.join("agenda");
-        let files = collect_markdown_files(&agenda_dir)?;
+        let files = collect_markdown_files(&agenda_dir);
         let mut indexed = 0usize;
 
         for file in files {
@@ -62,11 +62,7 @@ impl ZhixingWendaoIndexer {
         let agenda_entity_name = format!("Agenda {date}");
 
         // 1. Remove existing task links for this agenda document
-        self.graph
-            .remove_relations_for_source(&agenda_entity_name)
-            .map_err(|error| {
-                Error::Internal(format!("Graph operation failed during reindex: {error}"))
-            })?;
+        self.graph.remove_relations_for_source(&agenda_entity_name);
 
         if !file.exists() {
             return Ok(0);

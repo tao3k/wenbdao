@@ -1,10 +1,21 @@
 ---
 source: packages/rust/crates/xiuxian-testing/src/scenario.rs
+description: "Scenario 002_quantum_fusion_contexts [quantum_fusion]: Quantum Fusion Contexts"
 expression: result
+info:
+  id: 002_quantum_fusion_contexts
+  name: Quantum Fusion Contexts
+  category: quantum_fusion
+  description: "Build quantum contexts from anchor hits, fusing vector and topology scores"
+  input_type: markdown_tree
+  input_paths:
+    - input/docs
+  expected_output_type: ~
+input_file: packages/rust/crates/xiuxian-wendao/tests/scenarios/006_quantum_fusion_contexts/scenario.toml
 ---
 {
-  "scenario_id": "002_quantum_fusion_contexts",
   "category": "quantum_fusion",
-  "status": "validated",
-  "files": []
+  "files": [],
+  "scenario_id": "002_quantum_fusion_contexts",
+  "status": "validated"
 }

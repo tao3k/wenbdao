@@ -85,6 +85,7 @@ pub(super) fn should_skip_entry(
         return true;
     }
 
+    let mut prefix_components = Vec::new();
     let mut components = relative
         .split('/')
         .filter(|value| !value.is_empty())
@@ -94,7 +95,15 @@ pub(super) fn should_skip_entry(
         if !is_dir && is_last {
             break;
         }
+        prefix_components.push(component);
+        let current_prefix = prefix_components.join("/");
         if component.starts_with('.') {
+            let explicitly_included = !include_dirs.is_empty()
+                && (is_under_any_prefix(&current_prefix, include_dirs)
+                    || is_ancestor_of_any_prefix(&current_prefix, include_dirs));
+            if explicitly_included {
+                continue;
+            }
             return true;
         }
     }
@@ -103,9 +112,32 @@ pub(super) fn should_skip_entry(
         return false;
     }
 
-    relative
+    let mut prefix_components = Vec::new();
+    let mut components = relative
         .split('/')
-        .any(|component| excluded_dirs.contains(component.to_lowercase().as_str()))
+        .filter(|value| !value.is_empty())
+        .peekable();
+    while let Some(component) = components.next() {
+        let is_last = components.peek().is_none();
+        if !is_dir && is_last {
+            break;
+        }
+        prefix_components.push(component);
+        let current_prefix = prefix_components.join("/");
+        let is_excluded = excluded_dirs.contains(component.to_lowercase().as_str());
+        if !is_excluded {
+            continue;
+        }
+        let explicitly_included = !include_dirs.is_empty()
+            && (is_under_any_prefix(&current_prefix, include_dirs)
+                || is_ancestor_of_any_prefix(&current_prefix, include_dirs));
+        if explicitly_included {
+            continue;
+        }
+        return true;
+    }
+
+    false
 }
 
 pub(super) fn is_supported_note_candidate(path: &Path) -> bool {

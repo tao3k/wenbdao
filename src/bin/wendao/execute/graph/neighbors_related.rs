@@ -87,7 +87,7 @@ pub(super) fn handle_related(
     if args.verbose {
         let (results, diagnostics) =
             index.related_with_diagnostics(resolved, bounded_distance, bounded_limit, ppr.as_ref());
-        let phases = build_related_monitor_phases(diagnostics.clone());
+        let phases = build_related_monitor_phases(diagnostics);
         let payload = json!({
             "stem": args.stem,
             "max_distance": bounded_distance,

@@ -1,10 +1,21 @@
 ---
 source: packages/rust/crates/xiuxian-testing/src/scenario.rs
+description: "Scenario 054_seed_structural_priors_architecture_hub [seed_and_priors]: structural priors architecture hub"
 expression: result
+info:
+  id: 054_seed_structural_priors_architecture_hub
+  name: structural priors architecture hub
+  category: seed_and_priors
+  description: seed_and_priors scenario
+  input_type: markdown_tree
+  input_paths:
+    - input
+  expected_output_type: ~
+input_file: packages/rust/crates/xiuxian-wendao/tests/scenarios/054_seed_structural_priors_architecture_hub/scenario.toml
 ---
 {
-  "scenario_id": "054_seed_structural_priors_architecture_hub",
   "category": "seed_and_priors",
-  "status": "validated",
-  "files": []
+  "files": [],
+  "scenario_id": "054_seed_structural_priors_architecture_hub",
+  "status": "validated"
 }

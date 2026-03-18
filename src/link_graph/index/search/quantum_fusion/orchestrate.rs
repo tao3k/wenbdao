@@ -4,6 +4,9 @@ use super::scoring::{
     BatchQuantumScorer, BatchQuantumScorerError, QUANTUM_SALIENCY_COLUMN,
     topology_score_from_ranked,
 };
+use super::topology_expansion::{
+    collect_related_clusters, quantum_related_limit_for_doc, resolve_quantum_related_limits,
+};
 use crate::link_graph::index::LinkGraphIndex;
 use crate::link_graph::models::{QuantumAnchorHit, QuantumContext, QuantumFusionOptions};
 use arrow::array::{Array, Float64Array, StringArray};
@@ -172,13 +175,11 @@ impl LinkGraphIndex {
                 let anchor_id = candidate.anchor_id;
                 let doc_id = anchor_id
                     .split_once('#')
-                    .map(|(doc_id, _)| doc_id)
-                    .unwrap_or(anchor_id.as_str())
+                    .map_or(anchor_id.as_str(), |(doc_id, _)| doc_id)
                     .to_string();
                 let path = self
                     .get_doc(doc_id.as_str())
-                    .map(|doc| doc.path.clone())
-                    .unwrap_or_else(|| doc_id.clone());
+                    .map_or_else(|| doc_id.clone(), |doc| doc.path.clone());
                 let trace_label =
                     QuantumContext::trace_label_from_semantic_path(&candidate.semantic_path);
                 QuantumContext {
@@ -210,6 +211,13 @@ impl LinkGraphIndex {
         anchors: &[QuantumAnchorHit],
         options: &QuantumFusionOptions,
     ) -> Vec<QuantumContextCandidate> {
+        let related_limits = resolve_quantum_related_limits(
+            &anchors
+                .iter()
+                .filter_map(|anchor| self.quantum_anchor_doc_id(anchor.anchor_id.as_str()))
+                .collect::<Vec<_>>(),
+            options.related_limit,
+        );
         let mut candidates = Vec::new();
 
         for anchor in anchors {
@@ -223,17 +231,18 @@ impl LinkGraphIndex {
             // 2026 Refinement: use hierarchical lineage for anchor semantic path
             let semantic_path = self.extract_lineage(anchor_id).unwrap_or_default();
 
+            let effective_related_limit = quantum_related_limit_for_doc(
+                seed_doc_id.as_str(),
+                &related_limits,
+                options.related_limit,
+            );
             let ranked = self.quantum_related_ranked_doc_ids(
                 seed_doc_id.as_str(),
                 anchor.vector_score,
                 options,
             );
-            let related_clusters = ranked
-                .iter()
-                .take(options.related_limit)
-                .map(|(doc_id, _, _)| doc_id.clone())
-                .collect::<Vec<_>>();
-            let topology_score = topology_score_from_ranked(&ranked, options.related_limit);
+            let related_clusters = collect_related_clusters(&ranked, effective_related_limit);
+            let topology_score = topology_score_from_ranked(&ranked, effective_related_limit);
 
             candidates.push(QuantumContextCandidate {
                 anchor_id: anchor_id.to_string(),

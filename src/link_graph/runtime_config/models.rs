@@ -13,6 +13,7 @@ use super::constants::{
     DEFAULT_LINK_GRAPH_AGENTIC_SEARCH_PROVISIONAL_LIMIT,
     DEFAULT_LINK_GRAPH_AGENTIC_SUGGESTED_LINK_MAX_ENTRIES, DEFAULT_LINK_GRAPH_CANDIDATE_MULTIPLIER,
     DEFAULT_LINK_GRAPH_COACTIVATION_ALPHA_SCALE, DEFAULT_LINK_GRAPH_COACTIVATION_ENABLED,
+    DEFAULT_LINK_GRAPH_COACTIVATION_HOP_DECAY_SCALE, DEFAULT_LINK_GRAPH_COACTIVATION_MAX_HOPS,
     DEFAULT_LINK_GRAPH_COACTIVATION_MAX_NEIGHBORS_PER_DIRECTION,
     DEFAULT_LINK_GRAPH_COACTIVATION_TOUCH_QUEUE_DEPTH, DEFAULT_LINK_GRAPH_HYBRID_MIN_HITS,
     DEFAULT_LINK_GRAPH_HYBRID_MIN_TOP_SCORE, DEFAULT_LINK_GRAPH_MAX_SOURCES,
@@ -71,6 +72,9 @@ pub struct LinkGraphCoactivationRuntimeConfig {
     pub enabled: bool,
     pub alpha_scale: f64,
     pub max_neighbors_per_direction: usize,
+    pub max_hops: usize,
+    pub max_total_propagations: usize,
+    pub hop_decay_scale: f64,
     pub touch_queue_depth: usize,
 }
 
@@ -81,6 +85,10 @@ impl Default for LinkGraphCoactivationRuntimeConfig {
             alpha_scale: DEFAULT_LINK_GRAPH_COACTIVATION_ALPHA_SCALE,
             max_neighbors_per_direction:
                 DEFAULT_LINK_GRAPH_COACTIVATION_MAX_NEIGHBORS_PER_DIRECTION,
+            max_hops: DEFAULT_LINK_GRAPH_COACTIVATION_MAX_HOPS,
+            max_total_propagations: DEFAULT_LINK_GRAPH_COACTIVATION_MAX_NEIGHBORS_PER_DIRECTION
+                .saturating_mul(2),
+            hop_decay_scale: DEFAULT_LINK_GRAPH_COACTIVATION_HOP_DECAY_SCALE,
             touch_queue_depth: DEFAULT_LINK_GRAPH_COACTIVATION_TOUCH_QUEUE_DEPTH,
         }
     }

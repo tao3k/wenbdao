@@ -11,8 +11,7 @@ impl KnowledgeStorage {
     /// # Errors
     ///
     /// Returns an error when entry loading fails.
-    #[allow(clippy::unused_async)]
-    pub async fn search(
+    pub fn search(
         &self,
         query: &[f32],
         limit: i32,
@@ -46,8 +45,7 @@ impl KnowledgeStorage {
     /// # Errors
     ///
     /// Returns an error when entry loading fails.
-    #[allow(clippy::unused_async)]
-    pub async fn search_text(
+    pub fn search_text(
         &self,
         query: &str,
         limit: i32,
@@ -86,8 +84,7 @@ impl KnowledgeStorage {
     /// # Errors
     ///
     /// Returns an error when entry loading fails.
-    #[allow(clippy::unused_async)]
-    pub async fn stats(&self) -> Result<KnowledgeStats, Box<dyn std::error::Error>> {
+    pub fn stats(&self) -> Result<KnowledgeStats, Box<dyn std::error::Error>> {
         let entries = self.load_all_entries()?;
         if entries.is_empty() {
             return Ok(KnowledgeStats::default());

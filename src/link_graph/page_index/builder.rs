@@ -119,6 +119,7 @@ fn build_node(
             token_count: count_tokens(&section.section_text),
             is_thinned: false,
             logbook: section.logbook.clone(),
+            observations: section.observations.clone(),
         },
     }
 }

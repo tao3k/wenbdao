@@ -1,10 +1,21 @@
 ---
 source: packages/rust/crates/xiuxian-testing/src/scenario.rs
+description: "Scenario 051_search_strat_regex_strategy [search_match_strategies]: regex strategy"
 expression: result
+info:
+  id: 051_search_strat_regex_strategy
+  name: regex strategy
+  category: search_match_strategies
+  description: search_match_strategies scenario
+  input_type: markdown_tree
+  input_paths:
+    - input
+  expected_output_type: ~
+input_file: packages/rust/crates/xiuxian-wendao/tests/scenarios/051_search_strat_regex_strategy/scenario.toml
 ---
 {
-  "scenario_id": "051_search_strat_regex_strategy",
   "category": "search_match_strategies",
-  "status": "validated",
-  "files": []
+  "files": [],
+  "scenario_id": "051_search_strat_regex_strategy",
+  "status": "validated"
 }

@@ -41,7 +41,7 @@ impl LinkGraphIndex {
         let rows = self.execute_search_with_doc_boosts(
             &parsed.query,
             effective_limit,
-            parsed.options.clone(),
+            &parsed.options,
             (!provisional_doc_boosts.is_empty()).then_some(&provisional_doc_boosts),
         );
 
@@ -131,7 +131,7 @@ impl LinkGraphIndex {
         );
 
         // Compute CCS audit before moving ownership
-        let ccs_audit = self.compute_ccs_audit(&parsed.options.style_anchors, &hits);
+        let ccs_audit = Self::compute_ccs_audit(&parsed.options.style_anchors, &hits);
 
         LinkGraphPlannedSearchPayload {
             query: parsed.query,
@@ -148,7 +148,7 @@ impl LinkGraphIndex {
             graph_confidence_level: policy.graph_confidence_level,
             retrieval_plan: Some(policy.retrieval_plan),
             results: rows,
-            provisional_suggestions: provisional_suggestions.to_vec(),
+            provisional_suggestions,
             provisional_error,
             promoted_overlay,
             ccs_audit,
@@ -156,7 +156,6 @@ impl LinkGraphIndex {
     }
 
     fn compute_ccs_audit(
-        &self,
         style_anchors: &[String],
         hits: &[LinkGraphDisplayHit],
     ) -> Option<LinkGraphCcsAudit> {

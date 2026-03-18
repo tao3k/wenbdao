@@ -1,4 +1,4 @@
-#[path = "test_link_graph_saliency/support.rs"]
+#[path = "link_graph_saliency/support.rs"]
 mod support;
 use support::{TEST_VALKEY_URL, clear_prefix, unique_prefix};
 use xiuxian_wendao::link_graph::{

@@ -82,10 +82,10 @@ fn load_from_valkey_impl(scope_key: &str) -> Result<KnowledgeGraph, GraphError> 
 /// Invalidate cache for the given scope key.
 pub fn invalidate(scope_key: &str) {
     let key = normalize_scope(scope_key);
-    if let Ok(mut cache) = KG_CACHE.lock() {
-        if cache.remove(&key).is_some() {
-            debug!("KG cache invalidated for scope: {key}");
-        }
+    if let Ok(mut cache) = KG_CACHE.lock()
+        && cache.remove(&key).is_some()
+    {
+        debug!("KG cache invalidated for scope: {key}");
     }
 }
 

@@ -64,7 +64,7 @@ impl DenseCluster {
                 .iter()
                 .filter_map(|id| saliency_map.get(id))
                 .sum::<f64>()
-                / members.len() as f64
+                / usize_to_f64_saturating(members.len())
         };
 
         // Count internal edges
@@ -80,7 +80,8 @@ impl DenseCluster {
         // possible_edges = n * (n-1) for directed graph
         let n = members.len();
         let possible_edges = if n > 1 { n * (n - 1) } else { 1 };
-        let edge_density = internal_edges as f64 / possible_edges as f64;
+        let edge_density =
+            usize_to_f64_saturating(internal_edges) / usize_to_f64_saturating(possible_edges);
 
         Self {
             members,
@@ -103,9 +104,9 @@ impl DenseCluster {
 ///
 /// # Arguments
 /// * `high_saliency_nodes` - Nodes that exceed the saliency threshold
-/// * `outgoing` - Map from node_id to its outgoing edge targets
-/// * `incoming` - Map from node_id to its incoming edge sources
-/// * `saliency_map` - Map from node_id to its saliency value
+/// * `outgoing` - Map from `node_id` to its outgoing edge targets
+/// * `incoming` - Map from `node_id` to its incoming edge sources
+/// * `saliency_map` - Map from `node_id` to its saliency value
 ///
 /// # Returns
 /// List of valid dense clusters, sorted by average saliency (descending).
@@ -253,82 +254,13 @@ fn compute_edge_density(
 
     let n = members.len();
     let possible_edges = n * (n - 1);
-    internal_edges as f64 / possible_edges as f64
+    usize_to_f64_saturating(internal_edges) / usize_to_f64_saturating(possible_edges)
+}
+
+fn usize_to_f64_saturating(value: usize) -> f64 {
+    u32::try_from(value).map_or(f64::from(u32::MAX), f64::from)
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn make_saliency_map(nodes: &[(&str, f64)]) -> HashMap<String, f64> {
-        nodes.iter().map(|(id, s)| (id.to_string(), *s)).collect()
-    }
-
-    fn make_edge_map(edges: &[(&str, &str)]) -> HashMap<String, HashSet<String>> {
-        let mut map: HashMap<String, HashSet<String>> = HashMap::new();
-        for (from, to) in edges {
-            map.entry(from.to_string())
-                .or_default()
-                .insert(to.to_string());
-        }
-        map
-    }
-
-    #[test]
-    fn test_empty_cluster() {
-        let saliency = make_saliency_map(&[]);
-        let outgoing = HashMap::new();
-        let cluster = DenseCluster::new(vec![], &saliency, &outgoing);
-        assert_eq!(cluster.members.len(), 0);
-        assert_eq!(cluster.avg_saliency, 0.0);
-        assert!(!cluster.is_valid());
-    }
-
-    #[test]
-    fn test_cluster_validity() {
-        let saliency = make_saliency_map(&[("a", 0.8), ("b", 0.85), ("c", 0.9)]);
-        // a -> b, b -> c, c -> a (density = 3/6 = 0.5)
-        let outgoing = make_edge_map(&[("a", "b"), ("b", "c"), ("c", "a")]);
-        let cluster = DenseCluster::new(
-            vec!["a".to_string(), "b".to_string(), "c".to_string()],
-            &saliency,
-            &outgoing,
-        );
-        assert!(cluster.is_valid());
-        assert!((cluster.edge_density - 0.5).abs() < 0.01);
-    }
-
-    #[test]
-    fn test_low_density_cluster_invalid() {
-        let saliency = make_saliency_map(&[("a", 0.8), ("b", 0.85), ("c", 0.9)]);
-        // Only a -> b (density = 1/6 = 0.167)
-        let outgoing = make_edge_map(&[("a", "b")]);
-        let cluster = DenseCluster::new(
-            vec!["a".to_string(), "b".to_string(), "c".to_string()],
-            &saliency,
-            &outgoing,
-        );
-        assert!(!cluster.is_valid()); // density < MIN_EDGE_DENSITY
-    }
-
-    #[test]
-    fn test_find_clusters_insufficient_nodes() {
-        let high = vec!["a".to_string(), "b".to_string()];
-        let outgoing = HashMap::new();
-        let incoming = HashMap::new();
-        let saliency = make_saliency_map(&[("a", 0.8), ("b", 0.85)]);
-
-        let clusters = find_dense_clusters(&high, &outgoing, &incoming, &saliency);
-        assert!(clusters.is_empty());
-    }
-
-    #[test]
-    fn test_min_cluster_size_constant() {
-        assert_eq!(MIN_CLUSTER_SIZE, 3);
-    }
-
-    #[test]
-    fn test_min_edge_density_constant() {
-        assert!((MIN_EDGE_DENSITY - 0.4).abs() < f64::EPSILON);
-    }
-}
+#[path = "../../../../tests/unit/link_graph/index/build/cluster_finder.rs"]
+mod tests;

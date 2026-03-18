@@ -1,10 +1,20 @@
 ---
 source: packages/rust/crates/xiuxian-testing/src/scenario.rs
+description: "Scenario 037_ppr_prec_weighted_seed_precision_impact [ppr_precision]: weighted seed precision impact"
 expression: result
+info:
+  id: 037_ppr_prec_weighted_seed_precision_impact
+  name: weighted seed precision impact
+  category: ppr_precision
+  description: ppr_precision scenario (no input)
+  input_type: none
+  input_paths: []
+  expected_output_type: ~
+input_file: packages/rust/crates/xiuxian-wendao/tests/scenarios/037_ppr_prec_weighted_seed_precision_impact/scenario.toml
 ---
 {
-  "scenario_id": "037_ppr_prec_weighted_seed_precision_impact",
   "category": "ppr_precision",
-  "status": "no_input",
-  "files": []
+  "files": [],
+  "scenario_id": "037_ppr_prec_weighted_seed_precision_impact",
+  "status": "no_input"
 }

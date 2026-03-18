@@ -67,12 +67,17 @@ impl LinkGraphIndex {
             }
 
             if let Some(alias) = normalized_relative_note_alias(&candidate, &self.root)
-                && let Some(existing_id) = self.resolve_doc_id(&alias).map(|s| s.to_string())
+                && let Some(existing_id) = self
+                    .resolve_doc_id(&alias)
+                    .map(std::string::ToString::to_string)
             {
                 self.remove_doc_by_id(&existing_id);
             } else if let Some(stem) = candidate.file_stem().and_then(|v| v.to_str()) {
                 let stem_alias = normalize_alias(stem);
-                if let Some(existing_id) = self.resolve_doc_id(&stem_alias).map(|s| s.to_string()) {
+                if let Some(existing_id) = self
+                    .resolve_doc_id(&stem_alias)
+                    .map(std::string::ToString::to_string)
+                {
                     self.remove_doc_by_id(&existing_id);
                 }
             }

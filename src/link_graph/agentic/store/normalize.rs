@@ -24,7 +24,7 @@ pub fn normalize_record_for_read(mut record: LinkGraphSuggestedLink) -> LinkGrap
 }
 
 pub fn normalize_request(
-    request: LinkGraphSuggestedLinkRequest,
+    request: &LinkGraphSuggestedLinkRequest,
 ) -> Result<LinkGraphSuggestedLink, String> {
     let source_id = request.source_id.trim().to_string();
     if source_id.is_empty() {
@@ -82,7 +82,7 @@ pub fn normalize_request(
 }
 
 pub fn normalize_decision_request(
-    request: LinkGraphSuggestedLinkDecisionRequest,
+    request: &LinkGraphSuggestedLinkDecisionRequest,
 ) -> Result<(String, LinkGraphSuggestedLinkState, String, String, f64), String> {
     let suggestion_id = request.suggestion_id.trim().to_string();
     if suggestion_id.is_empty() {

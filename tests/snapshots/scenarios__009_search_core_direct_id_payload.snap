@@ -1,10 +1,21 @@
 ---
 source: packages/rust/crates/xiuxian-testing/src/scenario.rs
+description: "Scenario 009_search_core_direct_id_payload [search_core]: Search Core Direct ID Payload"
 expression: result
+info:
+  id: 009_search_core_direct_id_payload
+  name: Search Core Direct ID Payload
+  category: search_core
+  description: Direct ID match with payload context
+  input_type: markdown_tree
+  input_paths:
+    - input
+  expected_output_type: ~
+input_file: packages/rust/crates/xiuxian-wendao/tests/scenarios/009_search_core_direct_id_payload/scenario.toml
 ---
 {
-  "scenario_id": "009_search_core_direct_id_payload",
   "category": "search_core",
-  "status": "validated",
-  "files": []
+  "files": [],
+  "scenario_id": "009_search_core_direct_id_payload",
+  "status": "validated"
 }

@@ -4,4 +4,4 @@
 
 pub mod runners;
 
-pub use runners::{GraphRunner, PageIndexRunner, SearchRunner};
+pub use runners::{GraphRunner, PageIndexRunner, SearchRunner, SemanticCheckRunner};

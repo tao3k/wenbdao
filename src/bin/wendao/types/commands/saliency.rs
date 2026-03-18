@@ -4,6 +4,11 @@ use clap::Subcommand;
 pub(crate) enum SaliencyCommand {
     /// Read a saliency state by node id.
     Get { node_id: String },
+    /// Settle all persisted saliency states forward in time.
+    Decay {
+        #[arg(long)]
+        now_unix: Option<i64>,
+    },
     /// Touch a node and update saliency with decay + activation.
     Touch {
         node_id: String,

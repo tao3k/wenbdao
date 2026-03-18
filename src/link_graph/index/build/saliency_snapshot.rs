@@ -24,7 +24,7 @@ pub const MIN_ACTIVATION_COUNT: u64 = 3;
 /// Snapshot of saliency states captured at build time.
 #[derive(Debug, Clone, Default)]
 pub struct SaliencySnapshot {
-    /// Map from node_id to saliency state.
+    /// Map from `node_id` to saliency state.
     pub states: HashMap<String, LinkGraphSaliencyState>,
     /// Node IDs that exceed the high saliency threshold.
     pub high_saliency_nodes: Vec<String>,
@@ -74,10 +74,7 @@ impl SaliencySnapshot {
     /// Get saliency value for a specific node, defaulting to 0.0.
     #[must_use]
     pub fn saliency_of(&self, node_id: &str) -> f64 {
-        self.states
-            .get(node_id)
-            .map(|s| s.current_saliency)
-            .unwrap_or(0.0)
+        self.states.get(node_id).map_or(0.0, |s| s.current_saliency)
     }
 
     /// Check if a node qualifies as high saliency.
@@ -105,7 +102,7 @@ impl SaliencySnapshot {
             return 0.0;
         }
         let sum: f64 = self.states.values().map(|s| s.current_saliency).sum();
-        sum / self.states.len() as f64
+        sum / usize_to_f64_saturating(self.states.len())
     }
 
     /// Get top N nodes by saliency.
@@ -121,39 +118,10 @@ impl SaliencySnapshot {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_empty_snapshot() {
-        let snapshot = SaliencySnapshot::empty();
-        assert_eq!(snapshot.known_count(), 0);
-        assert_eq!(snapshot.high_saliency_count(), 0);
-        assert_eq!(snapshot.saliency_of("unknown"), 0.0);
-        assert!(!snapshot.is_high_saliency("unknown"));
-    }
-
-    #[test]
-    fn test_average_saliency_empty() {
-        let snapshot = SaliencySnapshot::empty();
-        assert_eq!(snapshot.average_saliency(), 0.0);
-    }
-
-    #[test]
-    fn test_top_n_empty() {
-        let snapshot = SaliencySnapshot::empty();
-        let top = snapshot.top_n(5);
-        assert!(top.is_empty());
-    }
-
-    #[test]
-    fn test_saliency_threshold_constant() {
-        assert!((SALIENCY_THRESHOLD_HIGH - 0.70).abs() < f64::EPSILON);
-    }
-
-    #[test]
-    fn test_min_activation_constant() {
-        assert_eq!(MIN_ACTIVATION_COUNT, 3);
-    }
+fn usize_to_f64_saturating(value: usize) -> f64 {
+    u32::try_from(value).map_or(f64::from(u32::MAX), f64::from)
 }
+
+#[cfg(test)]
+#[path = "../../../../tests/unit/link_graph/index/build/saliency_snapshot.rs"]
+mod tests;

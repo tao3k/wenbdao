@@ -159,7 +159,10 @@ pub(super) fn strip_fragment_and_query(raw: &str) -> &str {
 }
 
 pub(super) fn has_supported_note_extension(path: &str) -> bool {
-    path.ends_with(".md") || path.ends_with(".markdown")
+    std::path::Path::new(path)
+        .extension()
+        .and_then(|ext| ext.to_str())
+        .is_some_and(|ext| matches!(ext.to_ascii_lowercase().as_str(), "md" | "markdown"))
 }
 
 pub(super) fn normalize_markdown_note_target(

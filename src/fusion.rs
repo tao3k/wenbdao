@@ -4,6 +4,7 @@
 //! `Python` provides a thin wrapper (`LinkGraph` data fetch); all score computation runs here.
 
 use std::collections::{HashMap, HashSet};
+use std::hash::BuildHasher;
 
 /// Apply `LinkGraph` link and tag proximity boost to recall results.
 ///
@@ -12,13 +13,18 @@ use std::collections::{HashMap, HashSet};
 /// - Add `tag_boost` to both scores when stems share tags
 ///
 /// Results are re-sorted by score (descending) in place.
-pub fn apply_link_graph_proximity_boost(
+pub fn apply_link_graph_proximity_boost<LinksHasher, LinkSetHasher, TagsHasher, TagSetHasher>(
     results: &mut [RecallResult],
-    stem_links: &HashMap<String, HashSet<String>>,
-    stem_tags: &HashMap<String, HashSet<String>>,
+    stem_links: &HashMap<String, HashSet<String, LinkSetHasher>, LinksHasher>,
+    stem_tags: &HashMap<String, HashSet<String, TagSetHasher>, TagsHasher>,
     link_boost: f64,
     tag_boost: f64,
-) {
+) where
+    LinksHasher: BuildHasher,
+    LinkSetHasher: BuildHasher,
+    TagsHasher: BuildHasher,
+    TagSetHasher: BuildHasher,
+{
     if results.len() < 2 {
         return;
     }
@@ -91,6 +97,7 @@ pub struct RecallResult {
 
 impl RecallResult {
     /// Create a new recall result.
+    #[must_use]
     pub fn new(source: String, score: f64, content: String, title: String) -> Self {
         Self {
             source,

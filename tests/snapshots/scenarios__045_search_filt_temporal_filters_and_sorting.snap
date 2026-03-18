@@ -1,10 +1,21 @@
 ---
 source: packages/rust/crates/xiuxian-testing/src/scenario.rs
+description: "Scenario 045_search_filt_temporal_filters_and_sorting [search_filters]: temporal filters and sorting"
 expression: result
+info:
+  id: 045_search_filt_temporal_filters_and_sorting
+  name: temporal filters and sorting
+  category: search_filters
+  description: search_filters scenario
+  input_type: markdown_tree
+  input_paths:
+    - input
+  expected_output_type: ~
+input_file: packages/rust/crates/xiuxian-wendao/tests/scenarios/045_search_filt_temporal_filters_and_sorting/scenario.toml
 ---
 {
-  "scenario_id": "045_search_filt_temporal_filters_and_sorting",
   "category": "search_filters",
-  "status": "validated",
-  "files": []
+  "files": [],
+  "scenario_id": "045_search_filt_temporal_filters_and_sorting",
+  "status": "validated"
 }

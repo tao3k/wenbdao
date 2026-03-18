@@ -9,7 +9,7 @@ publish = false
 default-run = "wendao"
 
 [features]
-default = []
+default = ["zhenfa-router"]
 zhenfa-router = ["dep:axum"]
 
 [[bin]]
@@ -47,6 +47,9 @@ xiuxian-logging = { path = "../xiuxian-logging" }
 xiuxian-vector = { path = "../xiuxian-vector" }
 xiuxian-io = { path = "../xiuxian-io" }
 xiuxian-llm = { path = "../xiuxian-llm" }
+xiuxian-ast = { path = "../xiuxian-ast" }
+xiuxian-config-core = { path = "../xiuxian-config-core" }
+xiuxian-testing = { path = "../xiuxian-testing" }
 
 # Macro utilities
 xiuxian-macros = { path = "../xiuxian-macros" }
@@ -59,6 +62,9 @@ xxhash-rust = "0.8"
 
 # Content fingerprinting (Blake3)
 blake3 = "1"
+
+# SHA-256 for surgical fix verification (Blueprint v3.0)
+sha2 = "0.10"
 
 # Fast regex for entity reference extraction (10-100x faster than Python)
 regex = "1"
@@ -89,11 +95,17 @@ axum = { workspace = true, optional = true }
 xiuxian-zhenfa = { path = "../xiuxian-zhenfa" }
 url = "2.5.7"
 
+# Real-time observation (Project Sentinel Phase 2)
+notify = "8.2.0"
+notify-debouncer-full = "0.7.0"
+
+# HTTP client for webhook notifications (Phase 7 ForwardNotifier)
+reqwest = { workspace = true }
+
 [dev-dependencies]
 tempfile = { workspace = true }
 reqwest = { workspace = true }
 insta = { workspace = true }
-xiuxian-testing = { path = "../xiuxian-testing" }
 
 [lints]
 workspace = true

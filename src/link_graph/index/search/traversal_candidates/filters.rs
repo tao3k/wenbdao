@@ -7,10 +7,10 @@ impl LinkGraphIndex {
     pub(in crate::link_graph::index::search) fn combine_candidates(
         current: Option<HashSet<String>>,
         incoming: HashSet<String>,
-    ) -> Option<HashSet<String>> {
+    ) -> HashSet<String> {
         match current {
-            None => Some(incoming),
-            Some(existing) => Some(existing.intersection(&incoming).cloned().collect()),
+            None => incoming,
+            Some(existing) => existing.intersection(&incoming).cloned().collect(),
         }
     }
 

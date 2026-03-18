@@ -1,0 +1,36 @@
+---
+source: packages/rust/crates/xiuxian-wendao/src/gateway/studio/../../../tests/unit/gateway/studio/support.rs
+expression: value
+---
+{
+  "entries": [
+    {
+      "isDir": true,
+      "name": "docs",
+      "path": "docs",
+      "projectName": "alpha",
+      "rootLabel": "docs"
+    },
+    {
+      "isDir": true,
+      "name": "docs",
+      "path": "docs-2",
+      "projectName": "beta",
+      "rootLabel": "docs"
+    },
+    {
+      "isDir": false,
+      "name": "guide.md",
+      "path": "docs-2/guide.md",
+      "projectName": "beta",
+      "rootLabel": "docs"
+    },
+    {
+      "isDir": false,
+      "name": "guide.md",
+      "path": "docs/guide.md",
+      "projectName": "alpha",
+      "rootLabel": "docs"
+    }
+  ]
+}

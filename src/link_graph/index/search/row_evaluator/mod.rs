@@ -3,6 +3,7 @@ use super::super::{
     score_path_fields,
 };
 use super::context::{SearchExecutionContext, SearchRuntimePolicy};
+use super::strategy::StrategyScoreInputs;
 use std::collections::HashSet;
 
 impl LinkGraphIndex {
@@ -61,17 +62,19 @@ impl LinkGraphIndex {
         let (doc_score, doc_reason) = self.score_doc_for_strategy(
             doc,
             options,
-            raw_query,
-            &context.clean_query,
-            &context.query_tokens,
-            runtime_policy.scope,
-            runtime_policy.collapse_to_doc,
-            &section_candidates,
-            section_match.as_ref(),
-            section_score,
-            path_score,
-            runtime_policy.semantic_edges_enabled,
-            context.regex.as_ref(),
+            &StrategyScoreInputs {
+                raw_query,
+                clean_query: &context.clean_query,
+                query_tokens: &context.query_tokens,
+                scope: runtime_policy.scope,
+                collapse_to_doc: runtime_policy.collapse_to_doc,
+                section_candidates: &section_candidates,
+                section_match: section_match.as_ref(),
+                section_score,
+                path_score,
+                semantic_edges_enabled: runtime_policy.semantic_edges_enabled,
+                regex: context.regex.as_ref(),
+            },
         );
 
         if !matches!(runtime_policy.scope, LinkGraphScope::SectionOnly) {

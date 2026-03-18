@@ -10,7 +10,7 @@ use super::{PyKnowledgeCategory, PyKnowledgeEntry};
 pub fn create_knowledge_entry(
     title: &str,
     content: &str,
-    category: PyKnowledgeCategory,
+    category: &PyKnowledgeCategory,
     tags: Vec<String>,
     source: Option<&str>,
 ) -> PyKnowledgeEntry {

@@ -6,7 +6,7 @@
 //! ## Block Types
 //!
 //! - [`MarkdownBlock`] - Represents a single block element with byte ranges and content
-//! - [`MarkdownBlockKind`] - The type variant of a block (Paragraph, CodeFence, List, etc.)
+//! - [`MarkdownBlockKind`] - The type variant of a block (Paragraph, `CodeFence`, List, etc.)
 //!
 //! ## Usage
 //!
@@ -151,7 +151,7 @@ impl std::fmt::Display for MarkdownBlockKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Paragraph => write!(f, "Paragraph"),
-            Self::CodeFence { language } => write!(f, "CodeFence({})", language),
+            Self::CodeFence { language } => write!(f, "CodeFence({language})"),
             Self::List { ordered } => {
                 if *ordered {
                     write!(f, "OrderedList")
@@ -213,6 +213,7 @@ impl MarkdownBlock {
     /// Check if this block matches a given kind specifier.
     ///
     /// Used for block path resolution like `/Section/Paragraph[2]`.
+    #[must_use]
     pub fn matches_kind(&self, specifier: &BlockKindSpecifier) -> bool {
         match specifier {
             BlockKindSpecifier::Paragraph => self.kind == MarkdownBlockKind::Paragraph,

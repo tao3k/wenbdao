@@ -1,1 +1,1 @@
-//! LinkGraph refresh strategy selection logic.
+//! `LinkGraph` refresh strategy selection logic.

@@ -1,10 +1,21 @@
 ---
 source: packages/rust/crates/xiuxian-testing/src/scenario.rs
+description: "Scenario 038_ppr_weight_non_uniform_seed_bias [ppr_weighting]: non uniform seed bias"
 expression: result
+info:
+  id: 038_ppr_weight_non_uniform_seed_bias
+  name: non uniform seed bias
+  category: ppr_weighting
+  description: ppr_weighting scenario
+  input_type: markdown_tree
+  input_paths:
+    - input
+  expected_output_type: ~
+input_file: packages/rust/crates/xiuxian-wendao/tests/scenarios/038_ppr_weight_non_uniform_seed_bias/scenario.toml
 ---
 {
-  "scenario_id": "038_ppr_weight_non_uniform_seed_bias",
   "category": "ppr_weighting",
-  "status": "validated",
-  "files": []
+  "files": [],
+  "scenario_id": "038_ppr_weight_non_uniform_seed_bias",
+  "status": "validated"
 }

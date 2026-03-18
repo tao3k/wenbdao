@@ -8,8 +8,8 @@
 //! ## Dual-Index Architecture
 //!
 //! This module provides two complementary index types:
-//! - **RegistryIndex**: O(1) lookup for stable ID anchoring (used by agents/systems)
-//! - **TopologyIndex**: Fuzzy path discovery for human-friendly navigation
+//! - **`RegistryIndex`**: O(1) lookup for stable ID anchoring (used by agents/systems)
+//! - **`TopologyIndex`**: Fuzzy path discovery for human-friendly navigation
 //!
 //! ## Usage
 //!
@@ -45,12 +45,15 @@ mod skeleton_rerank;
 mod structural_transaction;
 mod topology;
 
+use std::collections::HashMap;
+use std::hash::BuildHasher;
+
 use crate::link_graph::models::{BlockAddress, PageIndexNode};
 
 pub use registry::{IdCollision, IndexedNode, RegistryBuildResult, RegistryIndex};
 pub use skeleton_rerank::{SkeletonRerankOptions, SkeletonValidatedHit, skeleton_rerank};
 pub use structural_transaction::{
-    StructureUpdateSignal, StructuralTransaction, StructuralTransactionCoordinator,
+    StructuralTransaction, StructuralTransactionCoordinator, StructureUpdateSignal,
 };
 pub use topology::{MatchType, PathEntry, PathMatch, TopologyIndex};
 
@@ -221,8 +224,8 @@ pub enum ResolveError {
 /// Resolve a node using dual indices with enhanced match information.
 ///
 /// This is the preferred resolution function for new code, providing:
-/// - O(1) ID lookup via RegistryIndex
-/// - Fuzzy path discovery via TopologyIndex
+/// - O(1) ID lookup via `RegistryIndex`
+/// - Fuzzy path discovery via `TopologyIndex`
 /// - Detailed match type and similarity scoring
 ///
 /// # Arguments
@@ -236,6 +239,11 @@ pub enum ResolveError {
 /// # Returns
 ///
 /// Enhanced resolution result with match metadata, or an error.
+///
+/// # Errors
+///
+/// Returns [`ResolveError::NotFound`] when the requested address cannot be resolved from either
+/// the registry index or the topology index for the provided document.
 pub fn resolve_with_indices(
     registry: &RegistryIndex,
     topology: &TopologyIndex,
@@ -244,145 +252,147 @@ pub fn resolve_with_indices(
     mode: ResolveMode,
 ) -> Result<EnhancedResolvedNode, ResolveError> {
     match address {
-        Address::Id(id) => {
-            // Direct O(1) lookup from registry
-            if let Some(indexed) = registry.get(id) {
-                return Ok(EnhancedResolvedNode {
-                    node: indexed.node.clone(),
-                    doc_id: indexed.doc_id.clone(),
-                    resolved_path: indexed.node.metadata.structural_path.clone(),
-                    resolved_id: Some(id.clone()),
-                    match_type: MatchType::Exact,
-                    similarity: 1.0,
-                });
-            }
-            // Fallback to topology hash lookup
-            if let Some(entry) = topology.find_by_hash(id) {
-                return Ok(EnhancedResolvedNode {
-                    node: build_node_from_entry(entry),
-                    doc_id: entry.doc_id.clone(),
-                    resolved_path: entry.path.clone(),
-                    resolved_id: entry.node_id.parse().ok(),
-                    match_type: MatchType::HashFallback,
-                    similarity: 0.8,
-                });
-            }
-            Err(ResolveError::NotFound {
-                address: address.to_display_string(),
-                doc_id: doc_id.to_string(),
-            })
-        }
-
+        Address::Id(id) => resolve_id_with_indices(registry, topology, address, doc_id, id),
         Address::Path(components) => {
-            match mode {
-                ResolveMode::Anchor => {
-                    // Exact path match only
-                    if let Some(entry) = topology.exact_path(doc_id, components) {
-                        return Ok(EnhancedResolvedNode {
-                            node: build_node_from_entry(entry),
-                            doc_id: entry.doc_id.clone(),
-                            resolved_path: entry.path.clone(),
-                            resolved_id: entry.node_id.parse().ok(),
-                            match_type: MatchType::Exact,
-                            similarity: 1.0,
-                        });
-                    }
-                    // Try case-insensitive match
-                    if let Some(path_match) = topology.path_case_insensitive(doc_id, components) {
-                        return Ok(EnhancedResolvedNode {
-                            node: build_node_from_entry(&path_match.entry),
-                            doc_id: path_match.doc_id,
-                            resolved_path: path_match.path,
-                            resolved_id: path_match.entry.node_id.parse().ok(),
-                            match_type: path_match.match_type,
-                            similarity: path_match.similarity_score,
-                        });
-                    }
-                    Err(ResolveError::NotFound {
-                        address: address.to_display_string(),
-                        doc_id: doc_id.to_string(),
-                    })
-                }
-                ResolveMode::Discover { fuzzy: true, max_results } => {
-                    // Fuzzy matching with path drift
-                    let query = components.join("/");
-                    let matches = topology.fuzzy_resolve(&query, max_results);
-                    if let Some(best_match) = matches.first() {
-                        return Ok(EnhancedResolvedNode {
-                            node: build_node_from_entry(&best_match.entry),
-                            doc_id: best_match.doc_id.clone(),
-                            resolved_path: best_match.path.clone(),
-                            resolved_id: best_match.entry.node_id.parse().ok(),
-                            match_type: best_match.match_type,
-                            similarity: best_match.similarity_score,
-                        });
-                    }
-                    Err(ResolveError::NotFound {
-                        address: address.to_display_string(),
-                        doc_id: doc_id.to_string(),
-                    })
-                }
-                ResolveMode::Discover { fuzzy: false, .. } => {
-                    // Non-fuzzy discover mode - same as anchor
-                    if let Some(entry) = topology.exact_path(doc_id, components) {
-                        return Ok(EnhancedResolvedNode {
-                            node: build_node_from_entry(entry),
-                            doc_id: entry.doc_id.clone(),
-                            resolved_path: entry.path.clone(),
-                            resolved_id: entry.node_id.parse().ok(),
-                            match_type: MatchType::Exact,
-                            similarity: 1.0,
-                        });
-                    }
-                    Err(ResolveError::NotFound {
-                        address: address.to_display_string(),
-                        doc_id: doc_id.to_string(),
-                    })
-                }
-            }
+            resolve_path_with_indices(topology, address, doc_id, components, mode)
         }
-
-        Address::Hash(hash) => {
-            // Self-healing via content hash
-            if let Some(entry) = topology.find_by_hash(hash) {
-                return Ok(EnhancedResolvedNode {
-                    node: build_node_from_entry(entry),
-                    doc_id: entry.doc_id.clone(),
-                    resolved_path: entry.path.clone(),
-                    resolved_id: entry.node_id.parse().ok(),
-                    match_type: MatchType::HashFallback,
-                    similarity: 0.9,
-                });
-            }
-            Err(ResolveError::NotFound {
-                address: address.to_display_string(),
-                doc_id: doc_id.to_string(),
-            })
-        }
-
-        Address::Block { section_path, block_addr: _ } => {
-            // Resolve section first using topology
-            if let Some(entry) = topology.exact_path(doc_id, section_path) {
-                // Note: Block resolution requires the full node data
-                // For now, return the section with a note about block addressing
-                return Ok(EnhancedResolvedNode {
-                    node: build_node_from_entry(entry),
-                    doc_id: entry.doc_id.clone(),
-                    resolved_path: entry.path.clone(),
-                    resolved_id: entry.node_id.parse().ok(),
-                    match_type: MatchType::Exact,
-                    similarity: 1.0,
-                });
-            }
-            Err(ResolveError::NotFound {
-                address: address.to_display_string(),
-                doc_id: doc_id.to_string(),
-            })
-        }
+        Address::Hash(hash) => resolve_hash_with_indices(topology, address, doc_id, hash),
+        Address::Block {
+            section_path,
+            block_addr: _,
+        } => resolve_block_with_indices(topology, address, doc_id, section_path),
     }
 }
 
-/// Build a PageIndexNode from a PathEntry.
+fn resolve_id_with_indices(
+    registry: &RegistryIndex,
+    topology: &TopologyIndex,
+    address: &Address,
+    doc_id: &str,
+    id: &str,
+) -> Result<EnhancedResolvedNode, ResolveError> {
+    if let Some(indexed) = registry.get(id) {
+        return Ok(build_registry_resolution(
+            indexed,
+            Some(id.to_string()),
+            MatchType::Exact,
+            1.0,
+        ));
+    }
+
+    topology
+        .find_by_hash(id)
+        .map(|entry| build_entry_resolution(entry, MatchType::HashFallback, 0.8))
+        .ok_or_else(|| not_found(address, doc_id))
+}
+
+fn resolve_path_with_indices(
+    topology: &TopologyIndex,
+    address: &Address,
+    doc_id: &str,
+    components: &[String],
+    mode: ResolveMode,
+) -> Result<EnhancedResolvedNode, ResolveError> {
+    match mode {
+        ResolveMode::Anchor => topology
+            .exact_path(doc_id, components)
+            .map(|entry| build_entry_resolution(entry, MatchType::Exact, 1.0))
+            .or_else(|| {
+                topology
+                    .path_case_insensitive(doc_id, components)
+                    .map(build_path_match_resolution)
+            })
+            .ok_or_else(|| not_found(address, doc_id)),
+        ResolveMode::Discover {
+            fuzzy: true,
+            max_results,
+        } => topology
+            .fuzzy_resolve(&components.join("/"), max_results)
+            .into_iter()
+            .next()
+            .map(build_path_match_resolution)
+            .ok_or_else(|| not_found(address, doc_id)),
+        ResolveMode::Discover { fuzzy: false, .. } => topology
+            .exact_path(doc_id, components)
+            .map(|entry| build_entry_resolution(entry, MatchType::Exact, 1.0))
+            .ok_or_else(|| not_found(address, doc_id)),
+    }
+}
+
+fn resolve_hash_with_indices(
+    topology: &TopologyIndex,
+    address: &Address,
+    doc_id: &str,
+    hash: &str,
+) -> Result<EnhancedResolvedNode, ResolveError> {
+    topology
+        .find_by_hash(hash)
+        .map(|entry| build_entry_resolution(entry, MatchType::HashFallback, 0.9))
+        .ok_or_else(|| not_found(address, doc_id))
+}
+
+fn resolve_block_with_indices(
+    topology: &TopologyIndex,
+    address: &Address,
+    doc_id: &str,
+    section_path: &[String],
+) -> Result<EnhancedResolvedNode, ResolveError> {
+    topology
+        .exact_path(doc_id, section_path)
+        .map(|entry| build_entry_resolution(entry, MatchType::Exact, 1.0))
+        .ok_or_else(|| not_found(address, doc_id))
+}
+
+fn build_registry_resolution(
+    indexed: &IndexedNode,
+    resolved_id: Option<String>,
+    match_type: MatchType,
+    similarity: f32,
+) -> EnhancedResolvedNode {
+    EnhancedResolvedNode {
+        node: indexed.node.clone(),
+        doc_id: indexed.doc_id.clone(),
+        resolved_path: indexed.node.metadata.structural_path.clone(),
+        resolved_id,
+        match_type,
+        similarity,
+    }
+}
+
+fn build_entry_resolution(
+    entry: &PathEntry,
+    match_type: MatchType,
+    similarity: f32,
+) -> EnhancedResolvedNode {
+    EnhancedResolvedNode {
+        node: build_node_from_entry(entry),
+        doc_id: entry.doc_id.clone(),
+        resolved_path: entry.path.clone(),
+        resolved_id: Some(entry.node_id.clone()),
+        match_type,
+        similarity,
+    }
+}
+
+fn build_path_match_resolution(path_match: PathMatch) -> EnhancedResolvedNode {
+    EnhancedResolvedNode {
+        node: build_node_from_entry(&path_match.entry),
+        doc_id: path_match.doc_id,
+        resolved_path: path_match.path,
+        resolved_id: Some(path_match.entry.node_id),
+        match_type: path_match.match_type,
+        similarity: path_match.similarity_score,
+    }
+}
+
+fn not_found(address: &Address, doc_id: &str) -> ResolveError {
+    ResolveError::NotFound {
+        address: address.to_display_string(),
+        doc_id: doc_id.to_string(),
+    }
+}
+
+/// Build a `PageIndexNode` from a `PathEntry`.
 ///
 /// This creates a minimal node with the essential information from the entry.
 /// For full node data, use the tree-based resolution.
@@ -406,6 +416,7 @@ fn build_node_from_entry(entry: &PathEntry) -> PageIndexNode {
             token_count: 0,
             is_thinned: false,
             logbook: Vec::new(),
+            observations: Vec::new(),
         },
     }
 }
@@ -415,11 +426,14 @@ fn build_node_from_entry(entry: &PathEntry) -> PageIndexNode {
 /// Attempts resolution in order: ID → Path → Hash.
 /// Returns `None` if no resolution succeeds.
 #[must_use]
-pub fn resolve_node(
-    trees: &std::collections::HashMap<String, Vec<PageIndexNode>>,
+pub fn resolve_node<S>(
+    trees: &HashMap<String, Vec<PageIndexNode>, S>,
     address: &Address,
     doc_id: &str,
-) -> Option<ResolvedNode> {
+) -> Option<ResolvedNode>
+where
+    S: BuildHasher,
+{
     let nodes = trees.get(doc_id)?;
 
     match address {
@@ -508,7 +522,13 @@ pub fn resolve_node(
 /// Find a node by explicit `:ID:` attribute.
 fn find_by_id(nodes: &[PageIndexNode], id: &str) -> Option<PageIndexNode> {
     for node in nodes {
-        if node.metadata.attributes.get("ID").map(|s| s.as_str()) == Some(id) {
+        if node
+            .metadata
+            .attributes
+            .get("ID")
+            .map(std::string::String::as_str)
+            == Some(id)
+        {
             return Some(node.clone());
         }
         // Recurse into children
@@ -601,12 +621,15 @@ fn find_block_in_node<'a>(
     matching_blocks.get(block_addr.index).copied()
 }
 
-/// Build a reverse index from ID to (doc_id, node).
+/// Build a reverse index from ID to (`doc_id`, node).
 #[must_use]
-pub fn build_id_index(
-    trees: &std::collections::HashMap<String, Vec<PageIndexNode>>,
-) -> std::collections::HashMap<String, (String, String)> {
-    let mut index = std::collections::HashMap::new();
+pub fn build_id_index<S>(
+    trees: &HashMap<String, Vec<PageIndexNode>, S>,
+) -> HashMap<String, (String, String)>
+where
+    S: BuildHasher,
+{
+    let mut index = HashMap::new();
     for (doc_id, nodes) in trees {
         collect_ids(nodes, doc_id, &mut index);
     }
@@ -616,7 +639,7 @@ pub fn build_id_index(
 fn collect_ids(
     nodes: &[PageIndexNode],
     doc_id: &str,
-    index: &mut std::collections::HashMap<String, (String, String)>,
+    index: &mut HashMap<String, (String, String)>,
 ) {
     for node in nodes {
         if let Some(id) = node.metadata.attributes.get("ID") {
@@ -626,12 +649,15 @@ fn collect_ids(
     }
 }
 
-/// Build a reverse index from content hash to (doc_id, node_id).
+/// Build a reverse index from content hash to (`doc_id`, `node_id`).
 #[must_use]
-pub fn build_hash_index(
-    trees: &std::collections::HashMap<String, Vec<PageIndexNode>>,
-) -> std::collections::HashMap<String, (String, String)> {
-    let mut index = std::collections::HashMap::new();
+pub fn build_hash_index<S>(
+    trees: &HashMap<String, Vec<PageIndexNode>, S>,
+) -> HashMap<String, (String, String)>
+where
+    S: BuildHasher,
+{
+    let mut index = HashMap::new();
     for (doc_id, nodes) in trees {
         collect_hashes(nodes, doc_id, &mut index);
     }
@@ -641,7 +667,7 @@ pub fn build_hash_index(
 fn collect_hashes(
     nodes: &[PageIndexNode],
     doc_id: &str,
-    index: &mut std::collections::HashMap<String, (String, String)>,
+    index: &mut HashMap<String, (String, String)>,
 ) {
     for node in nodes {
         if let Some(hash) = &node.metadata.content_hash {
@@ -692,6 +718,45 @@ pub enum ModificationError {
     /// Byte range not available.
     #[error("byte range not available for node")]
     NoByteRange,
+    /// Signed delta exceeded the supported `i64` range.
+    #[error("signed delta overflow while comparing lengths {lhs} and {rhs}")]
+    DeltaOverflow {
+        /// Left-hand length operand.
+        lhs: usize,
+        /// Right-hand length operand.
+        rhs: usize,
+    },
+    /// Adjusting a `usize` position by a signed delta overflowed.
+    #[error("range adjustment overflow for base {base} with delta {delta}")]
+    RangeAdjustmentOverflow {
+        /// Original base value.
+        base: usize,
+        /// Signed delta to apply.
+        delta: i64,
+    },
+}
+
+fn signed_len_delta(lhs: usize, rhs: usize) -> Result<i64, ModificationError> {
+    let lhs_i64 = i64::try_from(lhs).map_err(|_| ModificationError::DeltaOverflow { lhs, rhs })?;
+    let rhs_i64 = i64::try_from(rhs).map_err(|_| ModificationError::DeltaOverflow { lhs, rhs })?;
+    lhs_i64
+        .checked_sub(rhs_i64)
+        .ok_or(ModificationError::DeltaOverflow { lhs, rhs })
+}
+
+fn apply_signed_delta(base: usize, delta: i64) -> Result<usize, ModificationError> {
+    if delta >= 0 {
+        let magnitude = usize::try_from(delta)
+            .map_err(|_| ModificationError::RangeAdjustmentOverflow { base, delta })?;
+        base.checked_add(magnitude)
+            .ok_or(ModificationError::RangeAdjustmentOverflow { base, delta })
+    } else {
+        let magnitude = match usize::try_from(delta.unsigned_abs()) {
+            Ok(magnitude) => magnitude,
+            Err(_) => usize::MAX,
+        };
+        Ok(base.saturating_sub(magnitude))
+    }
 }
 
 /// Replace content at a specific byte range.
@@ -710,6 +775,12 @@ pub enum ModificationError {
 /// # Returns
 ///
 /// The modification result with new content and deltas, or an error.
+///
+/// # Errors
+///
+/// Returns [`ModificationError::ByteRangeOutOfBounds`] when the byte range is invalid,
+/// [`ModificationError::HashMismatch`] when the provided hash does not match the target slice,
+/// and overflow variants when the signed delta cannot be represented safely.
 ///
 /// # Example
 ///
@@ -756,19 +827,15 @@ pub fn replace_byte_range(
     // Calculate deltas
     let old_len = byte_end - byte_start;
     let new_len = new_text.len();
-    let byte_delta = new_len as i64 - old_len as i64;
+    let byte_delta = signed_len_delta(new_len, old_len)?;
 
     // Count lines
     let old_lines = content[byte_start..byte_end].lines().count();
     let new_lines = new_text.lines().count();
-    let line_delta = new_lines as i64 - old_lines as i64;
+    let line_delta = signed_len_delta(new_lines, old_lines)?;
 
     // Build new content - use saturating arithmetic to handle negative deltas
-    let new_capacity = if byte_delta >= 0 {
-        content_len + byte_delta as usize
-    } else {
-        content_len.saturating_sub((-byte_delta) as usize)
-    };
+    let new_capacity = apply_signed_delta(content_len, byte_delta)?;
     let mut new_content = String::with_capacity(new_capacity);
     new_content.push_str(&content[..byte_start]);
     new_content.push_str(new_text);
@@ -793,12 +860,17 @@ pub fn replace_byte_range(
 /// # Arguments
 ///
 /// * `content` - The full document content
-/// * `node` - The page index node with byte_range metadata
+/// * `node` - The page index node with `byte_range` metadata
 /// * `new_text` - The new section content
 ///
 /// # Returns
 ///
 /// The modification result or an error if the node has no byte range.
+///
+/// # Errors
+///
+/// Returns [`ModificationError::NoByteRange`] when the node lacks byte metadata and forwards any
+/// replacement failure from [`replace_byte_range`].
 pub fn update_section_content(
     content: &str,
     node: &PageIndexNode,
@@ -840,16 +912,21 @@ pub fn adjust_line_range(
 ) -> (usize, usize) {
     if modification_line <= original_start {
         // Modification is before this section - shift both
-        let shift = line_delta as isize;
         (
-            (original_start as isize + shift).max(1) as usize,
-            (original_end as isize + shift).max(1) as usize,
+            apply_signed_delta(original_start, line_delta)
+                .unwrap_or(1)
+                .max(1),
+            apply_signed_delta(original_end, line_delta)
+                .unwrap_or(1)
+                .max(1),
         )
     } else if modification_line <= original_end {
         // Modification is within this section - adjust end only
         (
             original_start,
-            (original_end as i64 + line_delta).max(1) as usize,
+            apply_signed_delta(original_end, line_delta)
+                .unwrap_or(1)
+                .max(1),
         )
     } else {
         // Modification is after this section - no change
@@ -858,240 +935,5 @@ pub fn adjust_line_range(
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use std::collections::HashMap;
-
-    #[test]
-    fn test_address_parse_id() {
-        let addr = Address::parse("#arch-v1");
-        assert_eq!(addr, Some(Address::Id("arch-v1".to_string())));
-    }
-
-    #[test]
-    fn test_address_parse_path() {
-        let addr = Address::parse("/Architecture/Storage");
-        assert_eq!(
-            addr,
-            Some(Address::Path(vec![
-                "Architecture".to_string(),
-                "Storage".to_string()
-            ]))
-        );
-    }
-
-    #[test]
-    fn test_address_parse_hash() {
-        let addr = Address::parse("@a1b2c3d4e5f6");
-        assert_eq!(addr, Some(Address::Hash("a1b2c3d4e5f6".to_string())));
-    }
-
-    #[test]
-    fn test_address_parse_empty() {
-        assert!(Address::parse("").is_none());
-        assert!(Address::parse("#").is_none());
-        assert!(Address::parse("@").is_none());
-    }
-
-    #[test]
-    fn test_address_to_display_string() {
-        assert_eq!(Address::id("test").to_display_string(), "#test");
-        assert_eq!(Address::path(vec!["A", "B"]).to_display_string(), "/A/B");
-        assert_eq!(Address::hash("abc123").to_display_string(), "@abc123");
-    }
-
-    #[test]
-    fn test_find_by_id() {
-        let node = PageIndexNode {
-            node_id: "doc#section".to_string(),
-            parent_id: None,
-            title: "Section".to_string(),
-            level: 1,
-            text: std::sync::Arc::from("content"),
-            summary: None,
-            children: Vec::new(),
-            blocks: Vec::new(),
-            metadata: crate::link_graph::models::PageIndexMeta {
-                line_range: (1, 10),
-                byte_range: Some((0, 100)),
-                structural_path: vec!["Section".to_string()],
-                content_hash: Some("abc123".to_string()),
-                attributes: {
-                    let mut attrs = HashMap::new();
-                    attrs.insert("ID".to_string(), "my-section".to_string());
-                    attrs
-                },
-                token_count: 10,
-                is_thinned: false,
-                logbook: Vec::new(),
-            },
-        };
-
-        let found = find_by_id(&[node.clone()], "my-section");
-        assert!(found.is_some());
-
-        let not_found = find_by_id(&[node], "other-id");
-        assert!(not_found.is_none());
-    }
-
-    #[test]
-    fn test_find_by_path() {
-        let node = PageIndexNode {
-            node_id: "doc#storage".to_string(),
-            parent_id: None,
-            title: "Storage".to_string(),
-            level: 2,
-            text: std::sync::Arc::from("content"),
-            summary: None,
-            children: Vec::new(),
-            blocks: Vec::new(),
-            metadata: crate::link_graph::models::PageIndexMeta {
-                line_range: (1, 10),
-                byte_range: Some((0, 100)),
-                structural_path: vec!["Architecture".to_string(), "Storage".to_string()],
-                content_hash: None,
-                attributes: HashMap::new(),
-                token_count: 10,
-                is_thinned: false,
-                logbook: Vec::new(),
-            },
-        };
-
-        let found = find_by_path(
-            &[node.clone()],
-            &["Architecture".to_string(), "Storage".to_string()],
-        );
-        assert!(found.is_some());
-
-        let found_by_title = find_by_path(&[node], &["Storage".to_string()]);
-        assert!(found_by_title.is_some());
-    }
-
-    #[test]
-    fn test_find_by_hash() {
-        let node = PageIndexNode {
-            node_id: "doc#section".to_string(),
-            parent_id: None,
-            title: "Section".to_string(),
-            level: 1,
-            text: std::sync::Arc::from("content"),
-            summary: None,
-            children: Vec::new(),
-            blocks: Vec::new(),
-            metadata: crate::link_graph::models::PageIndexMeta {
-                line_range: (1, 10),
-                byte_range: Some((0, 100)),
-                structural_path: vec![],
-                content_hash: Some("def456".to_string()),
-                attributes: HashMap::new(),
-                token_count: 10,
-                is_thinned: false,
-                logbook: Vec::new(),
-            },
-        };
-
-        let found = find_by_hash(&[node.clone()], "def456");
-        assert!(found.is_some());
-
-        let not_found = find_by_hash(&[node], "other-hash");
-        assert!(not_found.is_none());
-    }
-
-    #[test]
-    fn test_replace_byte_range_basic() {
-        let content = "Hello, world!";
-        let result = replace_byte_range(content, 7, 12, "Rust", None).unwrap();
-        assert_eq!(result.new_content, "Hello, Rust!");
-        assert_eq!(result.byte_delta, -1); // "world" (5) -> "Rust" (4)
-        assert_eq!(result.line_delta, 0);
-    }
-
-    #[test]
-    fn test_replace_byte_range_with_hash_verification() {
-        let content = "Hello, world!";
-        // Compute hash of "world"
-        let hash = compute_hash("world");
-        let result = replace_byte_range(content, 7, 12, "Rust", Some(&hash)).unwrap();
-        assert_eq!(result.new_content, "Hello, Rust!");
-    }
-
-    #[test]
-    fn test_replace_byte_range_hash_mismatch() {
-        let content = "Hello, world!";
-        let result = replace_byte_range(content, 7, 12, "Rust", Some("wronghash"));
-        assert!(matches!(
-            result,
-            Err(ModificationError::HashMismatch { .. })
-        ));
-    }
-
-    #[test]
-    fn test_replace_byte_range_out_of_bounds() {
-        let content = "Hello";
-        let result = replace_byte_range(content, 0, 100, "test", None);
-        assert!(matches!(
-            result,
-            Err(ModificationError::ByteRangeOutOfBounds { .. })
-        ));
-    }
-
-    #[test]
-    fn test_update_section_content() {
-        let node = PageIndexNode {
-            node_id: "doc#section".to_string(),
-            parent_id: None,
-            title: "Section".to_string(),
-            level: 1,
-            text: std::sync::Arc::from("old content"),
-            summary: None,
-            children: Vec::new(),
-            blocks: Vec::new(),
-            metadata: crate::link_graph::models::PageIndexMeta {
-                line_range: (1, 5),
-                byte_range: Some((0, 11)),
-                structural_path: vec![],
-                content_hash: Some(compute_hash("old content")),
-                attributes: HashMap::new(),
-                token_count: 2,
-                is_thinned: false,
-            },
-        };
-
-        let doc_content = "old content here";
-        let result = update_section_content(doc_content, &node, "new content").unwrap();
-        assert_eq!(result.new_content, "new content here");
-        assert_eq!(result.byte_delta, 0); // "old content" (11) -> "new content" (11) = 0
-    }
-
-    #[test]
-    fn test_adjust_line_range_before() {
-        // Modification before the section
-        let (start, end) = adjust_line_range(10, 20, 5, 5);
-        assert_eq!(start, 15);
-        assert_eq!(end, 25);
-    }
-
-    #[test]
-    fn test_adjust_line_range_within() {
-        // Modification within the section
-        let (start, end) = adjust_line_range(10, 20, 3, 15);
-        assert_eq!(start, 10);
-        assert_eq!(end, 23);
-    }
-
-    #[test]
-    fn test_adjust_line_range_after() {
-        // Modification after the section
-        let (start, end) = adjust_line_range(10, 20, 5, 30);
-        assert_eq!(start, 10);
-        assert_eq!(end, 20);
-    }
-
-    #[test]
-    fn test_compute_hash_consistency() {
-        let hash1 = compute_hash("test content");
-        let hash2 = compute_hash("test content");
-        assert_eq!(hash1, hash2);
-        assert_eq!(hash1.len(), 16); // Blake3 truncated to 16 hex chars
-    }
-}
+#[path = "../../../tests/unit/link_graph/addressing/mod.rs"]
+mod tests;

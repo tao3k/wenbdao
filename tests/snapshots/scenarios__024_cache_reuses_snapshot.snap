@@ -1,10 +1,21 @@
 ---
 source: packages/rust/crates/xiuxian-testing/src/scenario.rs
+description: "Scenario 024_cache_reuses_snapshot [cache_build]: Cache Build: reuses snapshot"
 expression: result
+info:
+  id: 024_cache_reuses_snapshot
+  name: "Cache Build: reuses snapshot"
+  category: cache_build
+  description: cache_build scenario
+  input_type: markdown_tree
+  input_paths:
+    - input
+  expected_output_type: ~
+input_file: packages/rust/crates/xiuxian-wendao/tests/scenarios/024_cache_reuses_snapshot/scenario.toml
 ---
 {
-  "scenario_id": "024_cache_reuses_snapshot",
   "category": "cache_build",
-  "status": "validated",
-  "files": []
+  "files": [],
+  "scenario_id": "024_cache_reuses_snapshot",
+  "status": "validated"
 }

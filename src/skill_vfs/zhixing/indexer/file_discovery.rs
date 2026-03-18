@@ -1,14 +1,16 @@
-use crate::skill_vfs::zhixing::Result;
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
-pub(super) fn collect_markdown_files(dir: &Path) -> Result<Vec<PathBuf>> {
+pub(super) fn collect_markdown_files(dir: &Path) -> Vec<PathBuf> {
     if !dir.exists() || !dir.is_dir() {
-        return Ok(Vec::new());
+        return Vec::new();
     }
 
     let mut files = Vec::new();
-    for entry in WalkDir::new(dir).into_iter().filter_map(|e| e.ok()) {
+    for entry in WalkDir::new(dir)
+        .into_iter()
+        .filter_map(std::result::Result::ok)
+    {
         if entry.file_type().is_file() {
             let path = entry.path().to_path_buf();
             let is_md = path
@@ -23,5 +25,5 @@ pub(super) fn collect_markdown_files(dir: &Path) -> Result<Vec<PathBuf>> {
         }
     }
     files.sort();
-    Ok(files)
+    files
 }

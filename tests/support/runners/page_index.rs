@@ -1,4 +1,4 @@
-//! Runner for page_index scenario tests.
+//! Runner for `page_index` scenario tests.
 
 use std::error::Error;
 use std::path::Path;
@@ -12,7 +12,7 @@ use xiuxian_wendao::link_graph::PageIndexNode;
 pub struct PageIndexRunner;
 
 impl ScenarioRunner for PageIndexRunner {
-    fn category(&self) -> &str {
+    fn category(&self) -> &'static str {
         "page_index"
     }
 
@@ -26,7 +26,7 @@ impl ScenarioRunner for PageIndexRunner {
         // Get the page index roots
         let roots = index
             .page_index(&doc_name)
-            .ok_or_else(|| format!("missing page index for {}", doc_name))?;
+            .ok_or_else(|| format!("missing page index for {doc_name}"))?;
 
         // Generate snapshot
         Ok(page_index_tree_snapshot(roots))
@@ -59,7 +59,7 @@ fn snapshot_block(block: &xiuxian_wendao::link_graph::MarkdownBlock) -> Value {
     use xiuxian_wendao::link_graph::MarkdownBlockKind;
     let kind_str = match &block.kind {
         MarkdownBlockKind::Paragraph => "Paragraph".to_string(),
-        MarkdownBlockKind::CodeFence { language } => format!("CodeFence({})", language),
+        MarkdownBlockKind::CodeFence { language } => format!("CodeFence({language})"),
         MarkdownBlockKind::List { ordered: true } => "OrderedList".to_string(),
         MarkdownBlockKind::List { ordered: false } => "UnorderedList".to_string(),
         MarkdownBlockKind::BlockQuote => "BlockQuote".to_string(),

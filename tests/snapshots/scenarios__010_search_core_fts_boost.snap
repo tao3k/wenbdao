@@ -1,10 +1,21 @@
 ---
 source: packages/rust/crates/xiuxian-testing/src/scenario.rs
+description: "Scenario 010_search_core_fts_boost [search_core]: Search Core FTS Boost"
 expression: result
+info:
+  id: 010_search_core_fts_boost
+  name: Search Core FTS Boost
+  category: search_core
+  description: Full-text search boost for exact matches
+  input_type: markdown_tree
+  input_paths:
+    - input
+  expected_output_type: ~
+input_file: packages/rust/crates/xiuxian-wendao/tests/scenarios/010_search_core_fts_boost/scenario.toml
 ---
 {
-  "scenario_id": "010_search_core_fts_boost",
   "category": "search_core",
-  "status": "validated",
-  "files": []
+  "files": [],
+  "scenario_id": "010_search_core_fts_boost",
+  "status": "validated"
 }

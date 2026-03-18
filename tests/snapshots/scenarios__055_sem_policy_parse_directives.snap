@@ -1,10 +1,20 @@
 ---
 source: packages/rust/crates/xiuxian-testing/src/scenario.rs
+description: "Scenario 055_sem_policy_parse_directives [semantic_policy]: parse directives"
 expression: result
+info:
+  id: 055_sem_policy_parse_directives
+  name: parse directives
+  category: semantic_policy
+  description: semantic_policy scenario (no input)
+  input_type: none
+  input_paths: []
+  expected_output_type: ~
+input_file: packages/rust/crates/xiuxian-wendao/tests/scenarios/055_sem_policy_parse_directives/scenario.toml
 ---
 {
-  "scenario_id": "055_sem_policy_parse_directives",
   "category": "semantic_policy",
-  "status": "no_input",
-  "files": []
+  "files": [],
+  "scenario_id": "055_sem_policy_parse_directives",
+  "status": "no_input"
 }

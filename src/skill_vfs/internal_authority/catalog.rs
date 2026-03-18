@@ -21,22 +21,18 @@ pub struct InternalSkillIntentCatalog {
 
 impl InternalSkillIntentCatalog {
     /// Build a reusable internal-skill intent catalog from prebuilt link-graph indexes.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error when a provided index cannot expose raw intent targets for a mounted
-    /// internal-skill `SKILL.md` document.
-    pub fn from_link_graph_indexes<'a, I>(indexes: I) -> Result<Self>
+    #[must_use]
+    pub fn from_link_graph_indexes<'a, I>(indexes: I) -> Self
     where
         I: IntoIterator<Item = &'a LinkGraphIndex>,
     {
         let mut intended_manifests = BTreeSet::new();
         for index in indexes {
-            extend_manifest_intents_from_index(index, &mut intended_manifests)?;
+            extend_manifest_intents_from_index(index, &mut intended_manifests);
         }
-        Ok(Self {
+        Self {
             intended_manifests: intended_manifests.into_iter().collect(),
-        })
+        }
     }
 }
 
@@ -57,7 +53,7 @@ impl SkillVfsResolver {
                     root.display()
                 )
             })?;
-            extend_manifest_intents_from_index(&index, &mut intended_manifests)?;
+            extend_manifest_intents_from_index(&index, &mut intended_manifests);
         }
         Ok(InternalSkillIntentCatalog {
             intended_manifests: intended_manifests.into_iter().collect(),
@@ -68,7 +64,7 @@ impl SkillVfsResolver {
 pub(crate) fn extend_manifest_intents_from_index(
     index: &LinkGraphIndex,
     intended_manifests: &mut BTreeSet<String>,
-) -> Result<()> {
+) {
     let total_notes = index.stats().total_notes;
     for doc in index
         .toc(total_notes.max(1))
@@ -88,7 +84,6 @@ pub(crate) fn extend_manifest_intents_from_index(
             intended_manifests.insert(manifest_uri);
         }
     }
-    Ok(())
 }
 
 fn is_internal_skill_doc_path(path: &str) -> bool {

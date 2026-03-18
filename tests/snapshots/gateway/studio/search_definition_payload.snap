@@ -1,0 +1,23 @@
+---
+source: packages/rust/crates/xiuxian-wendao/src/gateway/studio/../../../tests/unit/gateway/studio/support.rs
+expression: value
+---
+{
+  "candidateCount": 2,
+  "definition": {
+    "crateName": "demo",
+    "language": "rust",
+    "lineEnd": 3,
+    "lineStart": 1,
+    "name": "AlphaService",
+    "path": "packages/rust/crates/demo/src/service.rs",
+    "projectName": "kernel",
+    "rootLabel": "packages",
+    "score": 1.15,
+    "signature": "pub struct AlphaService {"
+  },
+  "query": "AlphaService",
+  "selectedScope": "definition",
+  "sourceLine": 2,
+  "sourcePath": "packages/rust/crates/demo/src/lib.rs"
+}

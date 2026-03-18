@@ -42,10 +42,28 @@ pub(in crate::link_graph::saliency::store) fn parse_saliency_payload(
     policy: LinkGraphSaliencyPolicy,
 ) -> Option<LinkGraphSaliencyState> {
     let parsed = serde_json::from_str::<LinkGraphSaliencyState>(raw).ok()?;
+    if parsed.node_id != node_id {
+        return None;
+    }
+    repair_saliency_state(parsed, policy)
+}
+
+pub(in crate::link_graph::saliency::store) fn parse_saliency_payload_any_node(
+    raw: &str,
+    policy: LinkGraphSaliencyPolicy,
+) -> Option<LinkGraphSaliencyState> {
+    let parsed = serde_json::from_str::<LinkGraphSaliencyState>(raw).ok()?;
+    repair_saliency_state(parsed, policy)
+}
+
+fn repair_saliency_state(
+    parsed: LinkGraphSaliencyState,
+    policy: LinkGraphSaliencyPolicy,
+) -> Option<LinkGraphSaliencyState> {
     if parsed.schema != LINK_GRAPH_SALIENCY_SCHEMA_VERSION {
         return None;
     }
-    if parsed.node_id != node_id {
+    if parsed.node_id.trim().is_empty() {
         return None;
     }
 

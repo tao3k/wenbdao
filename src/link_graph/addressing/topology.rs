@@ -1,6 +1,6 @@
 //! Fuzzy path matching for human discovery.
 //!
-//! The TopologyIndex provides structural path indexing and fuzzy matching capabilities
+//! The `TopologyIndex` provides structural path indexing and fuzzy matching capabilities
 //! for discovering nodes when the exact path or title is not known.
 
 use std::collections::HashMap;
@@ -10,7 +10,7 @@ use crate::link_graph::PageIndexNode;
 /// A path entry representing a node's position in the document structure.
 #[derive(Debug, Clone)]
 pub struct PathEntry {
-    /// Full structural path (e.g., ["Architecture", "Storage", "Configuration"]).
+    /// Full structural path (e.g., `["Architecture", "Storage", "Configuration"]`).
     pub path: Vec<String>,
     /// Stable node ID for anchoring after discovery.
     pub node_id: String,
@@ -77,7 +77,7 @@ pub enum MatchType {
 /// ```
 #[derive(Debug, Clone, Default)]
 pub struct TopologyIndex {
-    /// Structural paths for each document: doc_id → path entries.
+    /// Structural paths for each document: `doc_id` → path entries.
     by_doc: HashMap<String, Vec<PathEntry>>,
     /// Lowercase title → possible matches (for fuzzy search).
     title_index: HashMap<String, Vec<PathMatch>>,
@@ -105,7 +105,13 @@ impl TopologyIndex {
 
         for (doc_id, nodes) in trees {
             let mut entries = Vec::new();
-            Self::collect_entries(nodes, doc_id, &mut entries, &mut title_index, &mut hash_index);
+            Self::collect_entries(
+                nodes,
+                doc_id,
+                &mut entries,
+                &mut title_index,
+                &mut hash_index,
+            );
             by_doc.insert(doc_id.clone(), entries);
         }
 
@@ -167,11 +173,7 @@ impl TopologyIndex {
 
     /// Find a node by exact or case-insensitive path.
     #[must_use]
-    pub fn path_case_insensitive(
-        &self,
-        doc_id: &str,
-        components: &[String],
-    ) -> Option<PathMatch> {
+    pub fn path_case_insensitive(&self, doc_id: &str, components: &[String]) -> Option<PathMatch> {
         // Try exact match first
         if let Some(entry) = self.exact_path(doc_id, components) {
             return Some(PathMatch {
@@ -241,8 +243,7 @@ impl TopologyIndex {
                         match_type: MatchType::Suffix,
                     };
                     if !matches.iter().any(|existing: &PathMatch| {
-                        existing.entry.node_id == entry.node_id
-                            && existing.doc_id == entry.doc_id
+                        existing.entry.node_id == entry.node_id && existing.doc_id == entry.doc_id
                     }) {
                         matches.push(m);
                     }
@@ -256,12 +257,12 @@ impl TopologyIndex {
                 for m in title_matches {
                     let mut scored = m.clone();
                     // Score based on how much of the title the query covers
-                    scored.similarity_score = 0.7 + (query_lower.len() as f32 / title.len() as f32).min(0.25);
+                    scored.similarity_score =
+                        0.7 + similarity_ratio(query_lower.len(), title.len()).min(0.25);
                     scored.match_type = MatchType::TitleSubstring;
 
                     if !matches.iter().any(|existing: &PathMatch| {
-                        existing.entry.node_id == m.entry.node_id
-                            && existing.doc_id == m.doc_id
+                        existing.entry.node_id == m.entry.node_id && existing.doc_id == m.doc_id
                     }) {
                         matches.push(scored);
                     }
@@ -290,16 +291,19 @@ impl TopologyIndex {
     /// Get the total number of indexed entries across all documents.
     #[must_use]
     pub fn total_entries(&self) -> usize {
-        self.by_doc.values().map(|v| v.len()).sum()
+        self.by_doc.values().map(std::vec::Vec::len).sum()
     }
 
     /// Get all document IDs in the index.
     #[must_use]
     pub fn doc_ids(&self) -> Vec<&str> {
-        self.by_doc.keys().map(|s| s.as_str()).collect()
+        self.by_doc
+            .keys()
+            .map(std::string::String::as_str)
+            .collect()
     }
 
-    /// Find a path entry by its node_id (Blueprint Section 2.2 skeleton validation).
+    /// Find a path entry by its `node_id` (Blueprint Section 2.2 skeleton validation).
     ///
     /// This is used for skeleton re-ranking to validate vector search results
     /// against the current AST structure.
@@ -312,7 +316,7 @@ impl TopologyIndex {
 }
 
 /// Check if the query matches the end of a path.
-fn path_match_suffix(path_lower: &[String], query_lower: &str) -> bool {
+pub(super) fn path_match_suffix(path_lower: &[String], query_lower: &str) -> bool {
     // Try matching query against path suffixes
     let query_parts: Vec<&str> = query_lower.split('/').filter(|s| !s.is_empty()).collect();
 
@@ -335,197 +339,11 @@ fn path_match_suffix(path_lower: &[String], query_lower: &str) -> bool {
     true
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use std::sync::Arc;
-
-    fn make_test_node_with_path(title: &str, path: Vec<&str>, hash: Option<&str>) -> PageIndexNode {
-        PageIndexNode {
-            node_id: format!("doc#{}", title),
-            parent_id: None,
-            title: title.to_string(),
-            level: path.len(),
-            text: Arc::from("content"),
-            summary: None,
-            children: Vec::new(),
-            blocks: Vec::new(),
-            metadata: crate::link_graph::PageIndexMeta {
-                line_range: (1, 10),
-                byte_range: Some((0, 100)),
-                structural_path: path.iter().map(|s| s.to_string()).collect(),
-                content_hash: hash.map(|s| s.to_string()),
-                attributes: HashMap::new(),
-                token_count: 10,
-                is_thinned: false,
-            },
-        }
-    }
-
-    #[test]
-    fn test_empty_index() {
-        let index = TopologyIndex::new();
-        assert_eq!(index.total_entries(), 0);
-        assert!(index.doc_ids().is_empty());
-    }
-
-    #[test]
-    fn test_build_from_trees() {
-        let mut trees = HashMap::new();
-        trees.insert(
-            "doc.md".to_string(),
-            vec![
-                make_test_node_with_path("Intro", vec!["Intro"], Some("hash1")),
-                make_test_node_with_path("Storage", vec!["Architecture", "Storage"], Some("hash2")),
-            ],
-        );
-
-        let index = TopologyIndex::build_from_trees(&trees);
-
-        assert_eq!(index.total_entries(), 2);
-        assert_eq!(index.doc_ids().len(), 1);
-    }
-
-    #[test]
-    fn test_exact_path_match() {
-        let mut trees = HashMap::new();
-        trees.insert(
-            "doc.md".to_string(),
-            vec![make_test_node_with_path(
-                "Storage",
-                vec!["Architecture", "Storage"],
-                None,
-            )],
-        );
-
-        let index = TopologyIndex::build_from_trees(&trees);
-
-        let entry = index
-            .exact_path("doc.md", &["Architecture".to_string(), "Storage".to_string()])
-            .expect("should find exact path");
-        assert_eq!(entry.title, "Storage");
-
-        // Wrong path
-        assert!(index
-            .exact_path("doc.md", &["Architecture".to_string(), "Network".to_string()])
-            .is_none());
-    }
-
-    #[test]
-    fn test_find_by_hash() {
-        let mut trees = HashMap::new();
-        trees.insert(
-            "doc.md".to_string(),
-            vec![make_test_node_with_path(
-                "Section",
-                vec!["Section"],
-                Some("abc123"),
-            )],
-        );
-
-        let index = TopologyIndex::build_from_trees(&trees);
-
-        let entry = index.find_by_hash("abc123").expect("should find by hash");
-        assert_eq!(entry.title, "Section");
-
-        assert!(index.find_by_hash("notfound").is_none());
-    }
-
-    #[test]
-    fn test_fuzzy_resolve_exact_title() {
-        let mut trees = HashMap::new();
-        trees.insert(
-            "doc.md".to_string(),
-            vec![make_test_node_with_path("Storage", vec!["Storage"], None)],
-        );
-
-        let index = TopologyIndex::build_from_trees(&trees);
-
-        let matches = index.fuzzy_resolve("storage", 5);
-        assert_eq!(matches.len(), 1);
-        assert_eq!(matches[0].similarity_score, 1.0);
-        assert_eq!(matches[0].match_type, MatchType::Exact);
-    }
-
-    #[test]
-    fn test_fuzzy_resolve_suffix() {
-        let mut trees = HashMap::new();
-        trees.insert(
-            "doc.md".to_string(),
-            vec![make_test_node_with_path(
-                "Storage",
-                vec!["Architecture", "Storage"],
-                None,
-            )],
-        );
-
-        let index = TopologyIndex::build_from_trees(&trees);
-
-        let matches = index.fuzzy_resolve("architecture/storage", 5);
-        assert!(!matches.is_empty());
-        assert!(matches.iter().any(|m| m.match_type == MatchType::Suffix));
-    }
-
-    #[test]
-    fn test_fuzzy_resolve_substring() {
-        let mut trees = HashMap::new();
-        trees.insert(
-            "doc.md".to_string(),
-            vec![make_test_node_with_path(
-                "Configuration Settings",
-                vec!["Configuration Settings"],
-                None,
-            )],
-        );
-
-        let index = TopologyIndex::build_from_trees(&trees);
-
-        let matches = index.fuzzy_resolve("config", 5);
-        assert!(!matches.is_empty());
-        assert!(matches.iter().any(|m| m.match_type == MatchType::TitleSubstring));
-    }
-
-    #[test]
-    fn test_case_insensitive_path() {
-        let mut trees = HashMap::new();
-        trees.insert(
-            "doc.md".to_string(),
-            vec![make_test_node_with_path(
-                "Storage",
-                vec!["Architecture", "Storage"],
-                None,
-            )],
-        );
-
-        let index = TopologyIndex::build_from_trees(&trees);
-
-        let result = index
-            .path_case_insensitive("doc.md", &["architecture".to_string(), "storage".to_string()])
-            .expect("should find case-insensitive");
-        assert_eq!(result.match_type, MatchType::CaseInsensitive);
-        assert_eq!(result.similarity_score, 0.95);
-    }
-
-    #[test]
-    fn test_path_match_suffix_function() {
-        assert!(path_match_suffix(
-            &["architecture".to_string(), "storage".to_string()],
-            "storage"
-        ));
-
-        assert!(path_match_suffix(
-            &["architecture".to_string(), "storage".to_string()],
-            "architecture/storage"
-        ));
-
-        assert!(!path_match_suffix(
-            &["architecture".to_string(), "storage".to_string()],
-            "network"
-        ));
-
-        assert!(!path_match_suffix(
-            &["a".to_string()],
-            "a/b/c"
-        ));
-    }
+fn similarity_ratio(left: usize, right: usize) -> f32 {
+    f32::from(u16::try_from(left).unwrap_or(u16::MAX))
+        / f32::from(u16::try_from(right.max(1)).unwrap_or(u16::MAX))
 }
+
+#[cfg(test)]
+#[path = "../../../tests/unit/link_graph/addressing/topology.rs"]
+mod tests;

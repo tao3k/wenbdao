@@ -1,97 +1,108 @@
 ---
 source: packages/rust/crates/xiuxian-testing/src/scenario.rs
+description: "Scenario 005_page_index_semantic_docs [page_index]: Page Index Semantic Documents"
 expression: result
+info:
+  id: 005_page_index_semantic_docs
+  name: Page Index Semantic Documents
+  category: page_index
+  description: Export semantic documents for embedding generation
+  input_type: markdown_tree
+  input_paths:
+    - input
+  expected_output_type: ~
+input_file: packages/rust/crates/xiuxian-wendao/tests/scenarios/005_page_index_semantic_docs/scenario.toml
 ---
 {
   "nodes": [
     {
-      "node_id": "docs/alpha#alpha",
-      "title": "Alpha",
-      "level": 1,
-      "text": "alpha root section carries enough words to remain stable while powering semantic exports for hybrid retrieval.",
-      "summary": null,
-      "line_range": [
-        1,
-        4
-      ],
-      "token_count": 16,
-      "is_thinned": false,
       "blocks": [
         {
           "block_id": "block-para-0",
-          "kind": "Paragraph",
           "byte_range": [
             0,
             110
           ],
+          "content_hash": "d70e1c27a3767a40",
+          "kind": "Paragraph",
           "line_range": [
             1,
             1
-          ],
-          "content_hash": "d70e1c27a3767a40"
+          ]
         }
       ],
       "children": [
         {
-          "node_id": "docs/alpha#alpha---beta",
-          "title": "Beta",
-          "level": 2,
-          "text": "beta child section keeps enough detail to survive semantic document export without thinning away.",
-          "summary": null,
-          "line_range": [
-            5,
-            8
-          ],
-          "token_count": 14,
-          "is_thinned": false,
           "blocks": [
             {
               "block_id": "block-para-0",
-              "kind": "Paragraph",
               "byte_range": [
                 121,
                 218
               ],
+              "content_hash": "b0fe3fe861b45d0f",
+              "kind": "Paragraph",
               "line_range": [
                 5,
                 5
-              ],
-              "content_hash": "b0fe3fe861b45d0f"
+              ]
             }
           ],
           "children": [
             {
-              "node_id": "docs/alpha#alpha---beta---gamma",
-              "title": "Gamma",
-              "level": 3,
-              "text": "gamma leaf body stays visible for semantic document export tests.",
-              "summary": null,
-              "line_range": [
-                9,
-                11
-              ],
-              "token_count": 10,
-              "is_thinned": false,
               "blocks": [
                 {
                   "block_id": "block-para-0",
-                  "kind": "Paragraph",
                   "byte_range": [
                     229,
                     294
                   ],
+                  "content_hash": "cb7f5483dac7fe73",
+                  "kind": "Paragraph",
                   "line_range": [
                     9,
                     9
-                  ],
-                  "content_hash": "cb7f5483dac7fe73"
+                  ]
                 }
               ],
-              "children": []
+              "children": [],
+              "is_thinned": false,
+              "level": 3,
+              "line_range": [
+                9,
+                11
+              ],
+              "node_id": "docs/alpha#alpha---beta---gamma",
+              "summary": null,
+              "text": "gamma leaf body stays visible for semantic document export tests.",
+              "title": "Gamma",
+              "token_count": 10
             }
-          ]
+          ],
+          "is_thinned": false,
+          "level": 2,
+          "line_range": [
+            5,
+            8
+          ],
+          "node_id": "docs/alpha#alpha---beta",
+          "summary": null,
+          "text": "beta child section keeps enough detail to survive semantic document export without thinning away.",
+          "title": "Beta",
+          "token_count": 14
         }
-      ]
+      ],
+      "is_thinned": false,
+      "level": 1,
+      "line_range": [
+        1,
+        4
+      ],
+      "node_id": "docs/alpha#alpha",
+      "summary": null,
+      "text": "alpha root section carries enough words to remain stable while powering semantic exports for hybrid retrieval.",
+      "title": "Alpha",
+      "token_count": 16
     }
   ]
 }

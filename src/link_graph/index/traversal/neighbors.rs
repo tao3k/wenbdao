@@ -37,7 +37,10 @@ impl LinkGraphIndex {
         max_distance: usize,
         limit: usize,
     ) -> Vec<LinkGraphNeighbor> {
-        let Some(start_id) = self.resolve_doc_id(stem_or_id).map(|s| s.to_string()) else {
+        let Some(start_id) = self
+            .resolve_doc_id(stem_or_id)
+            .map(std::string::ToString::to_string)
+        else {
             return Vec::new();
         };
 
@@ -55,50 +58,50 @@ impl LinkGraphIndex {
 
             let next_distance = distance + 1;
 
-            if direction == LinkGraphDirection::Outgoing || direction == LinkGraphDirection::Both {
-                if let Some(neighbors) = self.outgoing.get(&current_id) {
-                    for neighbor_id in neighbors {
-                        if !visited.insert(neighbor_id.clone()) {
-                            continue;
-                        }
-                        if let Some(doc) = self.docs_by_id.get(neighbor_id) {
-                            results.push(LinkGraphNeighbor {
-                                stem: doc.stem.clone(),
-                                title: doc.title.clone(),
-                                path: doc.path.clone(),
-                                distance: next_distance,
-                                direction: LinkGraphDirection::Outgoing,
-                            });
-                            queue.push_back((
-                                neighbor_id.clone(),
-                                next_distance,
-                                LinkGraphDirection::Outgoing,
-                            ));
-                        }
+            if (direction == LinkGraphDirection::Outgoing || direction == LinkGraphDirection::Both)
+                && let Some(neighbors) = self.outgoing.get(&current_id)
+            {
+                for neighbor_id in neighbors {
+                    if !visited.insert(neighbor_id.clone()) {
+                        continue;
+                    }
+                    if let Some(doc) = self.docs_by_id.get(neighbor_id) {
+                        results.push(LinkGraphNeighbor {
+                            stem: doc.stem.clone(),
+                            title: doc.title.clone(),
+                            path: doc.path.clone(),
+                            distance: next_distance,
+                            direction: LinkGraphDirection::Outgoing,
+                        });
+                        queue.push_back((
+                            neighbor_id.clone(),
+                            next_distance,
+                            LinkGraphDirection::Outgoing,
+                        ));
                     }
                 }
             }
 
-            if direction == LinkGraphDirection::Incoming || direction == LinkGraphDirection::Both {
-                if let Some(neighbors) = self.incoming.get(&current_id) {
-                    for neighbor_id in neighbors {
-                        if !visited.insert(neighbor_id.clone()) {
-                            continue;
-                        }
-                        if let Some(doc) = self.docs_by_id.get(neighbor_id) {
-                            results.push(LinkGraphNeighbor {
-                                stem: doc.stem.clone(),
-                                title: doc.title.clone(),
-                                path: doc.path.clone(),
-                                distance: next_distance,
-                                direction: LinkGraphDirection::Incoming,
-                            });
-                            queue.push_back((
-                                neighbor_id.clone(),
-                                next_distance,
-                                LinkGraphDirection::Incoming,
-                            ));
-                        }
+            if (direction == LinkGraphDirection::Incoming || direction == LinkGraphDirection::Both)
+                && let Some(neighbors) = self.incoming.get(&current_id)
+            {
+                for neighbor_id in neighbors {
+                    if !visited.insert(neighbor_id.clone()) {
+                        continue;
+                    }
+                    if let Some(doc) = self.docs_by_id.get(neighbor_id) {
+                        results.push(LinkGraphNeighbor {
+                            stem: doc.stem.clone(),
+                            title: doc.title.clone(),
+                            path: doc.path.clone(),
+                            distance: next_distance,
+                            direction: LinkGraphDirection::Incoming,
+                        });
+                        queue.push_back((
+                            neighbor_id.clone(),
+                            next_distance,
+                            LinkGraphDirection::Incoming,
+                        ));
                     }
                 }
             }

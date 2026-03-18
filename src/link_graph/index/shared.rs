@@ -30,7 +30,7 @@ fn cmp_optional_ts_asc(left: Option<i64>, right: Option<i64>) -> Ordering {
 fn compare_by_sort_term(
     left: &ScoredSearchRow,
     right: &ScoredSearchRow,
-    term: &LinkGraphSortTerm,
+    term: LinkGraphSortTerm,
 ) -> Ordering {
     let base = match term.field {
         LinkGraphSortField::Score => left
@@ -60,7 +60,7 @@ pub fn sort_hits(rows: &mut [ScoredSearchRow], sort_terms: &[LinkGraphSortTerm])
     };
     rows.sort_by(|left, right| {
         for term in &terms {
-            let ord = compare_by_sort_term(left, right, term);
+            let ord = compare_by_sort_term(left, right, *term);
             if ord != Ordering::Equal {
                 return ord;
             }

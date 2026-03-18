@@ -48,5 +48,9 @@ pub(in crate::link_graph::index) fn token_match_ratio(
             matched += 1;
         }
     }
-    (matched as f64 / query_tokens.len() as f64).clamp(0.0, 1.0)
+    (usize_to_f64_saturating(matched) / usize_to_f64_saturating(query_tokens.len())).clamp(0.0, 1.0)
+}
+
+fn usize_to_f64_saturating(value: usize) -> f64 {
+    u32::try_from(value).map_or(f64::from(u32::MAX), f64::from)
 }

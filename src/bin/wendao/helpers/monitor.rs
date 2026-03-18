@@ -1,7 +1,68 @@
 //! Monitor-related CLI helpers.
 
+use std::cmp::Ordering;
+
 use serde_json::json;
-use xiuxian_wendao::LinkGraphRelatedPprDiagnostics;
+use xiuxian_wendao::{LinkGraphAgenticExecutionResult, LinkGraphRelatedPprDiagnostics};
+
+pub(crate) fn build_agentic_monitor_phases(
+    result: &LinkGraphAgenticExecutionResult,
+) -> Vec<serde_json::Value> {
+    let mut phases: Vec<serde_json::Value> = vec![
+        json!({
+            "phase": "agentic.plan",
+            "duration_ms": result.plan.elapsed_ms,
+            "extra": {
+                "candidate_notes": result.plan.candidate_notes,
+                "selected_pairs": result.plan.selected_pairs,
+                "timed_out": result.plan.timed_out,
+            }
+        }),
+        json!({
+            "phase": "agentic.execute.total",
+            "duration_ms": result.elapsed_ms,
+            "extra": {
+                "worker_runs": result.worker_runs.len(),
+                "prepared_proposals": result.prepared_proposals,
+                "persisted_proposals": result.persisted_proposals,
+                "timed_out": result.timed_out,
+            }
+        }),
+    ];
+
+    for worker_run in &result.worker_runs {
+        for phase in &worker_run.phases {
+            phases.push(json!({
+                "phase": format!("agentic.{}", phase.phase),
+                "duration_ms": phase.duration_ms,
+                "extra": {
+                    "worker_id": worker_run.worker_id,
+                    "item_count": phase.item_count,
+                    "processed_pairs": worker_run.processed_pairs,
+                    "timed_out": worker_run.timed_out,
+                }
+            }));
+        }
+    }
+
+    phases
+}
+
+pub(crate) fn build_agentic_monitor_summary(phases: &[serde_json::Value]) -> serde_json::Value {
+    let slowest_phase = phases
+        .iter()
+        .max_by(|left, right| {
+            phase_duration_ms(left)
+                .partial_cmp(&phase_duration_ms(right))
+                .unwrap_or(Ordering::Equal)
+        })
+        .cloned();
+
+    json!({
+        "phase_count": phases.len(),
+        "slowest_phase": slowest_phase,
+    })
+}
 
 pub(crate) fn build_related_monitor_phases(
     diagnostics: Option<LinkGraphRelatedPprDiagnostics>,
@@ -47,4 +108,11 @@ pub(crate) fn build_related_monitor_phases(
         }
     }));
     phases
+}
+
+fn phase_duration_ms(phase: &serde_json::Value) -> f64 {
+    phase
+        .get("duration_ms")
+        .and_then(serde_json::Value::as_f64)
+        .unwrap_or(0.0)
 }

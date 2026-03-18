@@ -31,11 +31,10 @@ pub(super) fn parse_markdown_target(
     if stripped.is_empty() {
         return None;
     }
-    if has_supported_note_extension(&stripped) {
-        return normalize_markdown_note_target(&stripped, source_path, root)
-            .map(ParsedTarget::Note);
+    if has_supported_note_extension(stripped) {
+        return normalize_markdown_note_target(stripped, source_path, root).map(ParsedTarget::Note);
     }
-    normalize_attachment_target(&stripped, source_path, root).map(ParsedTarget::Attachment)
+    normalize_attachment_target(stripped, source_path, root).map(ParsedTarget::Attachment)
 }
 
 pub(super) fn parse_wikilink_target(

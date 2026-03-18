@@ -55,6 +55,10 @@ impl Default for LinkGraphSearchOptions {
 
 impl LinkGraphSearchOptions {
     /// Validate schema-equivalent constraints for runtime safety.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error string when one or more query filters violate the runtime schema.
     pub fn validate(&self) -> Result<(), String> {
         if let Some(filter) = &self.filters.link_to
             && filter.max_distance.is_some_and(|distance| distance == 0)

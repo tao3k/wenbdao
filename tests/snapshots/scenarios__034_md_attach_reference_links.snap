@@ -1,10 +1,21 @@
 ---
 source: packages/rust/crates/xiuxian-testing/src/scenario.rs
+description: "Scenario 034_md_attach_reference_links [markdown_attachments]: reference links"
 expression: result
+info:
+  id: 034_md_attach_reference_links
+  name: reference links
+  category: markdown_attachments
+  description: markdown_attachments scenario
+  input_type: markdown_tree
+  input_paths:
+    - input
+  expected_output_type: ~
+input_file: packages/rust/crates/xiuxian-wendao/tests/scenarios/034_md_attach_reference_links/scenario.toml
 ---
 {
-  "scenario_id": "034_md_attach_reference_links",
   "category": "markdown_attachments",
-  "status": "validated",
-  "files": []
+  "files": [],
+  "scenario_id": "034_md_attach_reference_links",
+  "status": "validated"
 }

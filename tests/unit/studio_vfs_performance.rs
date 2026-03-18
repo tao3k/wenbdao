@@ -5,10 +5,11 @@
 //! - API response latency is < 10ms for cached endpoints
 #![cfg(feature = "zhenfa-router")]
 
+use crate as xiuxian_wendao;
 use std::sync::Arc;
 use std::time::Instant;
 
-use xiuxian_wendao::gateway::studio::{StudioState, studio_router};
+use xiuxian_wendao::gateway::studio::{GatewayState, StudioState, studio_router};
 
 /// Performance threshold for VFS scan (milliseconds).
 const VFS_SCAN_THRESHOLD_MS: u64 = 100;
@@ -16,23 +17,32 @@ const VFS_SCAN_THRESHOLD_MS: u64 = 100;
 /// Performance threshold for API latency (milliseconds).
 const API_LATENCY_THRESHOLD_MS: u64 = 10;
 
+const _: () = {
+    assert!(VFS_SCAN_THRESHOLD_MS >= 50);
+    assert!(VFS_SCAN_THRESHOLD_MS <= 500);
+    assert!(API_LATENCY_THRESHOLD_MS >= 5);
+    assert!(API_LATENCY_THRESHOLD_MS <= 50);
+};
+
+fn elapsed_millis_u64(started: Instant) -> u64 {
+    u64::try_from(started.elapsed().as_millis()).unwrap_or(u64::MAX)
+}
+
 // ============================================================================
 // Router Creation Tests
 // ============================================================================
 
 #[test]
 fn router_creation_is_instant() {
-    let state = Arc::new(StudioState::new());
+    let state = Arc::new(GatewayState::new(None, None));
 
     let start = Instant::now();
     let _router = studio_router(Arc::clone(&state));
-    let elapsed_ms = start.elapsed().as_millis() as u64;
+    let elapsed_ms = elapsed_millis_u64(start);
 
     assert!(
         elapsed_ms < API_LATENCY_THRESHOLD_MS,
-        "Router creation should complete in < {}ms, took {}ms",
-        API_LATENCY_THRESHOLD_MS,
-        elapsed_ms
+        "Router creation should complete in < {API_LATENCY_THRESHOLD_MS}ms, took {elapsed_ms}ms"
     );
 }
 
@@ -40,13 +50,11 @@ fn router_creation_is_instant() {
 fn studio_state_creation_is_fast() {
     let start = Instant::now();
     let _state = StudioState::new();
-    let elapsed_ms = start.elapsed().as_millis() as u64;
+    let elapsed_ms = elapsed_millis_u64(start);
 
     assert!(
         elapsed_ms < API_LATENCY_THRESHOLD_MS,
-        "State creation should complete in < {}ms, took {}ms",
-        API_LATENCY_THRESHOLD_MS,
-        elapsed_ms
+        "State creation should complete in < {API_LATENCY_THRESHOLD_MS}ms, took {elapsed_ms}ms"
     );
 }
 
@@ -56,49 +64,6 @@ fn studio_state_creation_is_fast() {
 
 #[test]
 fn router_has_expected_api_routes() {
-    // Verify the router compiles and can be created
-    let state = Arc::new(StudioState::new());
+    let state = Arc::new(GatewayState::new(None, None));
     let _router = studio_router(state);
-
-    // Routes that should exist:
-    // - GET /api/vfs
-    // - GET /api/vfs/scan
-    // - GET /api/vfs/cat
-    // - GET /api/vfs/{*path}
-    // - GET /api/neighbors/{*id}
-    // - GET /api/graph/neighbors/{*id}
-    // - GET/POST /api/ui/config
-    //
-    // The actual route structure is verified at compile time by Axum
-    assert!(true, "Router created successfully with all expected routes");
-}
-
-// ============================================================================
-// Performance SLA Documentation Tests
-// ============================================================================
-
-#[test]
-fn vfs_scan_threshold_is_reasonable() {
-    // Verify the threshold is set appropriately
-    assert!(
-        VFS_SCAN_THRESHOLD_MS >= 50,
-        "VFS scan threshold should be at least 50ms for realistic workloads"
-    );
-    assert!(
-        VFS_SCAN_THRESHOLD_MS <= 500,
-        "VFS scan threshold should be reasonable (< 500ms)"
-    );
-}
-
-#[test]
-fn api_latency_threshold_is_reasonable() {
-    // Verify the API latency threshold is appropriate
-    assert!(
-        API_LATENCY_THRESHOLD_MS >= 5,
-        "API latency threshold should be at least 5ms for realistic workloads"
-    );
-    assert!(
-        API_LATENCY_THRESHOLD_MS <= 50,
-        "API latency threshold should be reasonable (< 50ms)"
-    );
 }

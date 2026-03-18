@@ -1,4 +1,4 @@
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::sync::OnceLock;
 
 static LINK_GRAPH_CONFIG_HOME_OVERRIDE: OnceLock<String> = OnceLock::new();
@@ -15,22 +15,6 @@ pub fn set_link_graph_wendao_config_override(path: &str) {
 }
 
 #[must_use]
-pub fn resolve_project_root() -> PathBuf {
-    if let Some(overridden) = LINK_GRAPH_CONFIG_HOME_OVERRIDE.get() {
-        return PathBuf::from(overridden);
-    }
-    std::env::var("XIUXIAN_WENDAO_CONFIG_HOME")
-        .ok()
-        .map(PathBuf::from)
-        .unwrap_or_else(|| std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")))
-}
-
-#[must_use]
 pub fn wendao_config_file_override() -> Option<PathBuf> {
     LINK_GRAPH_WENDAO_CONFIG_OVERRIDE.get().map(PathBuf::from)
-}
-
-#[must_use]
-pub fn resolve_prj_config_home(root: &Path) -> PathBuf {
-    root.join(".config")
 }

@@ -76,6 +76,8 @@ pub mod fusion_py;
 // ---------------------------------------------------------------------------
 // Feature modules (enhancer, link graph refs, dependency, unified symbol)
 // ---------------------------------------------------------------------------
+/// Bridges contract-testing findings into Wendao knowledge ingestion payloads.
+pub mod contract_feedback;
 pub mod dep_indexer_py;
 pub mod dependency_indexer;
 pub mod enhancer;
@@ -93,6 +95,7 @@ pub mod zhenfa_router;
 // ---------------------------------------------------------------------------
 // Public re-exports (crate API)
 // ---------------------------------------------------------------------------
+pub use contract_feedback::WendaoContractFeedbackAdapter;
 pub use dep_indexer_py::{
     PyDependencyConfig, PyDependencyIndexResult, PyDependencyIndexer, PyDependencyStats,
     PyExternalDependency, PyExternalSymbol, PySymbolIndex,

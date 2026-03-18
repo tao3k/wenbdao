@@ -1,0 +1,42 @@
+---
+source: packages/rust/crates/xiuxian-wendao/src/gateway/studio/../../../tests/unit/gateway/studio/support.rs
+expression: value
+---
+{
+  "center": {
+    "distance": 0,
+    "id": "knowledge/alpha.md",
+    "isCenter": true,
+    "label": "Alpha",
+    "nodeType": "doc",
+    "path": "knowledge/alpha.md"
+  },
+  "links": [
+    {
+      "direction": "outgoing",
+      "distance": 1,
+      "source": "knowledge/alpha.md",
+      "target": "knowledge/beta.md"
+    }
+  ],
+  "nodes": [
+    {
+      "distance": 0,
+      "id": "knowledge/alpha.md",
+      "isCenter": true,
+      "label": "Alpha",
+      "nodeType": "doc",
+      "path": "knowledge/alpha.md"
+    },
+    {
+      "distance": 1,
+      "id": "knowledge/beta.md",
+      "isCenter": false,
+      "label": "Beta",
+      "nodeType": "doc",
+      "path": "knowledge/beta.md"
+    }
+  ],
+  "totalLinks": 1,
+  "totalNodes": 2
+}

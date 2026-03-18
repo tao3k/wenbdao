@@ -128,3 +128,26 @@ impl Default for LinkGraphSaliencyTouchRequest {
         }
     }
 }
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(deny_unknown_fields)]
+/// Request payload used to settle all persisted saliency states forward in time.
+pub struct LinkGraphSaliencyDecaySweepRequest {
+    /// Optional timestamp override for deterministic tests and manual backfills.
+    #[serde(default)]
+    pub now_unix: Option<i64>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+/// Summary of one global saliency decay sweep run.
+pub struct LinkGraphSaliencyDecaySweepResult {
+    /// Sweep settlement timestamp (unix seconds).
+    pub now_unix: i64,
+    /// Number of matching saliency keys scanned.
+    pub scanned_keys: usize,
+    /// Number of valid saliency states updated by the sweep.
+    pub updated_states: usize,
+    /// Number of invalid saliency payloads removed during the sweep.
+    pub deleted_states: usize,
+}

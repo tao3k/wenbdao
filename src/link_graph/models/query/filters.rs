@@ -35,7 +35,7 @@ pub struct LinkGraphLinkFilter {
     pub max_distance: Option<usize>,
 }
 
-/// Personalized PageRank (PPR) options for related-note discovery.
+/// Personalized `PageRank` (PPR) options for related-note discovery.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct LinkGraphRelatedPprOptions {

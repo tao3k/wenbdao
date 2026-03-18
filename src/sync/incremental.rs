@@ -26,6 +26,7 @@ impl Default for IncrementalSyncPolicy {
 
 impl IncrementalSyncPolicy {
     /// Create a new policy with explicit extensions.
+    #[must_use]
     pub fn new(extensions: &[String]) -> Self {
         Self {
             extensions: extensions.to_vec(),
@@ -38,7 +39,10 @@ impl IncrementalSyncPolicy {
     pub fn from_glob_patterns(patterns: &[String], fallback_extensions: &[&str]) -> Self {
         let mut extensions = extract_extensions_from_glob_patterns(patterns);
         if extensions.is_empty() {
-            extensions = fallback_extensions.iter().map(|s| s.to_string()).collect();
+            extensions = fallback_extensions
+                .iter()
+                .map(std::string::ToString::to_string)
+                .collect();
         }
         Self {
             extensions,
@@ -48,6 +52,7 @@ impl IncrementalSyncPolicy {
     }
 
     /// Returns true if the path extension matches policy.
+    #[must_use]
     pub fn supports_path(&self, path: &Path) -> bool {
         let Some(ext) = path.extension().and_then(|s| s.to_str()) else {
             return false;
@@ -58,6 +63,7 @@ impl IncrementalSyncPolicy {
 }
 
 /// Helper to extract base extensions from a list of globs.
+#[must_use]
 pub fn extract_extensions_from_glob_patterns(patterns: &[String]) -> Vec<String> {
     let mut values = BTreeSet::new();
     for pattern in patterns {
@@ -82,6 +88,7 @@ pub struct SyncEngine {
 
 impl SyncEngine {
     /// Construct a new sync engine for a project.
+    #[must_use]
     pub fn new(project_root: PathBuf, manifest_path: PathBuf) -> Self {
         Self {
             project_root,
@@ -91,6 +98,7 @@ impl SyncEngine {
     }
 
     /// Attach discovery options to the engine.
+    #[must_use]
     pub fn with_options(mut self, options: DiscoveryOptions) -> Self {
         self.options = options;
         self
@@ -150,16 +158,16 @@ impl SyncEngine {
             if !extensions.contains(&ext.to_ascii_lowercase()) {
                 continue;
             }
-            if let Ok(metadata) = path.metadata() {
-                if metadata.len() > options.max_file_size {
-                    continue;
-                }
+            if let Ok(metadata) = path.metadata()
+                && metadata.len() > options.max_file_size
+            {
+                continue;
             }
             files.push(path.to_path_buf());
-            if let Some(limit) = options.max_files {
-                if files.len() >= limit {
-                    break;
-                }
+            if let Some(limit) = options.max_files
+                && files.len() >= limit
+            {
+                break;
             }
         }
 

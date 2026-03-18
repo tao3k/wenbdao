@@ -81,7 +81,7 @@ fn persist_request_with_retries(
     for _attempt in 0..attempts {
         persist_attempts = persist_attempts.saturating_add(1);
         let persist_started = Instant::now();
-        match valkey_suggested_link_log(request.clone()) {
+        match valkey_suggested_link_log(request) {
             Ok(_) => {
                 persist_phase_ms += persist_started.elapsed().as_secs_f64() * 1000.0;
                 persisted = true;

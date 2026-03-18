@@ -1,37 +1,48 @@
 ---
 source: packages/rust/crates/xiuxian-testing/src/scenario.rs
+description: "Scenario 002_page_index_headingless [page_index]: Page Index Headingless"
 expression: result
+info:
+  id: 002_page_index_headingless
+  name: Page Index Headingless
+  category: page_index
+  description: Generate single root node for markdown documents without headings
+  input_type: markdown_tree
+  input_paths:
+    - input
+  expected_output_type: ~
+input_file: packages/rust/crates/xiuxian-wendao/tests/scenarios/002_page_index_headingless/scenario.toml
 ---
 {
   "nodes": [
     {
-      "node_id": "notes/plain#plain",
-      "title": "plain",
-      "level": 1,
-      "text": "Just body text without headings.\nStill part of the same section.",
-      "summary": null,
-      "line_range": [
-        1,
-        2
-      ],
-      "token_count": 11,
-      "is_thinned": false,
       "blocks": [
         {
           "block_id": "block-para-0",
-          "kind": "Paragraph",
           "byte_range": [
             0,
             64
           ],
+          "content_hash": "dd73ab3f686e0960",
+          "kind": "Paragraph",
           "line_range": [
             1,
             2
-          ],
-          "content_hash": "dd73ab3f686e0960"
+          ]
         }
       ],
-      "children": []
+      "children": [],
+      "is_thinned": false,
+      "level": 1,
+      "line_range": [
+        1,
+        2
+      ],
+      "node_id": "notes/plain#plain",
+      "summary": null,
+      "text": "Just body text without headings.\nStill part of the same section.",
+      "title": "plain",
+      "token_count": 11
     }
   ]
 }

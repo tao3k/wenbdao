@@ -36,4 +36,6 @@ pub use retrieval_plan::{
     LinkGraphConfidenceLevel, LinkGraphRetrievalBudget, LinkGraphRetrievalMode,
     LinkGraphRetrievalPlanInput, LinkGraphRetrievalPlanRecord,
 };
-pub use semantic_document::{LinkGraphSemanticDocument, LinkGraphSemanticDocumentKind};
+pub use semantic_document::{
+    CognitiveTraceRecord, LinkGraphSemanticDocument, LinkGraphSemanticDocumentKind,
+};

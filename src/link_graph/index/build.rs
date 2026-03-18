@@ -11,7 +11,6 @@ mod graphmem;
 mod property_drawer_edges;
 mod refresh;
 mod saliency_snapshot;
-mod vision_ingress;
 
 // Re-export types used by parent module
 pub use collapse::VirtualNode;

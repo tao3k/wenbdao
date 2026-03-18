@@ -1,0 +1,63 @@
+---
+source: packages/rust/crates/xiuxian-wendao/src/gateway/studio/../../../tests/unit/gateway/studio/support.rs
+expression: value
+---
+{
+  "hitCount": 4,
+  "hits": [
+    {
+      "crateName": "demo",
+      "kind": "struct",
+      "language": "python",
+      "line": 1,
+      "location": "packages/python/demo/tool.py:1",
+      "name": "AlphaClient",
+      "path": "packages/python/demo/tool.py",
+      "projectName": "kernel",
+      "rootLabel": "packages",
+      "score": 0.95,
+      "source": "project"
+    },
+    {
+      "crateName": "demo",
+      "kind": "struct",
+      "language": "rust",
+      "line": 1,
+      "location": "packages/rust/crates/demo/src/lib.rs:1",
+      "name": "AlphaService",
+      "path": "packages/rust/crates/demo/src/lib.rs",
+      "projectName": "kernel",
+      "rootLabel": "packages",
+      "score": 0.95,
+      "source": "project"
+    },
+    {
+      "crateName": "demo",
+      "kind": "function",
+      "language": "rust",
+      "line": 2,
+      "location": "packages/rust/crates/demo/src/lib.rs:2",
+      "name": "alpha_handler",
+      "path": "packages/rust/crates/demo/src/lib.rs",
+      "projectName": "kernel",
+      "rootLabel": "packages",
+      "score": 0.95,
+      "source": "project"
+    },
+    {
+      "crateName": "demo",
+      "kind": "function",
+      "language": "python",
+      "line": 4,
+      "location": "packages/python/demo/tool.py:4",
+      "name": "alpha_helper",
+      "path": "packages/python/demo/tool.py",
+      "projectName": "kernel",
+      "rootLabel": "packages",
+      "score": 0.95,
+      "source": "project"
+    }
+  ],
+  "query": "alpha",
+  "selectedScope": "project"
+}

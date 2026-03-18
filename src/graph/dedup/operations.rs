@@ -17,6 +17,7 @@ pub struct DeduplicationResult {
 
 impl KnowledgeGraph {
     /// Calculate similarity between two entity names (0.0 to 1.0).
+    #[must_use]
     pub fn name_similarity(name1: &str, name2: &str) -> f32 {
         let n1 = normalize_name(name1);
         let n2 = normalize_name(name2);
@@ -37,19 +38,19 @@ impl KnowledgeGraph {
         }
 
         let distance = levenshtein_distance(&n1, &n2);
-        let similarity = 1.0 - (distance as f32 / max_len as f32);
+        let similarity = 1.0 - bounded_ratio(distance, max_len);
 
         // Apply bonus for word overlap
         let words1: HashSet<&str> = n1.split_whitespace().collect();
         let words2: HashSet<&str> = n2.split_whitespace().collect();
-        let overlap = words1.intersection(&words2).count() as f32;
+        let overlap = bounded_usize_to_f32(words1.intersection(&words2).count());
         let word_bonus = if !words1.is_empty() && !words2.is_empty() {
-            overlap / (words1.len() + words2.len()) as f32 * 0.2
+            overlap / bounded_usize_to_f32(words1.len() + words2.len()) * 0.2
         } else {
             0.0
         };
 
-        (similarity + word_bonus).min(1.0).max(0.0)
+        (similarity + word_bonus).clamp(0.0, 1.0)
     }
 
     /// Find potential duplicate entities.
@@ -92,6 +93,12 @@ impl KnowledgeGraph {
     }
 
     /// Merge multiple entities into a single canonical entity.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`GraphError::EntityNotFound`] when none of the provided IDs
+    /// resolve to an entity, or any error from removing or re-adding the
+    /// canonical entity during the merge transaction.
     pub fn merge_entities(
         &self,
         entity_ids: &[String],
@@ -119,10 +126,10 @@ impl KnowledgeGraph {
                         all_aliases.push(entity.name.clone());
                     }
 
-                    if let Some(ref src) = entity.source {
-                        if !sources.contains(src) {
-                            sources.push(src.clone());
-                        }
+                    if let Some(ref src) = entity.source
+                        && !sources.contains(src)
+                    {
+                        sources.push(src.clone());
                     }
 
                     max_confidence = max_confidence.max(entity.confidence);
@@ -205,14 +212,26 @@ impl KnowledgeGraph {
             }
         }
 
-        best.map(|(_, name)| name)
-            .unwrap_or_else(|| entity_ids.first().cloned().unwrap_or_default())
+        best.map_or_else(
+            || entity_ids.first().cloned().unwrap_or_default(),
+            |(_, name)| name,
+        )
     }
 }
 
 // ---------------------------------------------------------------------------
 // Internal helpers
 // ---------------------------------------------------------------------------
+
+fn bounded_ratio(numerator: usize, denominator: usize) -> f32 {
+    let numerator = bounded_usize_to_f32(numerator);
+    let denominator = bounded_usize_to_f32(denominator);
+    numerator / denominator
+}
+
+fn bounded_usize_to_f32(value: usize) -> f32 {
+    u16::try_from(value).map_or(f32::from(u16::MAX), f32::from)
+}
 
 /// Normalize entity name for comparison (Unicode NFKC + lowercase).
 fn normalize_name(name: &str) -> String {
@@ -243,11 +262,7 @@ fn levenshtein_distance(a: &str, b: &str) -> usize {
     for i in 1..=m {
         curr[0] = i;
         for j in 1..=n {
-            let cost = if a_chars[i - 1] == b_chars[j - 1] {
-                0
-            } else {
-                1
-            };
+            let cost = usize::from(a_chars[i - 1] != b_chars[j - 1]);
             let deletion = prev[j] + 1;
             let insertion = curr[j - 1] + 1;
             let substitution = prev[j - 1] + cost;

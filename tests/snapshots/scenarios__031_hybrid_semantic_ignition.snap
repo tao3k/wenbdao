@@ -1,10 +1,21 @@
 ---
 source: packages/rust/crates/xiuxian-testing/src/scenario.rs
+description: "Scenario 031_hybrid_semantic_ignition [hybrid]: Hybrid: semantic ignition"
 expression: result
+info:
+  id: 031_hybrid_semantic_ignition
+  name: "Hybrid: semantic ignition"
+  category: hybrid
+  description: Hybrid quantum fusion scenario
+  input_type: markdown_tree
+  input_paths:
+    - input
+  expected_output_type: ~
+input_file: packages/rust/crates/xiuxian-wendao/tests/scenarios/031_hybrid_semantic_ignition/scenario.toml
 ---
 {
-  "scenario_id": "031_hybrid_semantic_ignition",
   "category": "hybrid",
-  "status": "validated",
-  "files": []
+  "files": [],
+  "scenario_id": "031_hybrid_semantic_ignition",
+  "status": "validated"
 }

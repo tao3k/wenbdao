@@ -1,10 +1,21 @@
 ---
 source: packages/rust/crates/xiuxian-testing/src/scenario.rs
+description: "Scenario 039_refresh_incremental_update_and_delete [refresh]: incremental update and delete"
 expression: result
+info:
+  id: 039_refresh_incremental_update_and_delete
+  name: incremental update and delete
+  category: refresh
+  description: refresh scenario
+  input_type: markdown_tree
+  input_paths:
+    - input
+  expected_output_type: ~
+input_file: packages/rust/crates/xiuxian-wendao/tests/scenarios/039_refresh_incremental_update_and_delete/scenario.toml
 ---
 {
-  "scenario_id": "039_refresh_incremental_update_and_delete",
   "category": "refresh",
-  "status": "validated",
-  "files": []
+  "files": [],
+  "scenario_id": "039_refresh_incremental_update_and_delete",
+  "status": "validated"
 }

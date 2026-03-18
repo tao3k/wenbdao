@@ -1,0 +1,21 @@
+# Scenario: Fuzzy Suggestion for Renamed Symbol
+# Test fuzzy pattern suggestion when a function is renamed
+
+[scenario]
+id = "070_fuzzy_suggestion_renamed_symbol"
+name = "Fuzzy Suggestion Renamed Symbol"
+description = "Test fuzzy pattern suggestion when a function has been renamed in source code"
+category = "semantic_check"
+
+[input]
+type = "markdown_tree"
+paths = ["input"]
+
+[runner]
+semantic_check = true
+source_paths = ["src"]
+
+[assert]
+issue_count = 1
+issue_type = "observation_target_missing"
+has_fuzzy_suggestion = true

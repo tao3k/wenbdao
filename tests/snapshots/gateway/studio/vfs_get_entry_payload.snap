@@ -1,0 +1,11 @@
+---
+source: packages/rust/crates/xiuxian-wendao/src/gateway/studio/../../../tests/unit/gateway/studio/support.rs
+expression: value
+---
+{
+  "contentType": "text/markdown",
+  "isDir": false,
+  "name": "guide.md",
+  "path": "docs/guide.md",
+  "size": 16
+}

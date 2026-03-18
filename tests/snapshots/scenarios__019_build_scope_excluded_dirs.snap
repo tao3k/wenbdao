@@ -1,10 +1,21 @@
 ---
 source: packages/rust/crates/xiuxian-testing/src/scenario.rs
+description: "Scenario 019_build_scope_excluded_dirs [build_scope]: Build Scope: excluded dirs"
 expression: result
+info:
+  id: 019_build_scope_excluded_dirs
+  name: "Build Scope: excluded dirs"
+  category: build_scope
+  description: build_scope scenario
+  input_type: markdown_tree
+  input_paths:
+    - input
+  expected_output_type: ~
+input_file: packages/rust/crates/xiuxian-wendao/tests/scenarios/019_build_scope_excluded_dirs/scenario.toml
 ---
 {
-  "scenario_id": "019_build_scope_excluded_dirs",
   "category": "build_scope",
-  "status": "validated",
-  "files": []
+  "files": [],
+  "scenario_id": "019_build_scope_excluded_dirs",
+  "status": "validated"
 }

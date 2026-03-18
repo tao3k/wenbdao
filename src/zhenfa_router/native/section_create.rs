@@ -1,4 +1,4 @@
-//! Section creation logic for `create_if_missing` in semantic_edit.
+//! Section creation logic for `create_if_missing` in `semantic_edit`.
 //!
 //! Implements path traversal and section insertion for creating new heading
 //! hierarchies in markdown documents.
@@ -8,8 +8,6 @@
 pub struct SiblingInfo {
     /// Title of the sibling section.
     pub title: String,
-    /// Heading level of the sibling.
-    pub level: usize,
     /// First line of content (truncated for context).
     pub preview: String,
 }
@@ -117,24 +115,6 @@ pub fn find_insertion_point(doc_content: &str, path_components: &[String]) -> In
     }
 }
 
-/// Build the content for new sections along a path.
-///
-/// Creates heading markers and nests content appropriately.
-/// When `options.generate_id` is true, adds `:ID: <uuid>` property drawer.
-#[must_use]
-pub fn build_new_sections_content(
-    remaining_path: &[String],
-    start_level: usize,
-    content: &str,
-) -> String {
-    build_new_sections_content_with_options(
-        remaining_path,
-        start_level,
-        content,
-        &BuildSectionOptions::default(),
-    )
-}
-
 /// Build new sections with optional ID generation.
 #[must_use]
 pub fn build_new_sections_content_with_options(
@@ -143,6 +123,7 @@ pub fn build_new_sections_content_with_options(
     content: &str,
     options: &BuildSectionOptions,
 ) -> String {
+    use std::fmt::Write;
     let mut result = String::new();
     let mut current_level = start_level;
 
@@ -153,12 +134,12 @@ pub fn build_new_sections_content_with_options(
         if i > 0 {
             result.push('\n');
         }
-        result.push_str(&format!("{} {}", heading_marker, heading));
+        let _ = write!(result, "{heading_marker} {heading}");
 
         // Add :ID: property drawer if requested
         if options.generate_id {
             let id = generate_section_id(options.id_prefix.as_deref());
-            result.push_str(&format!("\n:ID: {}", id));
+            let _ = write!(result, "\n:ID: {id}");
         }
 
         result.push_str("\n\n");
@@ -172,7 +153,7 @@ pub fn build_new_sections_content_with_options(
 }
 
 /// Generate a section ID: either prefixed or plain UUID.
-fn generate_section_id(prefix: Option<&str>) -> String {
+pub(super) fn generate_section_id(prefix: Option<&str>) -> String {
     let uuid = uuid::Uuid::new_v4();
     let uuid_str = uuid.simple().to_string();
 
@@ -214,7 +195,7 @@ fn parse_headings(lines: &[&str]) -> Vec<HeadingPosition> {
 }
 
 /// Parse a single heading line, returning (level, title) if it's a heading.
-fn parse_heading_line(line: &str) -> Option<(usize, String)> {
+pub(super) fn parse_heading_line(line: &str) -> Option<(usize, String)> {
     if !line.starts_with('#') {
         return None;
     }
@@ -242,7 +223,7 @@ fn parse_heading_line(line: &str) -> Option<(usize, String)> {
 
 /// Find the deepest matching path prefix in the heading structure.
 ///
-/// Returns (matched_depth, last_matched_level, last_matched_end_line, matched_line_idx).
+/// Returns (`matched_depth`, `last_matched_level`, `last_matched_end_line`, `matched_line_idx`).
 fn find_deepest_match_with_position(
     heading_positions: &[HeadingPosition],
     path_components: &[String],
@@ -307,8 +288,7 @@ fn find_sibling_context(
         heading_positions
             .iter()
             .find(|&&(line_idx, level, _)| line_idx > parent_line && level <= parent_level)
-            .map(|&(line_idx, _, _)| line_idx)
-            .unwrap_or(usize::MAX)
+            .map_or(usize::MAX, |&(line_idx, _, _)| line_idx)
     } else {
         usize::MAX
     };
@@ -326,7 +306,6 @@ fn find_sibling_context(
         let preview = extract_preview(lines, last.0);
         prev_sibling = Some(SiblingInfo {
             title: last.2.clone(),
-            level: last.1,
             preview,
         });
     }
@@ -340,9 +319,8 @@ fn find_sibling_context(
 
 /// Extract a preview string from content following a heading.
 fn extract_preview(lines: &[&str], heading_line_idx: usize) -> String {
-    let start = heading_line_idx + 1;
-    for i in start..lines.len().min(start + 3) {
-        let trimmed = lines[i].trim();
+    for line in lines.iter().skip(heading_line_idx + 1).take(3) {
+        let trimmed = line.trim();
         if !trimmed.is_empty() && !trimmed.starts_with('#') && !trimmed.starts_with(':') {
             return trimmed.chars().take(80).collect();
         }
@@ -388,128 +366,5 @@ fn calculate_insertion_byte(
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_parse_heading_line() {
-        assert_eq!(
-            parse_heading_line("# Title"),
-            Some((1, "Title".to_string()))
-        );
-        assert_eq!(
-            parse_heading_line("## Sub Title"),
-            Some((2, "Sub Title".to_string()))
-        );
-        assert_eq!(parse_heading_line("###Deep"), Some((3, "Deep".to_string())));
-        assert_eq!(parse_heading_line("No heading"), None);
-        assert_eq!(parse_heading_line("####### Too deep"), None);
-    }
-
-    #[test]
-    fn test_find_insertion_point_empty_doc() {
-        let doc = "";
-        let result = find_insertion_point(doc, &["Section".to_string()]);
-        assert_eq!(result.insertion_byte, 0);
-        assert_eq!(result.start_level, 1);
-        assert_eq!(result.remaining_path, vec!["Section".to_string()]);
-    }
-
-    #[test]
-    fn test_find_insertion_point_whitespace_doc() {
-        let doc = "   \n\n   \n";
-        let result = find_insertion_point(doc, &["First".to_string(), "Second".to_string()]);
-        assert_eq!(result.insertion_byte, 0);
-        assert_eq!(result.start_level, 1);
-        assert_eq!(result.remaining_path.len(), 2);
-    }
-
-    #[test]
-    fn test_find_insertion_point_existing_parent() {
-        let doc = "# Parent\n\nSome content.\n\n## Child\n\nMore content.\n";
-        let result = find_insertion_point(doc, &["Parent".to_string(), "NewChild".to_string()]);
-        assert!(result.insertion_byte > 0);
-        assert_eq!(result.start_level, 2);
-        assert_eq!(result.remaining_path, vec!["NewChild".to_string()]);
-    }
-
-    #[test]
-    fn test_find_insertion_point_with_siblings() {
-        let doc = "# Main\n\nIntro.\n\n## Alpha\n\nAlpha content.\n\n## Beta\n\nBeta content.\n";
-        let result = find_insertion_point(doc, &["Main".to_string(), "NewSection".to_string()]);
-        assert_eq!(result.start_level, 2);
-        // When inserting a new H2 under Main, after existing H2s,
-        // prev_sibling should be Beta (the last H2), next_sibling should be None
-        assert!(result.prev_sibling.is_some(), "should have prev_sibling");
-        assert_eq!(result.prev_sibling.as_ref().unwrap().title, "Beta");
-        assert!(
-            result.next_sibling.is_none(),
-            "should not have next_sibling at end"
-        );
-    }
-
-    #[test]
-    fn test_build_new_sections_content() {
-        let content = build_new_sections_content(&["Section".to_string()], 1, "Hello world");
-        assert!(content.starts_with("# Section\n\nHello world\n"));
-
-        let nested = build_new_sections_content(&["A".to_string(), "B".to_string()], 1, "Content");
-        assert!(nested.contains("# A"));
-        assert!(nested.contains("## B"));
-        assert!(nested.contains("Content"));
-    }
-
-    #[test]
-    fn test_build_new_sections_content_with_id() {
-        let content = build_new_sections_content_with_options(
-            &["MySection".to_string()],
-            2,
-            "Content here",
-            &BuildSectionOptions {
-                generate_id: true,
-                id_prefix: Some("sec".to_string()),
-            },
-        );
-
-        assert!(content.contains("## MySection"));
-        assert!(content.contains(":ID: sec-"));
-        assert!(content.contains("Content here"));
-    }
-
-    #[test]
-    fn test_build_new_sections_content_with_plain_id() {
-        let content = build_new_sections_content_with_options(
-            &["Section".to_string()],
-            1,
-            "Test",
-            &BuildSectionOptions {
-                generate_id: true,
-                id_prefix: None,
-            },
-        );
-
-        assert!(content.contains("# Section\n:ID:"));
-        // ID should be 12 chars (truncated UUID)
-        let id_line: Vec<&str> = content.lines().collect();
-        let id_part = id_line[1].strip_prefix(":ID: ").unwrap();
-        assert_eq!(id_part.len(), 12);
-    }
-
-    #[test]
-    fn test_compute_content_hash() {
-        let hash1 = compute_content_hash("test");
-        let hash2 = compute_content_hash("test");
-        assert_eq!(hash1, hash2);
-        assert_eq!(hash1.len(), 16);
-    }
-
-    #[test]
-    fn test_generate_section_id() {
-        let id1 = generate_section_id(None);
-        let id2 = generate_section_id(Some("arch"));
-
-        assert_eq!(id1.len(), 12);
-        assert!(id2.starts_with("arch-"));
-        assert_eq!(id2.len(), 13); // "arch-" (5) + 8 hex chars
-    }
-}
+#[path = "../../../tests/unit/zhenfa_router/native/section_create.rs"]
+mod tests;

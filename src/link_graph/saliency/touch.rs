@@ -72,10 +72,7 @@ fn enqueue_touch(task: SaliencyTouchTask) {
     let sender = touch_queue_sender();
     match sender.try_send(task) {
         Ok(()) => {}
-        Err(mpsc::TrySendError::Full(task)) => {
-            execute_touch_task(task);
-        }
-        Err(mpsc::TrySendError::Disconnected(task)) => {
+        Err(mpsc::TrySendError::Full(task) | mpsc::TrySendError::Disconnected(task)) => {
             execute_touch_task(task);
         }
     }
@@ -163,7 +160,8 @@ fn touch_hits_with_coactivation(
     }
 
     for (neighbor_id, rank) in neighbor_ranks {
-        let weight = 1.0 / (rank as f64 + 1.0);
+        let rank_f64 = f64::from(u32::try_from(rank).unwrap_or(u32::MAX));
+        let weight = 1.0 / (rank_f64 + 1.0);
         let alpha = base_alpha * weight;
         if alpha <= f64::EPSILON {
             continue;

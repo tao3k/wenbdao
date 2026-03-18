@@ -1,0 +1,42 @@
+---
+source: packages/rust/crates/xiuxian-wendao/src/gateway/studio/../../../tests/unit/gateway/studio/support.rs
+expression: value
+---
+{
+  "center": {
+    "distance": 0,
+    "id": "docs-2/03_features/202_topology_and_graph_navigation.md",
+    "isCenter": true,
+    "label": "Topology",
+    "nodeType": "doc",
+    "path": "docs-2/03_features/202_topology_and_graph_navigation.md"
+  },
+  "links": [
+    {
+      "direction": "outgoing",
+      "distance": 1,
+      "source": "docs-2/03_features/202_topology_and_graph_navigation.md",
+      "target": "docs/overview.md"
+    }
+  ],
+  "nodes": [
+    {
+      "distance": 0,
+      "id": "docs-2/03_features/202_topology_and_graph_navigation.md",
+      "isCenter": true,
+      "label": "Topology",
+      "nodeType": "doc",
+      "path": "docs-2/03_features/202_topology_and_graph_navigation.md"
+    },
+    {
+      "distance": 1,
+      "id": "docs/overview.md",
+      "isCenter": false,
+      "label": "Overview",
+      "nodeType": "doc",
+      "path": "docs/overview.md"
+    }
+  ],
+  "totalLinks": 1,
+  "totalNodes": 2
+}

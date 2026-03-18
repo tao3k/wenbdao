@@ -1,7 +1,5 @@
 //! Unit tests for sections module.
 
-use std::collections::HashMap;
-
 use super::*;
 
 #[test]
@@ -40,7 +38,7 @@ fn test_extract_property_drawers_multiple() {
     let lines = vec![
         ":ID: test-123".to_string(),
         ":TAGS: one, two".to_string(),
-        "".to_string(),
+        String::new(),
         "Content starts here".to_string(),
     ];
     let attrs = extract_property_drawers(&lines);
@@ -57,12 +55,12 @@ fn test_extract_property_drawers_stops_at_content() {
     ];
     let attrs = extract_property_drawers(&lines);
     assert_eq!(attrs.get("ID"), Some(&"test-456".to_string()));
-    assert!(attrs.get("TAGS").is_none()); // Should not be extracted
+    assert!(!attrs.contains_key("TAGS")); // Should not be extracted
 }
 
 #[test]
 fn test_extract_sections_with_property_drawer() {
-    let body = r#"# Main Title
+    let body = r"# Main Title
 :ID: main-section
 :TAGS: important
 
@@ -72,9 +70,9 @@ Content here.
 :ID: sub-001
 
 More content.
-"#;
+";
     let sections = extract_sections(
-        body.as_ref(),
+        body,
         std::path::Path::new("test.md"),
         std::path::Path::new("/"),
     );
@@ -82,7 +80,9 @@ More content.
     // First section should have :ID: main-section
     let first = sections.iter().find(|s| s.heading_title == "Main Title");
     assert!(first.is_some());
-    let first = first.unwrap();
+    let Some(first) = first else {
+        panic!("expected Main Title section");
+    };
     assert_eq!(
         first.attributes.get("ID"),
         Some(&"main-section".to_string())
@@ -92,7 +92,9 @@ More content.
     // Subsection should have :ID: sub-001
     let sub = sections.iter().find(|s| s.heading_title == "Subsection");
     assert!(sub.is_some());
-    let sub = sub.unwrap();
+    let Some(sub) = sub else {
+        panic!("expected Subsection section");
+    };
     assert_eq!(sub.attributes.get("ID"), Some(&"sub-001".to_string()));
 }
 
@@ -105,7 +107,7 @@ fn test_extract_property_drawers_org_block_format() {
         ":CONTRACT: must_contain(\"Rust\", \"Lock\")".to_string(),
         ":HASH:     blake3_fingerprint".to_string(),
         ":END:".to_string(),
-        "".to_string(),
+        String::new(),
         "Content starts here".to_string(),
     ];
     let attrs = extract_property_drawers(&lines);
@@ -132,7 +134,7 @@ fn test_extract_property_drawers_mixed_format() {
     assert_eq!(attrs.get("ID"), Some(&"block-id".to_string()));
     assert_eq!(attrs.get("STATUS"), Some(&"DRAFT".to_string()));
     // TAGS should NOT be present because it comes after :END:
-    assert!(attrs.get("TAGS").is_none());
+    assert!(!attrs.contains_key("TAGS"));
 }
 
 #[test]
@@ -156,15 +158,19 @@ This is the architecture section.
 Implementation details here.
 "#;
     let sections = extract_sections(
-        body.as_ref(),
+        body,
         std::path::Path::new("test.md"),
         std::path::Path::new("/"),
     );
 
     // First section should have all org block properties
-    let arch = sections.iter().find(|s| s.heading_title == "Architecture Node");
+    let arch = sections
+        .iter()
+        .find(|s| s.heading_title == "Architecture Node");
     assert!(arch.is_some());
-    let arch = arch.unwrap();
+    let Some(arch) = arch else {
+        panic!("expected Architecture Node section");
+    };
     assert_eq!(arch.attributes.get("ID"), Some(&"arch-v1".to_string()));
     assert_eq!(arch.attributes.get("STATUS"), Some(&"STABLE".to_string()));
     assert_eq!(
@@ -178,23 +184,17 @@ Implementation details here.
         .iter()
         .find(|s| s.heading_title == "Implementation");
     assert!(impl_section.is_some());
-    let impl_section = impl_section.unwrap();
-    assert_eq!(impl_section.attributes.get("ID"), Some(&"impl-v1".to_string()));
-    assert_eq!(impl_section.attributes.get("STATUS"), Some(&"DRAFT".to_string()));
-}
-
-#[test]
-fn test_node_status_parsing() {
-    assert_eq!(NodeStatus::from_str("STABLE"), NodeStatus::Stable);
-    assert_eq!(NodeStatus::from_str("stable"), NodeStatus::Stable);
-    assert_eq!(NodeStatus::from_str("  STABLE  "), NodeStatus::Stable);
-    assert_eq!(NodeStatus::from_str("DRAFT"), NodeStatus::Draft);
-    assert_eq!(NodeStatus::from_str("draft"), NodeStatus::Draft);
-    assert_eq!(NodeStatus::from_str("DEPRECATED"), NodeStatus::Deprecated);
-    assert_eq!(NodeStatus::from_str("deprecated"), NodeStatus::Deprecated);
-    // Unknown values default to Stable
-    assert_eq!(NodeStatus::from_str("UNKNOWN"), NodeStatus::Stable);
-    assert_eq!(NodeStatus::from_str(""), NodeStatus::Stable);
+    let Some(impl_section) = impl_section else {
+        panic!("expected Implementation section");
+    };
+    assert_eq!(
+        impl_section.attributes.get("ID"),
+        Some(&"impl-v1".to_string())
+    );
+    assert_eq!(
+        impl_section.attributes.get("STATUS"),
+        Some(&"DRAFT".to_string())
+    );
 }
 
 // =========================================================================
@@ -206,7 +206,9 @@ fn test_parse_logbook_entry_valid() {
     let line = "- [2025-03-14] Agent Started: Initiating structural audit.";
     let entry = parse_logbook_entry(line, 1);
     assert!(entry.is_some());
-    let entry = entry.unwrap();
+    let Some(entry) = entry else {
+        panic!("expected valid logbook entry");
+    };
     assert_eq!(entry.timestamp, "2025-03-14");
     assert_eq!(entry.message, "Agent Started: Initiating structural audit.");
     assert_eq!(entry.line_number, 1);
@@ -217,7 +219,9 @@ fn test_parse_logbook_entry_with_brackets_in_message() {
     let line = "- [2025-03-14] Step [audit] completed with status OK.";
     let entry = parse_logbook_entry(line, 2);
     assert!(entry.is_some());
-    let entry = entry.unwrap();
+    let Some(entry) = entry else {
+        panic!("expected valid logbook entry with brackets");
+    };
     assert_eq!(entry.timestamp, "2025-03-14");
     assert_eq!(entry.message, "Step [audit] completed with status OK.");
 }
@@ -246,16 +250,16 @@ fn test_extract_logbook_entries_basic() {
     let entries = extract_logbook_entries(&lines, 1);
     assert_eq!(entries.len(), 2);
     assert_eq!(entries[0].timestamp, "2025-03-14");
-    assert_eq!(entries[0].message, "Agent Started: Initiating structural audit.");
+    assert_eq!(
+        entries[0].message,
+        "Agent Started: Initiating structural audit."
+    );
     assert_eq!(entries[1].message, "Step [audit] completed with status OK.");
 }
 
 #[test]
 fn test_extract_logbook_entries_empty() {
-    let lines = vec![
-        ":LOGBOOK:".to_string(),
-        ":END:".to_string(),
-    ];
+    let lines = vec![":LOGBOOK:".to_string(), ":END:".to_string()];
     let entries = extract_logbook_entries(&lines, 1);
     assert!(entries.is_empty());
 }
@@ -272,7 +276,7 @@ fn test_extract_logbook_entries_no_block() {
 
 #[test]
 fn test_extract_sections_with_logbook() {
-    let body = r#"# Task: Refactor Authentication
+    let body = r"# Task: Refactor Authentication
 :PROPERTIES:
 :ID:       task-auth-001
 :STATUS:   RUNNING
@@ -284,9 +288,9 @@ fn test_extract_sections_with_logbook() {
 :END:
 
 Some task content here.
-"#;
+";
     let sections = extract_sections(
-        body.as_ref(),
+        body,
         std::path::Path::new("test.md"),
         std::path::Path::new("/"),
     );
@@ -295,12 +299,24 @@ Some task content here.
     let section = &sections[0];
 
     // Check properties
-    assert_eq!(section.attributes.get("ID"), Some(&"task-auth-001".to_string()));
-    assert_eq!(section.attributes.get("STATUS"), Some(&"RUNNING".to_string()));
+    assert_eq!(
+        section.attributes.get("ID"),
+        Some(&"task-auth-001".to_string())
+    );
+    assert_eq!(
+        section.attributes.get("STATUS"),
+        Some(&"RUNNING".to_string())
+    );
 
     // Check logbook entries
     assert_eq!(section.logbook.len(), 2);
     assert_eq!(section.logbook[0].timestamp, "2025-03-14");
-    assert_eq!(section.logbook[0].message, "Agent Started: Initiating structural audit.");
-    assert_eq!(section.logbook[1].message, "Step [audit] completed with status OK.");
+    assert_eq!(
+        section.logbook[0].message,
+        "Agent Started: Initiating structural audit."
+    );
+    assert_eq!(
+        section.logbook[1].message,
+        "Step [audit] completed with status OK."
+    );
 }

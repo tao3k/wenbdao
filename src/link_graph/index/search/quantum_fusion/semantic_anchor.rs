@@ -36,8 +36,7 @@ impl LinkGraphIndex {
         let doc_id = self.quantum_anchor_doc_id(anchor_id)?;
         let path = self
             .get_doc(doc_id.as_str())
-            .map(|doc| doc.path.clone())
-            .unwrap_or_else(|| doc_id.clone());
+            .map_or_else(|| doc_id.clone(), |doc| doc.path.clone());
         let semantic_path = self.extract_lineage(anchor_id).unwrap_or_default();
         let trace_label = QuantumContext::trace_label_from_semantic_path(&semantic_path);
 

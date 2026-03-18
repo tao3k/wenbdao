@@ -9,7 +9,13 @@ mod graph;
 #[cfg(feature = "zhenfa-router")]
 mod router;
 #[cfg(feature = "zhenfa-router")]
+mod search;
+#[cfg(feature = "zhenfa-router")]
 mod vfs;
 
 #[cfg(feature = "zhenfa-router")]
-pub use router::{StudioState, studio_router};
+pub use router::{GatewayState, StudioState, studio_router, studio_routes};
+
+#[cfg(all(test, feature = "zhenfa-router"))]
+#[path = "../../../tests/unit/studio_vfs_performance.rs"]
+mod studio_vfs_performance_tests;

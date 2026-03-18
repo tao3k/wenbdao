@@ -6,10 +6,18 @@ use super::KnowledgeStorage;
 
 impl KnowledgeStorage {
     /// Initialize the storage (validate Valkey connectivity).
-    pub async fn init(&self) -> Result<(), Box<dyn std::error::Error>> {
-        let client = self.redis_client()?;
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when the Valkey client cannot be created, the
+    /// connection cannot be established, or the connectivity/key checks fail.
+    pub fn init(&self) -> Result<(), Box<dyn std::error::Error>> {
+        let client = Self::redis_client()?;
         let mut conn = client.get_connection()?;
         let _pong: String = redis::cmd("PING").query(&mut conn)?;
+        let _exists: i64 = redis::cmd("EXISTS")
+            .arg(self.entries_key())
+            .query(&mut conn)?;
         Ok(())
     }
 
@@ -17,7 +25,7 @@ impl KnowledgeStorage {
         format!("{}:entries", self.table_name)
     }
 
-    pub(super) fn redis_client(&self) -> Result<redis::Client, String> {
+    pub(super) fn redis_client() -> Result<redis::Client, String> {
         // Correct implementation should use the url from context or env
         let url = std::env::var("XIUXIAN_WENDAO_KNOWLEDGE_VALKEY_URL")
             .unwrap_or_else(|_| "redis://127.0.0.1/".to_string());
@@ -25,12 +33,15 @@ impl KnowledgeStorage {
     }
 
     /// Upsert a knowledge entry.
-    pub async fn upsert(&self, entry: &KnowledgeEntry) -> Result<(), Box<dyn std::error::Error>> {
-        self.init().await?;
-        let client = self.redis_client().map_err(|e| {
-            Box::new(std::io::Error::new(std::io::ErrorKind::Other, e))
-                as Box<dyn std::error::Error>
-        })?;
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when storage initialization fails, the Valkey
+    /// connection fails, or JSON serialization/deserialization fails.
+    pub fn upsert(&self, entry: &KnowledgeEntry) -> Result<(), Box<dyn std::error::Error>> {
+        self.init()?;
+        let client = Self::redis_client()
+            .map_err(|e| Box::new(std::io::Error::other(e)) as Box<dyn std::error::Error>)?;
         let mut conn = client.get_connection()?;
         let entries_key = self.entries_key();
         let existing_raw: Option<String> = redis::cmd("HGET")
@@ -64,11 +75,14 @@ impl KnowledgeStorage {
     }
 
     /// Count total entries.
-    pub async fn count(&self) -> Result<i64, Box<dyn std::error::Error>> {
-        let client = self.redis_client().map_err(|e| {
-            Box::new(std::io::Error::new(std::io::ErrorKind::Other, e))
-                as Box<dyn std::error::Error>
-        })?;
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when the Valkey client or connection cannot be
+    /// created, or when the `HLEN` command fails.
+    pub fn count(&self) -> Result<i64, Box<dyn std::error::Error>> {
+        let client = Self::redis_client()
+            .map_err(|e| Box::new(std::io::Error::other(e)) as Box<dyn std::error::Error>)?;
         let mut conn = client.get_connection()?;
         let total: i64 = redis::cmd("HLEN")
             .arg(self.entries_key())
@@ -77,11 +91,14 @@ impl KnowledgeStorage {
     }
 
     /// Delete an entry by ID.
-    pub async fn delete(&self, id: &str) -> Result<(), Box<dyn std::error::Error>> {
-        let client = self.redis_client().map_err(|e| {
-            Box::new(std::io::Error::new(std::io::ErrorKind::Other, e))
-                as Box<dyn std::error::Error>
-        })?;
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when the Valkey client or connection cannot be
+    /// created, or when the `HDEL` command fails.
+    pub fn delete(&self, id: &str) -> Result<(), Box<dyn std::error::Error>> {
+        let client = Self::redis_client()
+            .map_err(|e| Box::new(std::io::Error::other(e)) as Box<dyn std::error::Error>)?;
         let mut conn = client.get_connection()?;
         let _: i64 = redis::cmd("HDEL")
             .arg(self.entries_key())
@@ -98,10 +115,8 @@ impl KnowledgeStorage {
         &self,
         id: &str,
     ) -> Result<Option<KnowledgeEntry>, Box<dyn std::error::Error>> {
-        let client = self.redis_client().map_err(|e| {
-            Box::new(std::io::Error::new(std::io::ErrorKind::Other, e))
-                as Box<dyn std::error::Error>
-        })?;
+        let client = Self::redis_client()
+            .map_err(|e| Box::new(std::io::Error::other(e)) as Box<dyn std::error::Error>)?;
         let mut conn = client.get_connection()?;
         let entries_key = self.entries_key();
         let raw: Option<String> = redis::cmd("HGET")
@@ -120,10 +135,8 @@ impl KnowledgeStorage {
     /// # Errors
     /// Returns an error if Valkey connection or deserialization fails.
     pub fn load_all_entries(&self) -> Result<Vec<KnowledgeEntry>, Box<dyn std::error::Error>> {
-        let client = self.redis_client().map_err(|e| {
-            Box::new(std::io::Error::new(std::io::ErrorKind::Other, e))
-                as Box<dyn std::error::Error>
-        })?;
+        let client = Self::redis_client()
+            .map_err(|e| Box::new(std::io::Error::other(e)) as Box<dyn std::error::Error>)?;
         let mut conn = client.get_connection()?;
         let entries_key = self.entries_key();
         let raws: std::collections::HashMap<String, String> =
@@ -137,11 +150,14 @@ impl KnowledgeStorage {
     }
 
     /// Clear all entries.
-    pub async fn clear(&self) -> Result<(), Box<dyn std::error::Error>> {
-        let client = self.redis_client().map_err(|e| {
-            Box::new(std::io::Error::new(std::io::ErrorKind::Other, e))
-                as Box<dyn std::error::Error>
-        })?;
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when the Valkey client or connection cannot be
+    /// created, or when the `DEL` command fails.
+    pub fn clear(&self) -> Result<(), Box<dyn std::error::Error>> {
+        let client = Self::redis_client()
+            .map_err(|e| Box::new(std::io::Error::other(e)) as Box<dyn std::error::Error>)?;
         let mut conn = client.get_connection()?;
         let _: i64 = redis::cmd("DEL").arg(self.entries_key()).query(&mut conn)?;
         Ok(())

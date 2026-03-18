@@ -65,6 +65,10 @@ pub struct LinkGraphVirtualNode {
     pub avg_saliency: f64,
     /// Synthesized title.
     pub title: String,
+    /// Internal edge count (edges between members).
+    pub internal_edges: usize,
+    /// Edge density within cluster (0.0-1.0).
+    pub edge_density: f64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -84,6 +88,8 @@ pub(crate) struct IndexedSection {
     pub(crate) attributes: std::collections::HashMap<String, String>,
     /// Execution log entries from :LOGBOOK: drawer (Blueprint v2.4).
     pub(crate) logbook: Vec<super::parser::LogbookEntry>,
+    /// Code observations from :OBSERVE: property drawer (Blueprint v2.7).
+    pub(crate) observations: Vec<super::parser::CodeObservation>,
 }
 
 impl IndexedSection {
@@ -102,6 +108,7 @@ impl IndexedSection {
             entities: value.entities.clone(),
             attributes: value.attributes.clone(),
             logbook: value.logbook.clone(),
+            observations: value.observations.clone(),
         }
     }
 }
@@ -120,7 +127,7 @@ struct SectionCandidate {
     reason: &'static str,
 }
 
-/// Cache build metadata emitted by the Valkey-backed LinkGraph bootstrap.
+/// Cache build metadata emitted by the Valkey-backed `LinkGraph` bootstrap.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LinkGraphCacheBuildMeta {
     /// Cache backend name.
@@ -135,6 +142,43 @@ pub struct LinkGraphCacheBuildMeta {
     pub schema_fingerprint: String,
 }
 
+/// Reference to a code observation symbol within a document.
+///
+/// Used by the Symbol-to-Node Inverted Index for O(1) semantic change propagation.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SymbolRef {
+    /// Document ID where the symbol is observed.
+    pub doc_id: String,
+    /// Node ID within the document.
+    pub node_id: String,
+    /// The observation pattern containing this symbol.
+    pub pattern: String,
+    /// Language of the observation.
+    pub language: String,
+    /// Line number in the document.
+    pub line_number: Option<usize>,
+    /// Optional scope filter for the observation.
+    pub scope: Option<String>,
+}
+
+/// Statistics about the symbol cache.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SymbolCacheStats {
+    /// Number of unique symbols in the cache.
+    pub unique_symbols: usize,
+    /// Total number of symbol-to-document references.
+    pub total_references: usize,
+}
+
+/// Parent resolution for a page-index node.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PageIndexParent<'a> {
+    /// The node exists and is a root node.
+    Root,
+    /// The node exists and is nested under the given parent node id.
+    Parent(&'a str),
+}
+
 /// Fast in-memory markdown link graph index.
 #[derive(Debug, Clone)]
 pub struct LinkGraphIndex {
@@ -144,23 +188,26 @@ pub struct LinkGraphIndex {
     docs_by_id: HashMap<String, LinkGraphDocument>,
     sections_by_doc: HashMap<String, Vec<IndexedSection>>,
     passages_by_id: HashMap<String, LinkGraphPassage>,
-                        attachments_by_doc: HashMap<String, Vec<LinkGraphAttachment>>,
-                        trees_by_doc: HashMap<String, Vec<PageIndexNode>>,
-                        /// Map page-index node ids to parent node ids (None for roots).
-                        node_parent_map: HashMap<String, Option<String>>,
-                        /// Explicit anchor registry (`doc_id#ID`) for fast semantic resolution.
-                        explicit_id_registry: HashMap<String, PageIndexNode>,
-                        alias_to_doc_id: HashMap<String, String>,
+    attachments_by_doc: HashMap<String, Vec<LinkGraphAttachment>>,
+    trees_by_doc: HashMap<String, Vec<PageIndexNode>>,
+    /// Map page-index node ids to parent node ids (None for roots).
+    node_parent_map: HashMap<String, Option<String>>,
+    /// Explicit anchor registry (`doc_id#ID`) for fast semantic resolution.
+    explicit_id_registry: HashMap<String, PageIndexNode>,
+    alias_to_doc_id: HashMap<String, String>,
     outgoing: HashMap<String, HashSet<String>>,
     incoming: HashMap<String, HashSet<String>>,
     rank_by_id: HashMap<String, f64>,
     edge_count: usize,
     /// Virtual nodes created by knowledge distillation (collapsed dense clusters).
     virtual_nodes: HashMap<String, build::VirtualNode>,
+    /// Symbol-to-Node Inverted Index for O(1) semantic change propagation.
+    /// Maps symbol names extracted from :OBSERVE: patterns to their document locations.
+    symbol_to_docs: HashMap<String, Vec<SymbolRef>>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-/// Refresh execution mode selected by LinkGraph incremental refresh logic.
+/// Refresh execution mode selected by `LinkGraph` incremental refresh logic.
 pub enum LinkGraphRefreshMode {
     /// No-op (no changed paths provided).
     Noop,
@@ -183,6 +230,12 @@ impl LinkGraphIndex {
         &self.root
     }
 
+    /// Directories included in this index (from configuration).
+    #[must_use]
+    pub fn include_dirs(&self) -> &[String] {
+        &self.include_dirs
+    }
+
     #[allow(dead_code)]
     pub(in crate::link_graph::index) fn execute_direct_id_lookup(
         &self,
@@ -191,19 +244,19 @@ impl LinkGraphIndex {
         _options: &LinkGraphSearchOptions,
     ) -> Vec<LinkGraphHit> {
         let mut out = Vec::new();
-        if let Some(doc_id) = self.resolve_doc_id(direct_id) {
-            if let Some(doc) = self.docs_by_id.get(doc_id) {
-                out.push(LinkGraphHit {
-                    stem: doc.stem.clone(),
-                    title: doc.title.clone(),
-                    path: doc.path.clone(),
-                    doc_type: doc.doc_type.clone(),
-                    tags: doc.tags.clone(),
-                    score: 1.0,
-                    best_section: None,
-                    match_reason: Some("direct_id".to_string()),
-                });
-            }
+        if let Some(doc_id) = self.resolve_doc_id(direct_id)
+            && let Some(doc) = self.docs_by_id.get(doc_id)
+        {
+            out.push(LinkGraphHit {
+                stem: doc.stem.clone(),
+                title: doc.title.clone(),
+                path: doc.path.clone(),
+                doc_type: doc.doc_type.clone(),
+                tags: doc.tags.clone(),
+                score: 1.0,
+                best_section: None,
+                match_reason: Some("direct_id".to_string()),
+            });
         }
         out
     }
@@ -226,13 +279,9 @@ impl LinkGraphIndex {
         self.trees_by_doc.get(doc_id)
     }
 
-                                                 pub(crate) fn get_node_parent_map(&self) -> &HashMap<String, Option<String>> {
-                                                     &self.node_parent_map
-                                                 }
-
-                                                 pub(crate) fn explicit_id_registry(&self) -> &HashMap<String, PageIndexNode> {
-                                                     &self.explicit_id_registry
-                                                 }
+    pub(crate) fn get_node_parent_map(&self) -> &HashMap<String, Option<String>> {
+        &self.node_parent_map
+    }
 
     pub(crate) fn resolve_doc_id_pub(&self, stem_or_id: &str) -> Option<&str> {
         self.resolve_doc_id(stem_or_id)
@@ -258,7 +307,145 @@ impl LinkGraphIndex {
         &self.trees_by_doc
     }
 
+    // =========================================================================
+    // Symbol-to-Node Inverted Index (Phase 6.3/6.4)
+    // =========================================================================
+
+    /// Look up documents containing a specific code symbol.
+    ///
+    /// This is the O(1) lookup for semantic change propagation.
+    /// Given a symbol name (e.g., "`process_data`"), returns all documents
+    /// with `:OBSERVE:` patterns that reference this symbol.
+    #[must_use]
+    pub fn lookup_symbol(&self, symbol: &str) -> Option<&[SymbolRef]> {
+        self.symbol_to_docs.get(symbol).map(Vec::as_slice)
+    }
+
+    /// Get all symbols in the inverted index.
+    pub fn all_symbols(&self) -> impl Iterator<Item = &String> {
+        self.symbol_to_docs.keys()
+    }
+
+    /// Get the total number of indexed symbols.
+    #[must_use]
+    pub fn symbol_count(&self) -> usize {
+        self.symbol_to_docs.len()
+    }
+
+    /// Check if any symbols are indexed.
+    #[must_use]
+    pub fn has_symbols(&self) -> bool {
+        !self.symbol_to_docs.is_empty()
+    }
+
+    // =========================================================================
+    // Phase 6.5: Incremental Symbol Cache Updates
+    // =========================================================================
+
+    /// Refresh the symbol cache for a single document.
+    ///
+    /// Call this when a document's `:OBSERVE:` patterns may have changed.
+    /// This performs a targeted update without rebuilding the entire index.
+    pub fn refresh_symbol_cache_for_doc(&mut self, doc_id: &str) {
+        // First, remove existing entries for this document
+        self.remove_symbol_refs_for_doc(doc_id);
+
+        // Clone the tree to avoid borrow issues
+        let tree_clone = self.trees_by_doc.get(doc_id).cloned();
+
+        // Then, re-index if the document has a page index tree
+        if let Some(tree) = tree_clone {
+            self.index_symbols_from_tree_cloned(doc_id, &tree);
+        }
+    }
+
+    /// Remove all symbol references for a document from the cache.
+    fn remove_symbol_refs_for_doc(&mut self, doc_id: &str) {
+        for refs in self.symbol_to_docs.values_mut() {
+            refs.retain(|r| r.doc_id != doc_id);
+        }
+        // Clean up empty symbol entries
+        self.symbol_to_docs.retain(|_, refs| !refs.is_empty());
+    }
+
+    /// Index symbols from a cloned page index tree.
+    fn index_symbols_from_tree_cloned(&mut self, doc_id: &str, nodes: &[PageIndexNode]) {
+        use crate::zhenfa_router::native::sentinel::extract_pattern_symbols;
+
+        for node in nodes {
+            for obs in &node.metadata.observations {
+                let symbols = extract_pattern_symbols(&obs.pattern);
+                for symbol in symbols {
+                    let symbol_ref = SymbolRef {
+                        doc_id: doc_id.to_string(),
+                        node_id: node.node_id.clone(),
+                        pattern: obs.pattern.clone(),
+                        language: obs.language.clone(),
+                        line_number: obs.line_number,
+                        scope: obs.scope.clone(),
+                    };
+                    self.symbol_to_docs
+                        .entry(symbol)
+                        .or_default()
+                        .push(symbol_ref);
+                }
+            }
+            // Recurse into children
+            self.index_symbols_from_tree_cloned(doc_id, &node.children);
+        }
+    }
+
+    /// Get statistics about the symbol cache.
+    #[must_use]
+    pub fn symbol_cache_stats(&self) -> SymbolCacheStats {
+        let total_refs: usize = self.symbol_to_docs.values().map(std::vec::Vec::len).sum();
+        SymbolCacheStats {
+            unique_symbols: self.symbol_to_docs.len(),
+            total_references: total_refs,
+        }
+    }
+
+    /// Check if a document has any indexed symbols.
+    #[must_use]
+    pub fn doc_has_symbols(&self, doc_id: &str) -> bool {
+        self.symbol_to_docs
+            .values()
+            .any(|refs| refs.iter().any(|r| r.doc_id == doc_id))
+    }
+
+    /// Get all documents that have indexed symbols.
+    #[must_use]
+    pub fn docs_with_symbols(&self) -> Vec<&str> {
+        let mut doc_ids: std::collections::HashSet<&str> = std::collections::HashSet::new();
+        for refs in self.symbol_to_docs.values() {
+            for r in refs {
+                doc_ids.insert(&r.doc_id);
+            }
+        }
+        doc_ids.into_iter().collect()
+    }
+
+    /// Get all virtual nodes created by knowledge distillation.
+    ///
+    /// Virtual nodes represent collapsed dense clusters of high-saliency nodes.
+    /// They inherit edges from their member nodes and can be used for graph traversal.
+    #[must_use]
+    pub fn virtual_nodes(&self) -> Vec<LinkGraphVirtualNode> {
+        self.virtual_nodes
+            .values()
+            .map(|vn| LinkGraphVirtualNode {
+                id: vn.id.clone(),
+                members: vn.members.clone(),
+                avg_saliency: vn.avg_saliency,
+                title: vn.title.clone(),
+                internal_edges: vn.internal_edges,
+                edge_density: vn.edge_density,
+            })
+            .collect()
+    }
+
     /// Extract semantic intent targets for a document.
+    #[must_use]
     pub fn intent_targets(&self, doc_id: &str) -> (Vec<String>, Vec<String>) {
         let Some(doc) = self.docs_by_id.get(doc_id) else {
             return (Vec::new(), Vec::new());
@@ -267,7 +454,7 @@ impl LinkGraphIndex {
         (doc.tags.clone(), Vec::new())
     }
 
-    /// Build a RegistryIndex for O(1) ID lookups.
+    /// Build a `RegistryIndex` for O(1) ID lookups.
     ///
     /// The registry index provides fast access to nodes with explicit `:ID:` attributes.
     #[must_use]
@@ -275,7 +462,7 @@ impl LinkGraphIndex {
         super::addressing::RegistryIndex::build_from_trees(&self.trees_by_doc)
     }
 
-    /// Build a RegistryIndex with collision detection.
+    /// Build a `RegistryIndex` with collision detection.
     ///
     /// Returns both the registry index and any ID collisions detected.
     /// This is the recommended method for semantic validation.
@@ -284,7 +471,7 @@ impl LinkGraphIndex {
         super::addressing::RegistryIndex::build_from_trees_with_collisions(&self.trees_by_doc)
     }
 
-    /// Build a TopologyIndex for fuzzy path discovery.
+    /// Build a `TopologyIndex` for fuzzy path discovery.
     ///
     /// The topology index enables structural path lookup and fuzzy matching.
     #[must_use]
@@ -292,3 +479,7 @@ impl LinkGraphIndex {
         super::addressing::TopologyIndex::build_from_trees(&self.trees_by_doc)
     }
 }
+
+#[cfg(test)]
+#[path = "../../tests/unit/link_graph/index.rs"]
+mod tests;

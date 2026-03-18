@@ -36,7 +36,7 @@ impl PyLinkGraphEngine {
             &self.include_dirs,
             &self.excluded_dirs,
         )
-        .map_err(|error| pyo3::exceptions::PyValueError::new_err(error.to_string()))?;
+        .map_err(|error| pyo3::exceptions::PyValueError::new_err(error.clone()))?;
         self.inner = inner;
         self.apply_cache_meta(meta);
         Ok(())
@@ -56,6 +56,6 @@ impl PyLinkGraphEngine {
         }
         self.inner
             .refresh_incremental(&changed_paths)
-            .map_err(|error| pyo3::exceptions::PyValueError::new_err(error.to_string()))
+            .map_err(|error| pyo3::exceptions::PyValueError::new_err(error.clone()))
     }
 }

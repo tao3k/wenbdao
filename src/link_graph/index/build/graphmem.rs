@@ -19,10 +19,13 @@ pub(super) fn sync_graphmem_state_to_valkey(
         .get_connection()
         .map_err(|e| format!("failed to connect valkey for link-graph graphmem sync: {e}"))?;
 
-    let now_unix = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .map_or(0, |delta| delta.as_secs() as i64);
-    let now_unix_f64 = now_unix as f64;
+    let now_delta = SystemTime::now().duration_since(UNIX_EPOCH).ok();
+    let now_unix = now_delta
+        .as_ref()
+        .map_or(0, |delta| delta.as_secs().cast_signed());
+    let now_unix_f64 = now_delta
+        .as_ref()
+        .map_or(0.0, std::time::Duration::as_secs_f64);
     let policy = LinkGraphSaliencyPolicy::default();
 
     let mut score_by_doc: HashMap<String, f64> = HashMap::with_capacity(index.docs_by_id.len());

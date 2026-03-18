@@ -15,7 +15,7 @@ impl LinkGraphIndex {
     ) -> (ParsedLinkGraphQuery, Vec<LinkGraphHit>) {
         let parsed = parse_search_query(query, base_options);
         let effective_limit = parsed.limit_override.unwrap_or(limit);
-        let rows = self.execute_search(&parsed.query, effective_limit, parsed.options.clone());
+        let rows = self.execute_search(&parsed.query, effective_limit, &parsed.options);
         (parsed, rows)
     }
 
@@ -25,7 +25,7 @@ impl LinkGraphIndex {
         &self,
         query: &str,
         limit: usize,
-        options: LinkGraphSearchOptions,
+        options: &LinkGraphSearchOptions,
     ) -> Vec<LinkGraphHit> {
         self.execute_search_with_doc_boosts(query, limit, options, None)
     }
@@ -37,17 +37,17 @@ impl LinkGraphIndex {
         &self,
         query: &str,
         limit: usize,
-        options: LinkGraphSearchOptions,
+        options: &LinkGraphSearchOptions,
         doc_boosts: Option<&HashMap<String, f64>>,
     ) -> Vec<LinkGraphHit> {
-        let Some(context) = self.prepare_execution_context(query, limit, &options) else {
+        let Some(context) = Self::prepare_execution_context(query, limit, options) else {
             return Vec::new();
         };
 
-        let graph_candidates = self.graph_filter_candidates(&options);
+        let graph_candidates = self.graph_filter_candidates(options);
         if context.raw_query.is_empty()
             && graph_candidates.is_none()
-            && !Self::has_non_query_filters(&options)
+            && !Self::has_non_query_filters(options)
         {
             return Vec::new();
         }
@@ -58,7 +58,7 @@ impl LinkGraphIndex {
             return Vec::new();
         }
 
-        let rows = self.collect_search_rows(&options, &context, graph_candidates.as_ref());
-        self.finalize_search_rows(rows, &options, context.bounded, doc_boosts)
+        let rows = self.collect_search_rows(options, &context, graph_candidates.as_ref());
+        self.finalize_search_rows(rows, options, context.bounded, doc_boosts)
     }
 }

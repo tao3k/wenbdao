@@ -16,7 +16,7 @@ impl ZhixingWendaoIndexer {
         summary: &mut ZhixingIndexSummary,
     ) -> Result<usize> {
         let dir = self.notebook_root.join(segment);
-        let files = collect_markdown_files(&dir)?;
+        let files = collect_markdown_files(&dir);
         for file in &files {
             let date = file
                 .file_stem()

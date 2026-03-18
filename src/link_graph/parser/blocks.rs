@@ -5,25 +5,16 @@
 //!
 //! ## Usage
 //!
-//! ```ignore
+//! ~~~ignore
 //! use crate::link_graph::parser::blocks::extract_blocks;
 //!
-//! let section_text = r#"
-//! This is a paragraph.
+//! let section_text = "This is a paragraph.\n\n```rust\nfn main() {}\n```\n\n- Item 1\n- Item 2\n";
 //!
-//! ```rust
-//! fn main() {}
-//! ```
-//!
-//! - Item 1
-//! - Item 2
-//! "#;
-//!
-//! let blocks = extract_blocks(section_text, 0, 1);
+//! let blocks = extract_blocks(section_text, 0, 1, &[]);
 //! // blocks[0] = Paragraph
-//! // blocks[1] = CodeFence { language: "rust" }
+//! // blocks[1] = `CodeFence` { language: "rust" }
 //! // blocks[2] = List { ordered: false }
-//! ```
+//! ~~~
 
 use crate::link_graph::models::{MarkdownBlock, MarkdownBlockKind};
 use comrak::{Arena, Options, nodes::AstNode, nodes::NodeValue, parse_document};
@@ -52,7 +43,7 @@ pub fn extract_blocks(
     let root = parse_document(&arena, section_text, &Options::default());
 
     let mut blocks = Vec::new();
-    let mut block_indices: BlockIndexCounter = Default::default();
+    let mut block_indices = BlockIndexCounter::default();
 
     for node in root.children() {
         if let Some(block) = node_to_block(
@@ -72,7 +63,7 @@ pub fn extract_blocks(
 
 /// Counter for generating unique block indices by kind.
 #[derive(Default)]
-struct BlockIndexCounter {
+pub(super) struct BlockIndexCounter {
     para: usize,
     code: usize,
     ulist: usize,
@@ -130,7 +121,7 @@ impl BlockIndexCounter {
     }
 }
 
-/// Convert a comrak AST node to a MarkdownBlock.
+/// Convert a comrak AST node to a `MarkdownBlock`.
 pub(super) fn node_to_block(
     node: &AstNode<'_>,
     section_text: &str,
@@ -143,10 +134,10 @@ pub(super) fn node_to_block(
     let sourcepos = ast.sourcepos;
 
     // Calculate byte range from source position
-    let start_line = sourcepos.start.line.max(0) as usize;
-    let start_col = sourcepos.start.column.max(0) as usize;
-    let end_line = sourcepos.end.line.max(0) as usize;
-    let end_col = sourcepos.end.column.max(0) as usize;
+    let start_line = sourcepos.start.line.max(0);
+    let start_col = sourcepos.start.column.max(0);
+    let end_line = sourcepos.end.line.max(0);
+    let end_col = sourcepos.end.column.max(0);
 
     // Convert line/column to byte offsets within section_text
     let byte_range =
@@ -194,11 +185,9 @@ pub(super) fn node_to_block(
         // Skip headings (handled at section level) and other inline elements
         NodeValue::Heading(_)
         | NodeValue::Document
-        | NodeValue::FrontMatter(_) => {
-            return None;
-        }
+        | NodeValue::FrontMatter(_)
         // Skip inline elements that shouldn't be standalone blocks
-        NodeValue::Text(_)
+        | NodeValue::Text(_)
         | NodeValue::SoftBreak
         | NodeValue::LineBreak
         | NodeValue::Code(_)
@@ -273,8 +262,7 @@ pub(super) fn line_col_to_byte_range(
                 + text[byte_idx..]
                     .char_indices()
                     .nth(col_offset)
-                    .map(|(i, _)| i)
-                    .unwrap_or(0);
+                    .map_or(0, |(i, _)| i);
 
             // Now find end byte
             if start_line == end_line {
@@ -284,8 +272,7 @@ pub(super) fn line_col_to_byte_range(
                     + text[start_byte..]
                         .char_indices()
                         .nth(end_col_offset)
-                        .map(|(i, _)| i)
-                        .unwrap_or(text[start_byte..].len());
+                        .map_or(text[start_byte..].len(), |(i, _)| i);
                 return Some((start_byte, end_byte));
             }
 
@@ -310,8 +297,7 @@ pub(super) fn line_col_to_byte_range(
             let col_byte = remaining
                 .char_indices()
                 .nth(end_col_offset)
-                .map(|(i, _)| i)
-                .unwrap_or(remaining.len());
+                .map_or(remaining.len(), |(i, _)| i);
             end_byte += col_byte;
 
             return Some((start_byte, end_byte));

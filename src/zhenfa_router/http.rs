@@ -224,9 +224,8 @@ fn build_index(root_dir: Option<&str>) -> Result<LinkGraphIndex, (StatusCode, Js
 }
 
 fn parse_search_options(raw: Option<Value>) -> Result<LinkGraphSearchOptions, String> {
-    let mut value = match raw {
-        Some(value) => value,
-        None => return Ok(LinkGraphSearchOptions::default()),
+    let Some(mut value) = raw else {
+        return Ok(LinkGraphSearchOptions::default());
     };
     if let Value::Object(ref mut map) = value {
         map.remove("schema");

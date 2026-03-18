@@ -95,9 +95,11 @@ struct ToolAnnotationsOverride {
 
 impl ToolAnnotationsOverride {
     fn apply_defaults(self) -> ToolAnnotations {
-        let mut annotations = ToolAnnotations::default();
-        annotations.read_only = false;
-        annotations.destructive = true;
+        let mut annotations = ToolAnnotations {
+            read_only: false,
+            destructive: true,
+            ..ToolAnnotations::default()
+        };
         annotations.set_idempotent(false);
         annotations.set_open_world(true);
         if let Some(value) = self.read_only {

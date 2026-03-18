@@ -6,7 +6,8 @@ use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 ///
 /// Returns the inner guard even if the lock is poisoned.
 pub fn read_lock<T>(lock: &RwLock<T>) -> RwLockReadGuard<'_, T> {
-    lock.read().unwrap_or_else(|poisoned| poisoned.into_inner())
+    lock.read()
+        .unwrap_or_else(std::sync::PoisonError::into_inner)
 }
 
 /// Acquire a write lock on a [`RwLock`].
@@ -14,7 +15,7 @@ pub fn read_lock<T>(lock: &RwLock<T>) -> RwLockReadGuard<'_, T> {
 /// Returns the inner guard even if the lock is poisoned.
 pub fn write_lock<T>(lock: &RwLock<T>) -> RwLockWriteGuard<'_, T> {
     lock.write()
-        .unwrap_or_else(|poisoned| poisoned.into_inner())
+        .unwrap_or_else(std::sync::PoisonError::into_inner)
 }
 
 /// In-memory knowledge graph state.

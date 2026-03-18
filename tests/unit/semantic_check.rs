@@ -131,7 +131,10 @@ fn test_node_status_parsing() {
 
 #[test]
 fn test_generate_suggested_id() {
-    assert_eq!(generate_suggested_id("Architecture Overview"), "architecture-overview");
+    assert_eq!(
+        generate_suggested_id("Architecture Overview"),
+        "architecture-overview"
+    );
     assert_eq!(generate_suggested_id("API Reference!"), "api-reference");
     assert_eq!(generate_suggested_id("  Test  "), "test");
 }
@@ -140,9 +143,15 @@ fn test_generate_suggested_id() {
 fn test_issue_type_to_code() {
     assert_eq!(issue_type_to_code("dead_link"), "ERR_DEAD_LINK");
     assert_eq!(issue_type_to_code("deprecated_ref"), "WARN_DEPRECATED_REF");
-    assert_eq!(issue_type_to_code("contract_violation"), "ERR_CONTRACT_VIOLATION");
+    assert_eq!(
+        issue_type_to_code("contract_violation"),
+        "ERR_CONTRACT_VIOLATION"
+    );
     assert_eq!(issue_type_to_code("id_collision"), "ERR_DUPLICATE_ID");
-    assert_eq!(issue_type_to_code("missing_identity"), "ERR_MISSING_IDENTITY");
+    assert_eq!(
+        issue_type_to_code("missing_identity"),
+        "ERR_MISSING_IDENTITY"
+    );
     assert_eq!(issue_type_to_code("legacy_syntax"), "WARN_LEGACY_SYNTAX");
     assert_eq!(issue_type_to_code("unknown"), "UNKNOWN");
 }

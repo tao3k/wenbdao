@@ -4,7 +4,10 @@ use crate::helpers::emit;
 use crate::types::{Cli, Command, SaliencyCommand};
 use anyhow::Result;
 use serde_json::json;
-use xiuxian_wendao::{LinkGraphSaliencyTouchRequest, valkey_saliency_get, valkey_saliency_touch};
+use xiuxian_wendao::{
+    LinkGraphSaliencyDecaySweepRequest, LinkGraphSaliencyTouchRequest, valkey_saliency_decay_all,
+    valkey_saliency_get, valkey_saliency_touch,
+};
 
 pub(super) fn handle(cli: &Cli) -> Result<()> {
     let Command::Saliency { command } = &cli.command else {
@@ -15,6 +18,13 @@ pub(super) fn handle(cli: &Cli) -> Result<()> {
         SaliencyCommand::Get { node_id } => {
             let payload = valkey_saliency_get(node_id).map_err(anyhow::Error::msg)?;
             emit(&json!({"node_id": node_id, "state": payload}), cli.output)
+        }
+        SaliencyCommand::Decay { now_unix } => {
+            let result = valkey_saliency_decay_all(LinkGraphSaliencyDecaySweepRequest {
+                now_unix: *now_unix,
+            })
+            .map_err(anyhow::Error::msg)?;
+            emit(&result, cli.output)
         }
         SaliencyCommand::Touch {
             node_id,

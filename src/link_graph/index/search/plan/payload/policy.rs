@@ -1,4 +1,8 @@
 use crate::link_graph::runtime_config::resolve_link_graph_retrieval_policy_runtime;
+use crate::link_graph::saliency::{
+    DEFAULT_SALIENCY_BASE, LinkGraphSaliencyPolicy, learned_saliency_signal_from_state,
+    valkey_saliency_get_many,
+};
 use crate::link_graph::{
     LINK_GRAPH_REASON_GRAPH_INSUFFICIENT, LINK_GRAPH_REASON_GRAPH_ONLY_REQUESTED,
     LINK_GRAPH_REASON_GRAPH_ONLY_REQUESTED_EMPTY, LINK_GRAPH_REASON_GRAPH_SUFFICIENT,
@@ -7,6 +11,8 @@ use crate::link_graph::{
     LinkGraphRetrievalPlanRecord,
 };
 use std::collections::HashSet;
+
+const QUANTUM_RETRIEVAL_BUDGET_MAX_MULTIPLIER: usize = 2;
 
 pub(super) struct LinkGraphPolicyDecision {
     pub requested_mode: LinkGraphRetrievalMode,
@@ -91,6 +97,89 @@ fn count_source_hints(hits: &[LinkGraphHit], cap: usize) -> usize {
     seen.len()
 }
 
+fn resolve_live_budget_factor(hits: &[LinkGraphHit], source_cap: usize) -> f64 {
+    let mut candidate_doc_ids = Vec::new();
+    let mut seen = HashSet::new();
+    for hit in hits {
+        let normalized = hit.stem.trim();
+        if normalized.is_empty() {
+            continue;
+        }
+        if seen.insert(normalized.to_string()) {
+            candidate_doc_ids.push(normalized.to_string());
+        }
+        if candidate_doc_ids.len() >= source_cap.max(1) {
+            break;
+        }
+    }
+
+    if candidate_doc_ids.is_empty() {
+        return 1.0;
+    }
+
+    let Ok(states) = valkey_saliency_get_many(&candidate_doc_ids) else {
+        return 1.0;
+    };
+
+    let maximum_signal = LinkGraphSaliencyPolicy::default()
+        .maximum
+        .max(DEFAULT_SALIENCY_BASE);
+    let mut total_signal = 0.0_f64;
+    let mut signal_count = 0_u32;
+    for doc_id in candidate_doc_ids {
+        let Some(state) = states.get(&doc_id) else {
+            continue;
+        };
+        let bounded_signal =
+            learned_saliency_signal_from_state(state).clamp(DEFAULT_SALIENCY_BASE, maximum_signal);
+        let normalized_signal = (bounded_signal - DEFAULT_SALIENCY_BASE)
+            / (maximum_signal - DEFAULT_SALIENCY_BASE).max(f64::EPSILON);
+        total_signal += normalized_signal;
+        signal_count = signal_count.saturating_add(1);
+    }
+
+    if signal_count == 0 {
+        1.0
+    } else {
+        (1.0 + (total_signal / f64::from(signal_count))).clamp(
+            1.0,
+            usize_to_f64_saturating(QUANTUM_RETRIEVAL_BUDGET_MAX_MULTIPLIER),
+        )
+    }
+}
+
+fn saliency_boosted_budget(
+    base_budget: &LinkGraphRetrievalBudget,
+    hits: &[LinkGraphHit],
+) -> LinkGraphRetrievalBudget {
+    let factor = resolve_live_budget_factor(hits, base_budget.max_sources);
+    LinkGraphRetrievalBudget {
+        candidate_limit: boosted_budget_value(base_budget.candidate_limit, factor),
+        max_sources: boosted_budget_value(base_budget.max_sources, factor),
+        rows_per_source: boosted_budget_value(base_budget.rows_per_source, factor),
+    }
+}
+
+fn boosted_budget_value(base_value: usize, factor: f64) -> usize {
+    let normalized_base = base_value.max(1);
+    let scaled_value =
+        ceil_nonnegative_f64_to_usize(usize_to_f64_saturating(normalized_base) * factor);
+    scaled_value.clamp(
+        normalized_base,
+        normalized_base.saturating_mul(QUANTUM_RETRIEVAL_BUDGET_MAX_MULTIPLIER),
+    )
+}
+
+fn ceil_nonnegative_f64_to_usize(value: f64) -> usize {
+    if !value.is_finite() || value <= 0.0 {
+        return 0;
+    }
+
+    let capped = value.ceil().min(f64::from(u32::MAX));
+    let integer = format!("{capped:.0}").parse::<u32>().unwrap_or(u32::MAX);
+    usize::try_from(integer).unwrap_or(usize::MAX)
+}
+
 pub(super) fn evaluate_link_graph_policy(
     hits: &[LinkGraphHit],
     effective_limit: usize,
@@ -130,13 +219,14 @@ pub(super) fn evaluate_link_graph_policy(
         }
     };
 
-    let budget = LinkGraphRetrievalBudget {
+    let base_budget = LinkGraphRetrievalBudget {
         candidate_limit: effective_limit
             .max(1)
             .saturating_mul(runtime.candidate_multiplier.max(1)),
         max_sources: runtime.max_sources.max(1),
         rows_per_source: runtime.graph_rows_per_source.max(1),
     };
+    let budget = saliency_boosted_budget(&base_budget, hits);
     let retrieval_plan = LinkGraphRetrievalPlanRecord::new(LinkGraphRetrievalPlanInput {
         requested_mode,
         selected_mode,

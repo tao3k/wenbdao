@@ -1,7 +1,8 @@
 use super::orchestrate::QuantumContextBuildError;
 use crate::link_graph::index::LinkGraphIndex;
 use crate::link_graph::models::{
-    QuantumAnchorHit, QuantumContext, QuantumFusionOptions, QuantumSemanticSearchRequest,
+    LinkGraphRetrievalPlanRecord, LinkGraphSemanticSearchPolicy, QuantumAnchorHit, QuantumContext,
+    QuantumFusionOptions, QuantumSemanticSearchRequest,
 };
 use std::future::Future;
 use std::pin::Pin;
@@ -54,6 +55,36 @@ pub trait QuantumSemanticIgnition: Send + Sync {
 }
 
 impl LinkGraphIndex {
+    /// Build quantum-fusion contexts from a planned retrieval budget plus semantic policy.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`QuantumSemanticIgnitionError::Backend`] when the semantic
+    /// backend fails, or [`QuantumSemanticIgnitionError::Orchestration`] when
+    /// Wendao cannot convert returned anchor hits into scored quantum contexts.
+    pub async fn quantum_contexts_from_retrieval_plan<I>(
+        &self,
+        ignition: &I,
+        query_text: Option<&str>,
+        query_vector: &[f32],
+        retrieval_plan: Option<&LinkGraphRetrievalPlanRecord>,
+        semantic_policy: Option<LinkGraphSemanticSearchPolicy>,
+        options: &QuantumFusionOptions,
+    ) -> Result<Vec<QuantumContext>, QuantumSemanticIgnitionError<I::Error>>
+    where
+        I: QuantumSemanticIgnition + ?Sized,
+        I::Error: std::error::Error + 'static,
+    {
+        let request = QuantumSemanticSearchRequest::from_retrieval_budget(
+            query_text,
+            query_vector,
+            retrieval_plan.map(|plan| &plan.budget),
+            semantic_policy,
+        );
+        self.quantum_contexts_from_semantic_ignition(ignition, request, options)
+            .await
+    }
+
     /// Build quantum-fusion contexts by delegating anchor search to a semantic-ignition backend.
     ///
     /// # Errors

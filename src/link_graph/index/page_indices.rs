@@ -1,10 +1,9 @@
-use super::LinkGraphIndex;
+use super::{LinkGraphIndex, PageIndexParent, SymbolRef};
 use crate::link_graph::models::PageIndexNode;
 use crate::link_graph::page_index::{
-    build_page_index_tree,
-    thin_page_index_tree,
-    DEFAULT_PAGE_INDEX_THINNING_TOKEN_THRESHOLD,
+    DEFAULT_PAGE_INDEX_THINNING_TOKEN_THRESHOLD, build_page_index_tree, thin_page_index_tree,
 };
+use crate::zhenfa_router::native::sentinel::extract_pattern_symbols;
 
 impl LinkGraphIndex {
     /// Return the hierarchical `PageIndex` roots for a note.
@@ -23,13 +22,17 @@ impl LinkGraphIndex {
 
     /// Lookup the parent node id for a page-index node.
     ///
-    /// Returns `Some(None)` for roots, `Some(Some(parent_id))` for child nodes,
+    /// Returns `Some(PageIndexParent::Root)` for roots,
+    /// `Some(PageIndexParent::Parent(parent_id))` for child nodes,
     /// and `None` when the node id is unknown.
     #[must_use]
-    pub fn page_index_parent_id(&self, node_id: &str) -> Option<Option<&str>> {
+    pub fn page_index_parent_id(&self, node_id: &str) -> Option<PageIndexParent<'_>> {
         self.node_parent_map
             .get(node_id)
-            .map(|parent| parent.as_deref())
+            .map(|parent| match parent.as_deref() {
+                Some(parent_id) => PageIndexParent::Parent(parent_id),
+                None => PageIndexParent::Root,
+            })
     }
 
     #[allow(dead_code)]
@@ -37,6 +40,7 @@ impl LinkGraphIndex {
         self.trees_by_doc.clear();
         self.node_parent_map.clear();
         self.explicit_id_registry.clear();
+        self.symbol_to_docs.clear();
         let doc_ids = self.docs_by_id.keys().cloned().collect::<Vec<_>>();
         for doc_id in doc_ids {
             self.rebuild_page_index_for_doc(&doc_id);
@@ -70,19 +74,45 @@ impl LinkGraphIndex {
             .retain(|node_id, _| !node_id.starts_with(&prefix));
         self.explicit_id_registry
             .retain(|node_id, _| !node_id.starts_with(&prefix));
+        // Remove symbol entries for this document
+        for refs in self.symbol_to_docs.values_mut() {
+            refs.retain(|r| !r.doc_id.starts_with(doc_id));
+        }
+        // Clean up empty symbol entries
+        self.symbol_to_docs.retain(|_, refs| !refs.is_empty());
     }
 
     fn index_page_index_nodes(&mut self, nodes: &[PageIndexNode], parent_id: Option<&str>) {
         for node in nodes {
             self.node_parent_map
                 .insert(node.node_id.clone(), parent_id.map(str::to_string));
-            if let Some(id) = node.metadata.attributes.get("ID") {
-                if !id.trim().is_empty() {
-                    self.explicit_id_registry
-                        .entry(node.node_id.clone())
-                        .or_insert_with(|| node.clone());
+            if let Some(id) = node.metadata.attributes.get("ID")
+                && !id.trim().is_empty()
+            {
+                self.explicit_id_registry
+                    .entry(node.node_id.clone())
+                    .or_insert_with(|| node.clone());
+            }
+
+            // Extract symbols from code observations and populate symbol cache
+            for obs in &node.metadata.observations {
+                let symbols = extract_pattern_symbols(&obs.pattern);
+                for symbol in symbols {
+                    let symbol_ref = SymbolRef {
+                        doc_id: node.node_id.split('#').next().unwrap_or("").to_string(),
+                        node_id: node.node_id.clone(),
+                        pattern: obs.pattern.clone(),
+                        language: obs.language.clone(),
+                        line_number: obs.line_number,
+                        scope: obs.scope.clone(),
+                    };
+                    self.symbol_to_docs
+                        .entry(symbol)
+                        .or_default()
+                        .push(symbol_ref);
                 }
             }
+
             self.index_page_index_nodes(&node.children, Some(node.node_id.as_str()));
         }
     }

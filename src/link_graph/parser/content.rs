@@ -141,9 +141,7 @@ pub(super) fn count_words(body: &str) -> usize {
 }
 
 pub(super) fn extract_doc_type(frontmatter: Option<&Value>) -> Option<String> {
-    let Some(value) = frontmatter else {
-        return None;
-    };
+    let value = frontmatter?;
     value
         .get("type")
         .or_else(|| value.get("kind"))

@@ -1,6 +1,9 @@
-//! Unit tests for semantic_check module (Blueprint v2.2).
+//! Unit tests for `semantic_check` module (Blueprint v2.2).
 
 use super::*;
+use crate::link_graph::parser::CodeObservation;
+use crate::link_graph::{PageIndexMeta, PageIndexNode};
+use std::sync::Arc;
 
 // =============================================================================
 // ID Reference Extraction Tests
@@ -121,7 +124,10 @@ fn test_node_status_parsing() {
 
 #[test]
 fn test_generate_suggested_id() {
-    assert_eq!(generate_suggested_id("Architecture Overview"), "architecture-overview");
+    assert_eq!(
+        generate_suggested_id("Architecture Overview"),
+        "architecture-overview"
+    );
     assert_eq!(generate_suggested_id("API Reference!"), "api-reference");
     assert_eq!(generate_suggested_id("  Test  "), "test");
 }
@@ -130,10 +136,20 @@ fn test_generate_suggested_id() {
 fn test_issue_type_to_code() {
     assert_eq!(issue_type_to_code("dead_link"), "ERR_DEAD_LINK");
     assert_eq!(issue_type_to_code("deprecated_ref"), "WARN_DEPRECATED_REF");
-    assert_eq!(issue_type_to_code("contract_violation"), "ERR_CONTRACT_VIOLATION");
+    assert_eq!(
+        issue_type_to_code("contract_violation"),
+        "ERR_CONTRACT_VIOLATION"
+    );
     assert_eq!(issue_type_to_code("id_collision"), "ERR_DUPLICATE_ID");
-    assert_eq!(issue_type_to_code("missing_identity"), "ERR_MISSING_IDENTITY");
+    assert_eq!(
+        issue_type_to_code("missing_identity"),
+        "ERR_MISSING_IDENTITY"
+    );
     assert_eq!(issue_type_to_code("legacy_syntax"), "WARN_LEGACY_SYNTAX");
+    assert_eq!(
+        issue_type_to_code("invalid_observation_pattern"),
+        "ERR_INVALID_OBSERVER_PATTERN"
+    );
     assert_eq!(issue_type_to_code("unknown"), "UNKNOWN");
 }
 
@@ -152,6 +168,7 @@ fn test_build_file_reports() {
             message: "Test error".to_string(),
             location: None,
             suggestion: None,
+            fuzzy_suggestion: None,
         },
         SemanticIssue {
             severity: "warning".to_string(),
@@ -161,6 +178,7 @@ fn test_build_file_reports() {
             message: "Test warning".to_string(),
             location: None,
             suggestion: None,
+            fuzzy_suggestion: None,
         },
         SemanticIssue {
             severity: "error".to_string(),
@@ -170,6 +188,7 @@ fn test_build_file_reports() {
             message: "Another error".to_string(),
             location: None,
             suggestion: None,
+            fuzzy_suggestion: None,
         },
     ];
 
@@ -203,6 +222,7 @@ fn test_health_score_bounds() {
             message: "Error".to_string(),
             location: None,
             suggestion: None,
+            fuzzy_suggestion: None,
         })
         .collect();
 
@@ -211,4 +231,159 @@ fn test_health_score_bounds() {
 
     // 10 errors * 20 = 200 penalty, but score should be 0 (not negative)
     assert_eq!(reports[0].health_score, 0);
+}
+
+// =============================================================================
+// Code Observation Check Tests (Blueprint v2.7)
+// =============================================================================
+
+/// Helper to create a `PageIndexNode` with observations.
+fn create_node_with_observations(
+    node_id: &str,
+    observations: Vec<CodeObservation>,
+) -> PageIndexNode {
+    PageIndexNode {
+        node_id: node_id.to_string(),
+        parent_id: None,
+        title: "Test Node".to_string(),
+        level: 1,
+        text: Arc::from(""),
+        summary: None,
+        children: Vec::new(),
+        blocks: Vec::new(),
+        metadata: PageIndexMeta {
+            line_range: (1, 10),
+            byte_range: Some((0, 100)),
+            structural_path: vec!["Test".to_string()],
+            content_hash: Some("abc123".to_string()),
+            attributes: std::collections::HashMap::new(),
+            token_count: 10,
+            is_thinned: false,
+            logbook: Vec::new(),
+            observations,
+        },
+    }
+}
+
+fn parse_observation(raw: &str) -> CodeObservation {
+    let Some(observation) = CodeObservation::parse(raw) else {
+        panic!("expected test observation to parse: {raw}");
+    };
+    observation
+}
+
+#[test]
+fn test_check_code_observations_valid_pattern() {
+    // Create a valid Rust observation
+    let obs = parse_observation(r#"lang:rust "fn $NAME($$$) -> Result<$$$>""#);
+    let node = create_node_with_observations("test.md#valid", vec![obs]);
+
+    let mut issues = Vec::new();
+    check_code_observations(&node, "test.md", &[], None, &mut issues);
+
+    // Should not report any issues for a valid pattern
+    assert!(issues.is_empty());
+}
+
+#[test]
+fn test_check_code_observations_unsupported_language() {
+    // Create an observation with unsupported language
+    let obs = parse_observation(r#"lang:brainfuck "+-<>""#);
+    let node = create_node_with_observations("test.md#unsupported", vec![obs]);
+
+    let mut issues = Vec::new();
+    check_code_observations(&node, "test.md", &[], None, &mut issues);
+
+    // Should report unsupported language error
+    assert_eq!(issues.len(), 1);
+    assert_eq!(issues[0].issue_type, "invalid_observation_language");
+    assert!(issues[0].message.contains("Unsupported language"));
+    assert!(issues[0].message.contains("brainfuck"));
+}
+
+// Note: Invalid pattern tests are covered by snapshot tests in tests/snapshots/
+
+#[test]
+fn test_check_code_observations_multiple_issues() {
+    // Create multiple observations with various issues
+    let obs1 = parse_observation(r#"lang:rust "fn $NAME()""#); // valid
+    let obs2 = parse_observation(r#"lang:brainfuck "+-<>""#); // unsupported
+    let obs3 = parse_observation(r#"lang:python "def $NAME():""#); // valid
+
+    let node = create_node_with_observations("test.md#mixed", vec![obs1, obs2, obs3]);
+
+    let mut issues = Vec::new();
+    check_code_observations(&node, "test.md", &[], None, &mut issues);
+
+    // Should report only one issue (unsupported language)
+    assert_eq!(issues.len(), 1);
+    assert_eq!(issues[0].issue_type, "invalid_observation_language");
+}
+
+#[test]
+fn test_check_code_observations_no_observations() {
+    // Create a node without observations
+    let node = create_node_with_observations("test.md#none", Vec::new());
+
+    let mut issues = Vec::new();
+    check_code_observations(&node, "test.md", &[], None, &mut issues);
+
+    // Should not report any issues
+    assert!(issues.is_empty());
+}
+
+#[test]
+fn test_check_code_observations_python_valid() {
+    // Test valid Python pattern
+    let obs = parse_observation(r#"lang:python "def $NAME($$$): $$$BODY""#);
+    let node = create_node_with_observations("test.md#python", vec![obs]);
+
+    let mut issues = Vec::new();
+    check_code_observations(&node, "test.md", &[], None, &mut issues);
+
+    assert!(issues.is_empty());
+}
+
+#[test]
+fn test_check_code_observations_typescript_valid() {
+    // Test valid TypeScript pattern
+    let obs = parse_observation(r#"lang:typescript "function $NAME($$$): $$$RET""#);
+    let node = create_node_with_observations("test.md#ts", vec![obs]);
+
+    let mut issues = Vec::new();
+    check_code_observations(&node, "test.md", &[], None, &mut issues);
+
+    assert!(issues.is_empty());
+}
+
+// =============================================================================
+// Fuzzy Suggestion Tests (Blueprint v2.9)
+// =============================================================================
+
+#[test]
+fn test_check_code_observations_with_fuzzy_suggestion() {
+    // Create an observation with a pattern that won't match
+    // (The pattern is syntactically valid but has no matches in source files)
+    let obs = parse_observation(r#"lang:rust "fn nonexistent_function($$$)""#);
+    let node = create_node_with_observations("test.md#fuzzy", vec![obs]);
+
+    // Create a source file with a similar function
+    let source = SourceFile {
+        path: "src/lib.rs".to_string(),
+        content: "fn existing_function(x: i32) -> i32 { x + 1 }".to_string(),
+    };
+
+    let mut issues = Vec::new();
+    check_code_observations(&node, "test.md", &[source], None, &mut issues);
+
+    // The pattern is valid but finds no matches, so a warning is issued
+    assert_eq!(issues.len(), 1);
+    assert_eq!(issues[0].severity, "warning");
+    assert_eq!(issues[0].issue_type, "observation_target_missing");
+    // The fuzzy suggestion should find the similar function
+    assert!(issues[0].fuzzy_suggestion.is_some());
+    let Some(fuzzy) = issues[0].fuzzy_suggestion.as_ref() else {
+        panic!("expected fuzzy suggestion data for missing observation target");
+    };
+    assert!(fuzzy.suggested_pattern.contains("existing_function"));
 }

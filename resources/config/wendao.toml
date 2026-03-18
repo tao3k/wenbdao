@@ -1,0 +1,76 @@
+# =============================================================================
+# Wendao (LinkGraph Engine) Configuration
+# =============================================================================
+
+[link_graph]
+# Primary graph backend (Wendao Rust engine).
+backend = "wendao"
+# Default backend config location relative to notebook root.
+config_relative_path = ".wendao/config.toml"
+
+# File patterns watched for LinkGraph refresh triggers.
+watch_patterns = ["**/*.md", "**/*.markdown", "**/*.mdx", "**/SKILL.md"]
+
+# Optional relative whitelist. If non-empty, only these paths are indexed.
+include_dirs = []
+
+# When include_dirs is empty, auto-select existing directories from
+# include_dirs_auto_candidates.
+include_dirs_auto = true
+include_dirs_auto_candidates = ["assets/knowledge", "docs", ".data/harvested", ".data/research/papers"]
+
+# Additional directory excludes (non-hidden).
+exclude_dirs = ["target", "node_modules"]
+
+# Cross-process stats cache TTL (seconds).
+stats_persistent_cache_ttl_sec = 120.0
+
+# Response-time stats probe budget (seconds).
+stats_response_probe_timeout_sec = 0.05
+stats_response_refresh_timeout_sec = 5.0
+
+# Graph-first retrieval policy runtime knobs.
+retrieval_mode = "hybrid"
+candidate_multiplier = 4
+max_sources = 8
+graph_rows_per_source = 8
+
+[link_graph.cache]
+valkey_url = "redis://localhost:6379/0"
+key_prefix = "xiuxian_wendao:link_graph:index"
+ttl_seconds = 300
+
+[link_graph.related_ppr]
+max_candidates = 4096
+max_partitions = 8
+time_budget_ms = 250.0
+
+[link_graph.hybrid]
+min_hits = 2
+min_top_score = 0.25
+
+[link_graph.agentic.suggested_link]
+max_entries = 2000
+ttl_seconds = 0
+
+[link_graph.agentic.search]
+include_provisional_default = false
+provisional_limit = 50
+
+[link_graph.agentic.expansion]
+max_workers = 4
+max_candidates = 256
+max_pairs_per_worker = 128
+time_budget_ms = 250.0
+
+[link_graph.agentic.execution]
+worker_time_budget_ms = 120.0
+persist_suggestions_default = false
+persist_retry_attempts = 2
+idempotency_scan_limit = 2000
+relation = "related_to"
+agent_id = "qianhuan-architect"
+evidence_prefix = "agentic expansion bridge candidate"
+
+[link_graph.index.delta]
+full_rebuild_threshold = 256

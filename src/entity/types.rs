@@ -1,5 +1,8 @@
-use serde::{Deserialize, Serialize};
+use std::convert::Infallible;
 use std::fmt;
+use std::str::FromStr;
+
+use serde::{Deserialize, Serialize};
 
 /// Predefined entity categories for knowledge graph.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -62,9 +65,7 @@ impl fmt::Display for EntityType {
 }
 
 impl EntityType {
-    /// Parse entity type from string.
-    #[must_use]
-    pub fn from_str(s: &str) -> Self {
+    fn parse_lossy(s: &str) -> Self {
         match s.to_uppercase().as_str() {
             "PERSON" => Self::Person,
             "LOCATION" => Self::Location,
@@ -83,6 +84,14 @@ impl EntityType {
             "PATTERN" => Self::Pattern,
             _ => Self::Other(s.to_string()),
         }
+    }
+}
+
+impl FromStr for EntityType {
+    type Err = Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self::parse_lossy(s))
     }
 }
 
@@ -153,9 +162,7 @@ impl fmt::Display for RelationType {
 }
 
 impl RelationType {
-    /// Parse relation type from string.
-    #[must_use]
-    pub fn from_str(s: &str) -> Self {
+    fn parse_lossy(s: &str) -> Self {
         match s.to_uppercase().as_str() {
             "LOCATED_IN" => Self::LocatedIn,
             "MEMBER_OF" => Self::MemberOf,
@@ -176,5 +183,13 @@ impl RelationType {
             "ATTACHED_TO" => Self::AttachedTo,
             _ => Self::Other(s.to_string()),
         }
+    }
+}
+
+impl FromStr for RelationType {
+    type Err = Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self::parse_lossy(s))
     }
 }

@@ -7,6 +7,26 @@
 
 use serde::{Deserialize, Serialize};
 
+fn timestamp_ms_now() -> u64 {
+    match std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH) {
+        Ok(duration) => u64::try_from(duration.as_millis()).unwrap_or(u64::MAX),
+        Err(_) => 0,
+    }
+}
+
+fn apply_signed_delta(base: usize, delta: i64) -> Option<usize> {
+    if delta >= 0 {
+        let magnitude = usize::try_from(delta).ok()?;
+        base.checked_add(magnitude)
+    } else {
+        let magnitude = match usize::try_from(delta.unsigned_abs()) {
+            Ok(magnitude) => magnitude,
+            Err(_) => usize::MAX,
+        };
+        Some(base.saturating_sub(magnitude))
+    }
+}
+
 /// Result of a structural edit operation.
 ///
 /// Contains all information needed for:
@@ -39,6 +59,7 @@ pub struct StructuralTransaction {
 
 impl StructuralTransaction {
     /// Create a new structural transaction record.
+    #[allow(clippy::too_many_arguments)]
     #[must_use]
     pub fn new(
         doc_id: String,
@@ -60,10 +81,7 @@ impl StructuralTransaction {
             line_delta,
             old_hash,
             new_hash,
-            timestamp_ms: std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .map(|d| d.as_millis() as u64)
-                .unwrap_or(0),
+            timestamp_ms: timestamp_ms_now(),
             agent_id,
         }
     }
@@ -71,7 +89,7 @@ impl StructuralTransaction {
     /// Adjust a byte range for concurrent access after this transaction.
     ///
     /// If the range is before the edit, it's unchanged.
-    /// If the range is after the edit, it's shifted by byte_delta.
+    /// If the range is after the edit, it's shifted by `byte_delta`.
     /// If the range overlaps the edit, returns None (conflict).
     #[must_use]
     pub fn adjust_byte_range(&self, range: (usize, usize)) -> Option<(usize, usize)> {
@@ -86,16 +104,8 @@ impl StructuralTransaction {
         // Range is after edit - shift by delta
         if start >= edit_end {
             let delta = self.byte_delta;
-            let new_start = if delta >= 0 {
-                start + delta as usize
-            } else {
-                start.saturating_sub((-delta) as usize)
-            };
-            let new_end = if delta >= 0 {
-                end + delta as usize
-            } else {
-                end.saturating_sub((-delta) as usize)
-            };
+            let new_start = apply_signed_delta(start, delta)?;
+            let new_end = apply_signed_delta(end, delta)?;
             return Some((new_start, new_end));
         }
 
@@ -145,7 +155,11 @@ pub struct StructureUpdateSignal {
 impl StructureUpdateSignal {
     /// Create a new structure update signal.
     #[must_use]
-    pub fn new(transaction: StructuralTransaction, affected_node_ids: Vec<String>, structure_changed: bool) -> Self {
+    pub fn new(
+        transaction: StructuralTransaction,
+        affected_node_ids: Vec<String>,
+        structure_changed: bool,
+    ) -> Self {
         Self {
             transaction,
             affected_node_ids,
@@ -192,7 +206,15 @@ impl StructuralTransactionCoordinator {
     ///
     /// Returns `Ok(())` if the transaction is compatible with pending transactions,
     /// or `Err(conflicting_transactions)` if there are conflicts.
-    pub fn record(&mut self, transaction: StructuralTransaction) -> Result<(), Vec<StructuralTransaction>> {
+    ///
+    /// # Errors
+    ///
+    /// Returns the conflicting pending transactions when the new transaction overlaps an
+    /// in-flight edit for the same document.
+    pub fn record(
+        &mut self,
+        transaction: StructuralTransaction,
+    ) -> Result<(), Vec<StructuralTransaction>> {
         // Check for conflicts with pending transactions
         let conflicts: Vec<&StructuralTransaction> = self
             .pending
@@ -205,7 +227,8 @@ impl StructuralTransactionCoordinator {
         }
 
         // Update last transaction for this document
-        self.last_per_doc.insert(transaction.doc_id.clone(), transaction.clone());
+        self.last_per_doc
+            .insert(transaction.doc_id.clone(), transaction.clone());
 
         // Add to pending
         self.pending.push(transaction);
@@ -250,100 +273,5 @@ impl StructuralTransactionCoordinator {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn make_test_transaction(
-        doc_id: &str,
-        byte_range: (usize, usize),
-        byte_delta: i64,
-        line_delta: i64,
-    ) -> StructuralTransaction {
-        StructuralTransaction::new(
-            doc_id.to_string(),
-            format!("{}.md", doc_id),
-            Some(format!("{}#section", doc_id)),
-            byte_range,
-            byte_delta,
-            line_delta,
-            "old_hash".to_string(),
-            "new_hash".to_string(),
-            Some("test_agent".to_string()),
-        )
-    }
-
-    #[test]
-    fn test_adjust_byte_range_before_edit() {
-        let tx = make_test_transaction("doc", (100, 200), 50, 2);
-        // Range before edit
-        let adjusted = tx.adjust_byte_range((0, 50));
-        assert_eq!(adjusted, Some((0, 50)));
-    }
-
-    #[test]
-    fn test_adjust_byte_range_after_edit() {
-        let tx = make_test_transaction("doc", (100, 200), 50, 2);
-        // Range after edit - should shift by +50
-        let adjusted = tx.adjust_byte_range((250, 300));
-        assert_eq!(adjusted, Some((300, 350)));
-    }
-
-    #[test]
-    fn test_adjust_byte_range_overlapping_conflict() {
-        let tx = make_test_transaction("doc", (100, 200), 50, 2);
-        // Range overlapping edit
-        let adjusted = tx.adjust_byte_range((150, 250));
-        assert_eq!(adjusted, None);
-    }
-
-    #[test]
-    fn test_compatible_transactions_different_docs() {
-        let tx1 = make_test_transaction("doc1", (100, 200), 50, 2);
-        let tx2 = make_test_transaction("doc2", (100, 200), 50, 2);
-        assert!(tx1.is_compatible_with(&tx2));
-    }
-
-    #[test]
-    fn test_compatible_transactions_non_overlapping() {
-        let tx1 = make_test_transaction("doc", (100, 200), 50, 2);
-        let tx2 = make_test_transaction("doc", (300, 400), 10, 1);
-        assert!(tx1.is_compatible_with(&tx2));
-    }
-
-    #[test]
-    fn test_incompatible_transactions_overlapping() {
-        let tx1 = make_test_transaction("doc", (100, 200), 50, 2);
-        let tx2 = make_test_transaction("doc", (150, 250), 10, 1);
-        assert!(!tx1.is_compatible_with(&tx2));
-    }
-
-    #[test]
-    fn test_coordinator_record_and_flush() {
-        let mut coordinator = StructuralTransactionCoordinator::new();
-        let tx = make_test_transaction("doc", (100, 200), 50, 2);
-
-        assert!(coordinator.record(tx).is_ok());
-        let signals = coordinator.flush_pending();
-        assert_eq!(signals.len(), 1);
-    }
-
-    #[test]
-    fn test_coordinator_rejects_conflicting() {
-        let mut coordinator = StructuralTransactionCoordinator::new();
-        let tx1 = make_test_transaction("doc", (100, 200), 50, 2);
-        let tx2 = make_test_transaction("doc", (150, 250), 10, 1);
-
-        assert!(coordinator.record(tx1).is_ok());
-        assert!(coordinator.record(tx2).is_err());
-    }
-
-    #[test]
-    fn test_coordinator_adjust_byte_range() {
-        let mut coordinator = StructuralTransactionCoordinator::new();
-        let tx = make_test_transaction("doc", (100, 200), 50, 2);
-        coordinator.record(tx).unwrap();
-
-        let adjusted = coordinator.adjust_byte_range("doc", (250, 300));
-        assert_eq!(adjusted, Some((300, 350)));
-    }
-}
+#[path = "../../../tests/unit/link_graph/addressing/structural_transaction.rs"]
+mod tests;

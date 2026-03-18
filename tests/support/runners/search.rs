@@ -17,7 +17,7 @@ use xiuxian_wendao::LinkGraphIndex;
 pub struct SearchRunner;
 
 impl ScenarioRunner for SearchRunner {
-    fn category(&self) -> &str {
+    fn category(&self) -> &'static str {
         "search_core"
     }
 
@@ -53,10 +53,10 @@ impl ScenarioRunner for SearchRunner {
 
         // Build the index if input exists
         let input_path = scenario.input_path();
-        if let Some(path) = input_path {
-            if path.exists() {
-                let _index = LinkGraphIndex::build(temp_dir)?;
-            }
+        if let Some(path) = input_path
+            && path.exists()
+        {
+            let _index = LinkGraphIndex::build(temp_dir)?;
         }
 
         Ok(json!({

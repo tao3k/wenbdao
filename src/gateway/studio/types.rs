@@ -25,6 +25,12 @@ pub struct VfsEntry {
     /// MIME content type guess for files.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub content_type: Option<String>,
+    /// Project grouping label for multi-root monorepo views.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub project_name: Option<String>,
+    /// Root label under the grouped project node.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub root_label: Option<String>,
 }
 
 /// Category classification for VFS entries.
@@ -67,6 +73,12 @@ pub struct VfsScanEntry {
     /// Wendao document ID if indexed.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub wendao_id: Option<String>,
+    /// Project grouping label for multi-root monorepo views.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub project_name: Option<String>,
+    /// Root label under the grouped project node.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub root_label: Option<String>,
 }
 
 /// Result of a VFS scan operation.
@@ -341,6 +353,164 @@ pub struct SearchResponse {
     pub selected_mode: Option<String>,
 }
 
+/// A matched AST definition extracted from source code.
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct AstSearchHit {
+    /// Captured definition name.
+    pub name: String,
+    /// Signature line or skeleton snippet.
+    pub signature: String,
+    /// Source file path relative to the project root.
+    pub path: String,
+    /// Source language name.
+    pub language: String,
+    /// Owning crate or package name.
+    pub crate_name: String,
+    /// Configured project name when the source path maps to a studio project.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub project_name: Option<String>,
+    /// Configured root label when the source path maps to a project root path.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub root_label: Option<String>,
+    /// 1-based start line.
+    pub line_start: usize,
+    /// 1-based end line.
+    pub line_end: usize,
+    /// Search relevance score.
+    pub score: f64,
+}
+
+/// Response for studio AST definition search queries.
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct AstSearchResponse {
+    /// Original query string.
+    pub query: String,
+    /// Matching AST hits.
+    pub hits: Vec<AstSearchHit>,
+    /// Total number of hits returned.
+    pub hit_count: usize,
+    /// Selected AST scope.
+    pub selected_scope: String,
+}
+
+/// Response for native studio definition resolution.
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct DefinitionResolveResponse {
+    /// Original query string.
+    pub query: String,
+    /// Optional source path used to bias resolution.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source_path: Option<String>,
+    /// Optional source line used by the caller.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source_line: Option<usize>,
+    /// Resolved definition hit.
+    pub definition: AstSearchHit,
+    /// Total number of considered candidates.
+    pub candidate_count: usize,
+    /// Selected semantic scope.
+    pub selected_scope: String,
+}
+
+/// One source-level reference or usage hit for a symbol.
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct ReferenceSearchHit {
+    /// Queried symbol name.
+    pub name: String,
+    /// Source file path relative to the project root.
+    pub path: String,
+    /// Source language name.
+    pub language: String,
+    /// Owning crate or package name.
+    pub crate_name: String,
+    /// Configured project name when the source path maps to a studio project.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub project_name: Option<String>,
+    /// Configured root label when the source path maps to a project root path.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub root_label: Option<String>,
+    /// 1-based line number for the usage.
+    pub line: usize,
+    /// 1-based column number of the first match.
+    pub column: usize,
+    /// Full source line containing the usage.
+    pub line_text: String,
+    /// Search relevance score.
+    pub score: f64,
+}
+
+/// Response for studio reference or usage search queries.
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct ReferenceSearchResponse {
+    /// Original query string.
+    pub query: String,
+    /// Matching reference hits.
+    pub hits: Vec<ReferenceSearchHit>,
+    /// Total number of hits returned.
+    pub hit_count: usize,
+    /// Selected semantic scope.
+    pub selected_scope: String,
+}
+
+/// Search domain for symbol hits.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, Type)]
+#[serde(rename_all = "lowercase")]
+pub enum SymbolSearchSource {
+    /// Symbol declared in the current project workspace.
+    Project,
+    /// Symbol imported from an external dependency.
+    External,
+}
+
+/// A symbol-level search hit extracted from source files.
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct SymbolSearchHit {
+    /// Symbol name.
+    pub name: String,
+    /// Symbol classification.
+    pub kind: String,
+    /// Source file path relative to the project root.
+    pub path: String,
+    /// 1-based source line.
+    pub line: usize,
+    /// Source location in `path:line` format.
+    pub location: String,
+    /// Source language.
+    pub language: String,
+    /// Owning crate or package name.
+    pub crate_name: String,
+    /// Configured project name when the source path maps to a studio project.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub project_name: Option<String>,
+    /// Configured root label when the source path maps to a project root path.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub root_label: Option<String>,
+    /// Symbol source domain.
+    pub source: SymbolSearchSource,
+    /// Search relevance score.
+    pub score: f64,
+}
+
+/// Response for studio symbol search queries.
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct SymbolSearchResponse {
+    /// Original query string.
+    pub query: String,
+    /// Matching symbol hits.
+    pub hits: Vec<SymbolSearchHit>,
+    /// Total number of hits returned.
+    pub hit_count: usize,
+    /// Selected symbol search scope.
+    pub selected_scope: String,
+}
+
 /// Type of autocomplete suggestion.
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, Type)]
 #[serde(rename_all = "lowercase")]
@@ -381,12 +551,35 @@ pub struct AutocompleteResponse {
 
 // === UI Config Types ===
 
+/// Project-scoped explorer configuration for the studio frontend.
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct UiProjectConfig {
+    /// Stable project name shown in the explorer.
+    pub name: String,
+    /// Project root relative to the Wendao project root, or absolute.
+    pub root: String,
+    /// Indexed paths relative to the project root.
+    #[serde(default)]
+    pub paths: Vec<String>,
+    /// File watch patterns scoped to the project.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub watch_patterns: Vec<String>,
+    /// Whether candidate directories should be auto-included for this project.
+    #[serde(default)]
+    pub include_dirs_auto: bool,
+    /// Candidate directories considered when auto-include is enabled.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub include_dirs_auto_candidates: Vec<String>,
+}
+
 /// UI configuration for the frontend.
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub struct UiConfig {
-    /// Paths to expand by default in the file tree.
-    pub index_paths: Vec<String>,
+    /// Project-scoped explorer configuration.
+    #[serde(default)]
+    pub projects: Vec<UiProjectConfig>,
 }
 
 // === Error Types ===
@@ -426,9 +619,18 @@ pub fn studio_type_collection() -> TypeCollection {
         .register::<KnowledgeSearchResult>()
         .register::<SearchHit>()
         .register::<SearchResponse>()
+        .register::<AstSearchHit>()
+        .register::<AstSearchResponse>()
+        .register::<DefinitionResolveResponse>()
+        .register::<ReferenceSearchHit>()
+        .register::<ReferenceSearchResponse>()
+        .register::<SymbolSearchSource>()
+        .register::<SymbolSearchHit>()
+        .register::<SymbolSearchResponse>()
         .register::<AutocompleteSuggestionType>()
         .register::<AutocompleteSuggestion>()
         .register::<AutocompleteResponse>()
+        .register::<UiProjectConfig>()
         .register::<UiConfig>()
         .register::<ApiError>()
 }

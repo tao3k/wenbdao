@@ -1,10 +1,21 @@
 ---
 source: packages/rust/crates/xiuxian-testing/src/scenario.rs
+description: "Scenario 031_md_attach_attachment_search_filters [markdown_attachments]: attachment search filters"
 expression: result
+info:
+  id: 031_md_attach_attachment_search_filters
+  name: attachment search filters
+  category: markdown_attachments
+  description: markdown_attachments scenario
+  input_type: markdown_tree
+  input_paths:
+    - input
+  expected_output_type: ~
+input_file: packages/rust/crates/xiuxian-wendao/tests/scenarios/031_md_attach_attachment_search_filters/scenario.toml
 ---
 {
-  "scenario_id": "031_md_attach_attachment_search_filters",
   "category": "markdown_attachments",
-  "status": "validated",
-  "files": []
+  "files": [],
+  "scenario_id": "031_md_attach_attachment_search_filters",
+  "status": "validated"
 }
