@@ -1,32 +1,11 @@
 ---
-source: packages/rust/crates/xiuxian-wendao/src/gateway/studio/../../../tests/unit/gateway/studio/support.rs
+source: packages/rust/crates/xiuxian-wendao/src/gateway/studio/test_support.rs
 expression: value
 ---
 {
-  "graphConfidenceScore": 0.965,
-  "hitCount": 2,
-  "hits": [
-    {
-      "bestSection": "Alpha",
-      "docType": null,
-      "matchReason": "fts+section_body_contains",
-      "path": "knowledge/alpha.md",
-      "score": 0.9,
-      "stem": "alpha",
-      "tags": [],
-      "title": "Alpha"
-    },
-    {
-      "bestSection": "Beta",
-      "docType": null,
-      "matchReason": "fts+section_body_contains",
-      "path": "knowledge/beta.md",
-      "score": 0.9,
-      "stem": "beta",
-      "tags": [],
-      "title": "Beta"
-    }
-  ],
+  "graphConfidenceScore": 0.0,
+  "hitCount": 0,
+  "hits": [],
   "query": "wendao",
-  "selectedMode": "graph_only"
+  "selectedMode": "vector_only"
 }

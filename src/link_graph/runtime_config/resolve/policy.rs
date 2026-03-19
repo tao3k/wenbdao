@@ -3,7 +3,10 @@ use crate::link_graph::runtime_config::constants::{
     LINK_GRAPH_COACTIVATION_HOP_DECAY_SCALE_ENV, LINK_GRAPH_COACTIVATION_MAX_HOPS_ENV,
     LINK_GRAPH_COACTIVATION_MAX_NEIGHBORS_PER_DIRECTION_ENV,
     LINK_GRAPH_COACTIVATION_MAX_TOTAL_PROPAGATIONS_ENV,
-    LINK_GRAPH_COACTIVATION_TOUCH_QUEUE_DEPTH_ENV,
+    LINK_GRAPH_COACTIVATION_TOUCH_QUEUE_DEPTH_ENV, LINK_GRAPH_SEMANTIC_IGNITION_BACKEND_ENV,
+    LINK_GRAPH_SEMANTIC_IGNITION_EMBEDDING_BASE_URL_ENV,
+    LINK_GRAPH_SEMANTIC_IGNITION_EMBEDDING_MODEL_ENV, LINK_GRAPH_SEMANTIC_IGNITION_TABLE_NAME_ENV,
+    LINK_GRAPH_SEMANTIC_IGNITION_VECTOR_STORE_PATH_ENV,
 };
 use crate::link_graph::runtime_config::models::LinkGraphCoactivationRuntimeConfig;
 use crate::link_graph::runtime_config::settings::{
@@ -110,7 +113,9 @@ pub fn resolve_link_graph_coactivation_runtime() -> LinkGraphCoactivationRuntime
 }
 
 use crate::link_graph::models::LinkGraphRetrievalMode;
-use crate::link_graph::runtime_config::models::LinkGraphRetrievalPolicyRuntimeConfig;
+use crate::link_graph::runtime_config::models::{
+    LinkGraphRetrievalPolicyRuntimeConfig, LinkGraphSemanticIgnitionBackend,
+};
 
 /// Resolve retrieval policy runtime configuration from settings.
 pub(crate) fn resolve_link_graph_retrieval_policy_runtime() -> LinkGraphRetrievalPolicyRuntimeConfig
@@ -160,5 +165,53 @@ pub(crate) fn resolve_link_graph_retrieval_policy_runtime() -> LinkGraphRetrieva
         resolved.graph_rows_per_source = value;
     }
 
+    if let Some(value) = first_non_empty(&[
+        get_setting_string(&settings, "link_graph.retrieval.semantic_ignition.backend"),
+        std::env::var(LINK_GRAPH_SEMANTIC_IGNITION_BACKEND_ENV).ok(),
+    ])
+    .as_deref()
+    .and_then(LinkGraphSemanticIgnitionBackend::from_alias)
+    {
+        resolved.semantic_ignition.backend = value;
+    }
+
+    resolved.semantic_ignition.vector_store_path =
+        normalize_optional_runtime_string(first_non_empty(&[
+            get_setting_string(
+                &settings,
+                "link_graph.retrieval.semantic_ignition.vector_store_path",
+            ),
+            std::env::var(LINK_GRAPH_SEMANTIC_IGNITION_VECTOR_STORE_PATH_ENV).ok(),
+        ]));
+    resolved.semantic_ignition.table_name = normalize_optional_runtime_string(first_non_empty(&[
+        get_setting_string(
+            &settings,
+            "link_graph.retrieval.semantic_ignition.table_name",
+        ),
+        std::env::var(LINK_GRAPH_SEMANTIC_IGNITION_TABLE_NAME_ENV).ok(),
+    ]));
+    resolved.semantic_ignition.embedding_base_url =
+        normalize_optional_runtime_string(first_non_empty(&[
+            get_setting_string(
+                &settings,
+                "link_graph.retrieval.semantic_ignition.embedding_base_url",
+            ),
+            std::env::var(LINK_GRAPH_SEMANTIC_IGNITION_EMBEDDING_BASE_URL_ENV).ok(),
+        ]));
+    resolved.semantic_ignition.embedding_model =
+        normalize_optional_runtime_string(first_non_empty(&[
+            get_setting_string(
+                &settings,
+                "link_graph.retrieval.semantic_ignition.embedding_model",
+            ),
+            std::env::var(LINK_GRAPH_SEMANTIC_IGNITION_EMBEDDING_MODEL_ENV).ok(),
+        ]));
+
     resolved
+}
+
+fn normalize_optional_runtime_string(value: Option<String>) -> Option<String> {
+    value
+        .map(|entry| entry.trim().to_string())
+        .filter(|entry| !entry.is_empty())
 }

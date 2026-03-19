@@ -1,0 +1,25 @@
+---
+source: packages/rust/crates/xiuxian-wendao/src/gateway/studio/test_support.rs
+expression: value
+---
+{
+  "hitCount": 1,
+  "hits": [
+    {
+      "attachmentExt": "png",
+      "attachmentId": "att://docs/alpha/assets/topology.png",
+      "attachmentName": "topology.png",
+      "attachmentPath": "assets/topology.png",
+      "kind": "image",
+      "path": "docs/alpha.md",
+      "score": 0.5,
+      "sourceId": "docs/alpha",
+      "sourcePath": "docs/alpha.md",
+      "sourceStem": "alpha",
+      "sourceTitle": "Alpha",
+      "visionSnippet": null
+    }
+  ],
+  "query": "topology",
+  "selectedScope": "attachments"
+}

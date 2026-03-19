@@ -86,6 +86,7 @@ impl LinkGraphIndex {
                 };
 
                 out.push(LinkGraphAttachmentHit {
+                    source_id: row.source_id.clone(),
                     source_stem: row.source_stem.clone(),
                     source_title: row.source_title.clone(),
                     source_path: row.source_path.clone(),

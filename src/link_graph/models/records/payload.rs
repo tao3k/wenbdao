@@ -1,4 +1,5 @@
 use super::hits::{LinkGraphDisplayHit, LinkGraphHit};
+use super::quantum_fusion::QuantumContext;
 use super::retrieval_plan::{
     LinkGraphConfidenceLevel, LinkGraphRetrievalMode, LinkGraphRetrievalPlanRecord,
 };
@@ -43,6 +44,12 @@ pub struct LinkGraphPlannedSearchPayload {
     /// Full schema-aligned retrieval plan record.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub retrieval_plan: Option<LinkGraphRetrievalPlanRecord>,
+    /// Semantic ignition telemetry for quantum enrichment.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub semantic_ignition: Option<LinkGraphSemanticIgnitionTelemetry>,
+    /// Quantum contexts derived from semantic ignition plus Arrow-native fusion.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub quantum_contexts: Vec<QuantumContext>,
     /// Raw hit rows for backward compatibility.
     pub results: Vec<LinkGraphHit>,
     /// Optional provisional suggested-link rows for hybrid/agentic surfaces.
@@ -87,4 +94,20 @@ pub struct LinkGraphPromotedOverlayTelemetry {
     pub promoted_rows: usize,
     /// Number of distinct directed edges materialized into the overlay graph.
     pub added_edges: usize,
+}
+
+/// Semantic ignition telemetry emitted on planned search payloads.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LinkGraphSemanticIgnitionTelemetry {
+    /// Runtime-selected semantic ignition backend alias.
+    pub backend: String,
+    /// Stable backend name reported by the ignition implementation.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub backend_name: Option<String>,
+    /// Number of quantum contexts emitted for this payload.
+    #[serde(default)]
+    pub context_count: usize,
+    /// Backend or orchestration error, when enrichment failed closed.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub error: Option<String>,
 }

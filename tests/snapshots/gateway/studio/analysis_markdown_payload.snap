@@ -1,0 +1,305 @@
+---
+source: packages/rust/crates/xiuxian-wendao/src/gateway/studio/test_support.rs
+expression: value
+---
+{
+  "diagnostics": [],
+  "documentHash": "82096e6c66111f65b2e74ec66af2afb6b53cf02bf70616f101a2090c59fe9abd",
+  "edgeCount": 12,
+  "edges": [
+    {
+      "evidence": {
+        "confidence": 1.0,
+        "lineEnd": 1,
+        "lineStart": 1,
+        "path": "docs/analysis.md"
+      },
+      "id": "edge:1",
+      "kind": "contains",
+      "label": "contains",
+      "sourceId": "doc:0",
+      "targetId": "sec:1"
+    },
+    {
+      "evidence": {
+        "confidence": 1.0,
+        "lineEnd": 3,
+        "lineStart": 3,
+        "path": "docs/analysis.md"
+      },
+      "id": "edge:2",
+      "kind": "contains",
+      "label": "contains",
+      "sourceId": "sec:1",
+      "targetId": "sec:3"
+    },
+    {
+      "evidence": {
+        "confidence": 1.0,
+        "lineEnd": 4,
+        "lineStart": 4,
+        "path": "docs/analysis.md"
+      },
+      "id": "edge:3",
+      "kind": "contains",
+      "label": "contains",
+      "sourceId": "sec:3",
+      "targetId": "task:4"
+    },
+    {
+      "evidence": {
+        "confidence": 1.0,
+        "lineEnd": 5,
+        "lineStart": 5,
+        "path": "docs/analysis.md"
+      },
+      "id": "edge:4",
+      "kind": "contains",
+      "label": "contains",
+      "sourceId": "sec:3",
+      "targetId": "task:5"
+    },
+    {
+      "evidence": {
+        "confidence": 0.9,
+        "lineEnd": 5,
+        "lineStart": 5,
+        "path": "docs/analysis.md"
+      },
+      "id": "edge:5",
+      "kind": "next_step",
+      "label": "next",
+      "sourceId": "task:4",
+      "targetId": "task:5"
+    },
+    {
+      "evidence": {
+        "confidence": 1.0,
+        "lineEnd": 7,
+        "lineStart": 7,
+        "path": "docs/analysis.md"
+      },
+      "id": "edge:6",
+      "kind": "contains",
+      "label": "contains",
+      "sourceId": "sec:1",
+      "targetId": "sec:7"
+    },
+    {
+      "evidence": {
+        "confidence": 0.85,
+        "lineEnd": 13,
+        "lineStart": 13,
+        "path": "docs/analysis.md"
+      },
+      "id": "edge:7",
+      "kind": "references",
+      "label": "docs/guide.md",
+      "sourceId": "sec:7",
+      "targetId": "ref:docs-guide-md"
+    },
+    {
+      "evidence": {
+        "confidence": 0.85,
+        "lineEnd": 13,
+        "lineStart": 13,
+        "path": "docs/analysis.md"
+      },
+      "id": "edge:8",
+      "kind": "references",
+      "label": "internal_skills/writer/SKILL.md",
+      "sourceId": "sec:7",
+      "targetId": "ref:internal-skills-writer-skill-md"
+    },
+    {
+      "evidence": {
+        "confidence": 1.0,
+        "lineEnd": 17,
+        "lineStart": 15,
+        "path": "docs/analysis.md"
+      },
+      "id": "edge:9",
+      "kind": "contains",
+      "label": "contains",
+      "sourceId": "sec:7",
+      "targetId": "code:15"
+    },
+    {
+      "evidence": {
+        "confidence": 1.0,
+        "lineEnd": 9,
+        "lineStart": 9,
+        "path": "docs/analysis.md"
+      },
+      "id": "edge:10",
+      "kind": "contains",
+      "label": "contains",
+      "sourceId": "sec:7",
+      "targetId": "prop:9:id"
+    },
+    {
+      "evidence": {
+        "confidence": 1.0,
+        "lineEnd": 10,
+        "lineStart": 10,
+        "path": "docs/analysis.md"
+      },
+      "id": "edge:11",
+      "kind": "contains",
+      "label": "contains",
+      "sourceId": "sec:7",
+      "targetId": "observe:10:observe"
+    },
+    {
+      "evidence": {
+        "confidence": 0.95,
+        "lineEnd": 10,
+        "lineStart": 10,
+        "path": "docs/analysis.md"
+      },
+      "id": "edge:12",
+      "kind": "references",
+      "label": "compile",
+      "sourceId": "observe:10:observe",
+      "targetId": "symbol:10:compile"
+    }
+  ],
+  "nodeCount": 12,
+  "nodes": [
+    {
+      "depth": 0,
+      "id": "doc:0",
+      "kind": "document",
+      "label": "docs/analysis.md",
+      "lineEnd": 17,
+      "lineStart": 1,
+      "parentId": null
+    },
+    {
+      "depth": 1,
+      "id": "sec:1",
+      "kind": "section",
+      "label": "Analysis Kernel",
+      "lineEnd": 1,
+      "lineStart": 1,
+      "parentId": "doc:0"
+    },
+    {
+      "depth": 2,
+      "id": "sec:3",
+      "kind": "section",
+      "label": "Inputs",
+      "lineEnd": 3,
+      "lineStart": 3,
+      "parentId": "sec:1"
+    },
+    {
+      "depth": 3,
+      "id": "task:4",
+      "kind": "task",
+      "label": "Parse markdown",
+      "lineEnd": 4,
+      "lineStart": 4,
+      "parentId": "sec:3"
+    },
+    {
+      "depth": 3,
+      "id": "task:5",
+      "kind": "task",
+      "label": "Build IR",
+      "lineEnd": 5,
+      "lineStart": 5,
+      "parentId": "sec:3"
+    },
+    {
+      "depth": 2,
+      "id": "sec:7",
+      "kind": "section",
+      "label": "Links",
+      "lineEnd": 7,
+      "lineStart": 7,
+      "parentId": "sec:1"
+    },
+    {
+      "depth": 1,
+      "id": "ref:docs-guide-md",
+      "kind": "reference",
+      "label": "docs/guide.md",
+      "lineEnd": 13,
+      "lineStart": 13,
+      "parentId": null
+    },
+    {
+      "depth": 1,
+      "id": "ref:internal-skills-writer-skill-md",
+      "kind": "reference",
+      "label": "internal_skills/writer/SKILL.md",
+      "lineEnd": 13,
+      "lineStart": 13,
+      "parentId": null
+    },
+    {
+      "depth": 3,
+      "id": "code:15",
+      "kind": "codeblock",
+      "label": "code block (rust)",
+      "lineEnd": 17,
+      "lineStart": 15,
+      "parentId": "sec:7"
+    },
+    {
+      "depth": 3,
+      "id": "prop:9:id",
+      "kind": "property",
+      "label": ":ID: AnalysisKernel",
+      "lineEnd": 9,
+      "lineStart": 9,
+      "parentId": "sec:7"
+    },
+    {
+      "depth": 3,
+      "id": "observe:10:observe",
+      "kind": "observation",
+      "label": ":OBSERVE: lang:rust scope:\"src/gateway/studio/**\" \"fn compile() { $$$ }\"",
+      "lineEnd": 10,
+      "lineStart": 10,
+      "parentId": "sec:7"
+    },
+    {
+      "depth": 4,
+      "id": "symbol:10:compile",
+      "kind": "symbol",
+      "label": "compile",
+      "lineEnd": 10,
+      "lineStart": 10,
+      "parentId": "observe:10:observe"
+    }
+  ],
+  "path": "docs/analysis.md",
+  "projections": [
+    {
+      "complexityScore": 27.0,
+      "diagnostics": [],
+      "edgeCount": 12,
+      "kind": "mindmap",
+      "nodeCount": 12,
+      "source": "mindmap\n  root((docs/analysis.md))\n    Analysis Kernel\n      Inputs\n        Parse markdown\n        Build IR\n      Links\n    docs/guide.md\n    internal_skills/writer/SKILL.md\n        code block (rust)\n        :ID: AnalysisKernel\n        :OBSERVE: lang:rust scope:'src/gateway/studio/**' 'fn compile() { $$$ }'\n          compile\n"
+    },
+    {
+      "complexityScore": 27.0,
+      "diagnostics": [],
+      "edgeCount": 12,
+      "kind": "flowchart",
+      "nodeCount": 12,
+      "source": "flowchart TD\n  N0[\"docs/analysis.md\"]\n  N1[\"Analysis Kernel\"]\n  N2[\"Inputs\"]\n  N3[\"Parse markdown\"]\n  N4[\"Build IR\"]\n  N5[\"Links\"]\n  N6[\"docs/guide.md\"]\n  N7[\"internal_skills/writer/SKILL.md\"]\n  N8[\"code block (rust)\"]\n  N9[\":ID: AnalysisKernel\"]\n  N10[\":OBSERVE: lang:rust scope:'src/gateway/studio/**' 'fn compile() { $$$ }'\"]\n  N11[\"compile\"]\n  N0 -->|contains| N1\n  N1 -->|contains| N2\n  N2 -->|contains| N3\n  N2 -->|contains| N4\n  N3 -->|next| N4\n  N1 -->|contains| N5\n  N5 -->|docs/guide.md| N6\n  N5 -->|internal_skills/writer/SKILL.md| N7\n  N5 -->|contains| N8\n  N5 -->|contains| N9\n  N5 -->|contains| N10\n  N10 -->|compile| N11\n"
+    },
+    {
+      "complexityScore": 27.0,
+      "diagnostics": [],
+      "edgeCount": 12,
+      "kind": "graph",
+      "nodeCount": 12,
+      "source": "graph LR\n  N0[\"docs/analysis.md\"]\n  N1[\"Analysis Kernel\"]\n  N2[\"Inputs\"]\n  N3[\"Parse markdown\"]\n  N4[\"Build IR\"]\n  N5[\"Links\"]\n  N6[\"docs/guide.md\"]\n  N7[\"internal_skills/writer/SKILL.md\"]\n  N8[\"code block (rust)\"]\n  N9[\":ID: AnalysisKernel\"]\n  N10[\":OBSERVE: lang:rust scope:'src/gateway/studio/**' 'fn compile() { $$$ }'\"]\n  N11[\"compile\"]\n  N0 -->|contains| N1\n  N1 -->|contains| N2\n  N2 -->|contains| N3\n  N2 -->|contains| N4\n  N3 -->|next| N4\n  N1 -->|contains| N5\n  N5 -->|docs/guide.md| N6\n  N5 -->|internal_skills/writer/SKILL.md| N7\n  N5 -->|contains| N8\n  N5 -->|contains| N9\n  N5 -->|contains| N10\n  N10 -->|compile| N11\n"
+    }
+  ]
+}

@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 use std::{collections::HashSet, fs};
 
+use super::pathing;
 use super::router::StudioState;
 use super::types::{
     UiProjectConfig, VfsCategory, VfsContentResponse, VfsEntry, VfsScanEntry, VfsScanResult,
@@ -17,6 +18,31 @@ struct ResolvedVfsRoot {
     filesystem_path: PathBuf,
     project_name: Option<String>,
     root_label: Option<String>,
+    project_root: Option<String>,
+    project_dirs: Vec<String>,
+    filter_prefix: String,
+    file_filters: Vec<pathing::ProjectFileFilter>,
+}
+
+#[derive(Debug, Clone)]
+struct ResolvedVfsPath {
+    full_path: PathBuf,
+    root: ResolvedVfsRoot,
+    rest: String,
+}
+
+struct ScanDirectoryConfig<'a> {
+    file_filters: &'a [pathing::ProjectFileFilter],
+    project_name: Option<&'a str>,
+    root_label: Option<&'a str>,
+    project_root: Option<&'a str>,
+    project_dirs: &'a [String],
+}
+
+struct ScanDirectoryCounters<'a> {
+    entries: &'a mut Vec<VfsScanEntry>,
+    file_count: &'a mut usize,
+    dir_count: &'a mut usize,
 }
 
 /// VFS operation error type.
@@ -58,6 +84,8 @@ pub(crate) fn list_root_entries(state: &StudioState) -> Vec<VfsEntry> {
             content_type: None,
             project_name: root.project_name,
             root_label: root.root_label,
+            project_root: root.project_root,
+            project_dirs: (!root.project_dirs.is_empty()).then_some(root.project_dirs),
         })
         .collect()
 }
@@ -88,15 +116,27 @@ pub(crate) fn scan_roots(state: &StudioState) -> VfsScanResult {
             wendao_id: None,
             project_name: root.project_name.clone(),
             root_label: root.root_label.clone(),
+            project_root: root.project_root.clone(),
+            project_dirs: (!root.project_dirs.is_empty()).then(|| root.project_dirs.clone()),
         });
+        let config = ScanDirectoryConfig {
+            file_filters: root.file_filters.as_slice(),
+            project_name: root.project_name.as_deref(),
+            root_label: root.root_label.as_deref(),
+            project_root: root.project_root.as_deref(),
+            project_dirs: root.project_dirs.as_slice(),
+        };
+        let mut counters = ScanDirectoryCounters {
+            entries: &mut entries,
+            file_count: &mut file_count,
+            dir_count: &mut dir_count,
+        };
         scan_directory(
             root.filesystem_path.as_path(),
             root.request_root.as_str(),
-            root.project_name.as_deref(),
-            root.root_label.as_deref(),
-            &mut entries,
-            &mut file_count,
-            &mut dir_count,
+            root.filter_prefix.as_str(),
+            &config,
+            &mut counters,
         );
     }
 
@@ -110,13 +150,21 @@ pub(crate) fn scan_roots(state: &StudioState) -> VfsScanResult {
 
 /// Get a single VFS entry by path.
 pub(crate) fn get_entry(state: &StudioState, path: &str) -> Result<VfsEntry, VfsError> {
-    let full_path = resolve_vfs_path(state, path)?;
+    let resolved = resolve_vfs_path(state, path)?;
+    let full_path = resolved.full_path;
 
     if !full_path.exists() {
         return Err(VfsError::NotFound(path.to_string()));
     }
 
     let metadata = std::fs::metadata(&full_path)?;
+    if metadata.is_file() {
+        let filter_path =
+            join_filter_path(resolved.root.filter_prefix.as_str(), resolved.rest.as_str());
+        if !matches_file_filters(filter_path.as_str(), resolved.root.file_filters.as_slice()) {
+            return Err(VfsError::NotFound(path.to_string()));
+        }
+    }
     let is_dir = metadata.is_dir();
     let name = full_path
         .file_name()
@@ -138,8 +186,11 @@ pub(crate) fn get_entry(state: &StudioState, path: &str) -> Result<VfsEntry, Vfs
         } else {
             Some(guess_content_type(&full_path))
         },
-        project_name: None,
-        root_label: None,
+        project_name: resolved.root.project_name.clone(),
+        root_label: resolved.root.root_label.clone(),
+        project_root: resolved.root.project_root.clone(),
+        project_dirs: (!resolved.root.project_dirs.is_empty())
+            .then(|| resolved.root.project_dirs.clone()),
     })
 }
 
@@ -148,10 +199,19 @@ pub(crate) async fn read_content(
     state: &StudioState,
     path: &str,
 ) -> Result<VfsContentResponse, VfsError> {
-    let full_path = resolve_vfs_path(state, path)?;
+    let resolved = resolve_vfs_path(state, path)?;
+    let full_path = resolved.full_path;
 
     if !full_path.exists() {
         return Err(VfsError::NotFound(path.to_string()));
+    }
+    let metadata = std::fs::metadata(&full_path)?;
+    if metadata.is_file() {
+        let filter_path =
+            join_filter_path(resolved.root.filter_prefix.as_str(), resolved.rest.as_str());
+        if !matches_file_filters(filter_path.as_str(), resolved.root.file_filters.as_slice()) {
+            return Err(VfsError::NotFound(path.to_string()));
+        }
     }
 
     let content = tokio::fs::read_to_string(&full_path)
@@ -169,21 +229,21 @@ pub(crate) async fn read_content(
 fn scan_directory(
     base: &Path,
     prefix: &str,
-    project_name: Option<&str>,
-    root_label: Option<&str>,
-    entries: &mut Vec<VfsScanEntry>,
-    file_count: &mut usize,
-    dir_count: &mut usize,
+    filter_prefix: &str,
+    config: &ScanDirectoryConfig<'_>,
+    counters: &mut ScanDirectoryCounters<'_>,
 ) {
     if let Ok(dir_entries) = std::fs::read_dir(base) {
         for entry in dir_entries.flatten() {
             let path = entry.path();
             let relative = format!("{}/{}", prefix, entry.file_name().to_string_lossy());
+            let filter_relative =
+                join_filter_path(filter_prefix, entry.file_name().to_string_lossy().as_ref());
             let metadata = entry.metadata().ok();
 
             if path.is_dir() {
-                *dir_count += 1;
-                entries.push(VfsScanEntry {
+                *counters.dir_count += 1;
+                counters.entries.push(VfsScanEntry {
                     path: relative.clone(),
                     name: entry.file_name().to_string_lossy().to_string(),
                     is_dir: true,
@@ -197,22 +257,20 @@ fn scan_directory(
                     content_type: None,
                     has_frontmatter: false,
                     wendao_id: None,
-                    project_name: project_name.map(ToOwned::to_owned),
-                    root_label: root_label.map(ToOwned::to_owned),
+                    project_name: config.project_name.map(ToOwned::to_owned),
+                    root_label: config.root_label.map(ToOwned::to_owned),
+                    project_root: config.project_root.map(ToOwned::to_owned),
+                    project_dirs: (!config.project_dirs.is_empty())
+                        .then(|| config.project_dirs.to_vec()),
                 });
-                scan_directory(
-                    &path,
-                    &relative,
-                    project_name,
-                    root_label,
-                    entries,
-                    file_count,
-                    dir_count,
-                );
+                scan_directory(&path, &relative, filter_relative.as_str(), config, counters);
             } else {
-                *file_count += 1;
+                if !matches_file_filters(filter_relative.as_str(), config.file_filters) {
+                    continue;
+                }
+                *counters.file_count += 1;
                 let has_frontmatter = is_markdown_with_frontmatter(&path);
-                entries.push(VfsScanEntry {
+                counters.entries.push(VfsScanEntry {
                     path: relative,
                     name: entry.file_name().to_string_lossy().to_string(),
                     is_dir: false,
@@ -226,8 +284,11 @@ fn scan_directory(
                     content_type: Some(guess_content_type(&path)),
                     has_frontmatter,
                     wendao_id: None,
-                    project_name: project_name.map(ToOwned::to_owned),
-                    root_label: root_label.map(ToOwned::to_owned),
+                    project_name: config.project_name.map(ToOwned::to_owned),
+                    root_label: config.root_label.map(ToOwned::to_owned),
+                    project_root: config.project_root.map(ToOwned::to_owned),
+                    project_dirs: (!config.project_dirs.is_empty())
+                        .then(|| config.project_dirs.to_vec()),
                 });
             }
         }
@@ -237,35 +298,159 @@ fn scan_directory(
 fn resolved_vfs_roots(state: &StudioState) -> Vec<ResolvedVfsRoot> {
     let mut roots = Vec::new();
     let mut seen_fs_paths = HashSet::new();
-    let mut seen_request_roots = HashSet::new();
 
     for project in state.configured_projects() {
-        for configured in &project.paths {
+        let file_filters = project_file_filters(&project);
+        for configured in &project.dirs {
             push_root(
                 &mut roots,
                 &mut seen_fs_paths,
-                &mut seen_request_roots,
-                resolve_project_root_candidate(state, &project, configured.as_str()),
+                resolve_project_root_candidate(
+                    state,
+                    &project,
+                    configured.as_str(),
+                    file_filters.clone(),
+                ),
             );
         }
     }
 
+    assign_request_roots(&mut roots);
     roots
 }
 
 pub(crate) fn graph_lookup_candidates(state: &StudioState, requested_path: &str) -> Vec<String> {
     let mut candidates = Vec::new();
-    push_unique_candidate(&mut candidates, requested_path.trim().replace('\\', "/"));
+    let normalized_requested_path = requested_path.trim().replace('\\', "/");
+    push_unique_candidate(&mut candidates, normalized_requested_path.clone());
 
-    if let Ok(full_path) = resolve_vfs_path(state, requested_path) {
-        push_unique_candidate(
-            &mut candidates,
-            normalize_graph_index_path(state, full_path.as_path()),
-        );
-        push_unique_candidate(&mut candidates, normalize_path_string(full_path.as_path()));
+    if let Some(stripped_dollar) = normalized_requested_path.strip_prefix('$') {
+        push_unique_candidate(&mut candidates, stripped_dollar.to_string());
+    }
+
+    let semantic_candidates = semantic_lookup_candidates(normalized_requested_path.as_str());
+    for candidate in semantic_candidates {
+        push_unique_candidate(&mut candidates, candidate);
+    }
+
+    let path_candidates = candidates.clone();
+    for candidate in path_candidates {
+        if let Ok(resolved) = resolve_vfs_path(state, candidate.as_str()) {
+            let full_path = resolved.full_path;
+            push_unique_candidate(
+                &mut candidates,
+                normalize_graph_index_path(state, full_path.as_path()),
+            );
+            push_unique_candidate(&mut candidates, normalize_path_string(full_path.as_path()));
+        }
     }
 
     candidates
+}
+
+pub(crate) fn resolve_navigation_target(
+    state: &StudioState,
+    requested_path: &str,
+) -> super::types::StudioNavigationTarget {
+    let candidates = graph_lookup_candidates(state, requested_path);
+
+    for candidate in &candidates {
+        if let Ok(entry) = get_entry(state, candidate.as_str()) {
+            let (project_name, root_label) =
+                navigation_target_project_metadata(state, entry.path.as_str());
+            return super::types::StudioNavigationTarget {
+                path: entry.path.clone(),
+                category: inferred_navigation_category(entry.path.as_str(), entry.is_dir),
+                project_name: entry.project_name.or(project_name),
+                root_label: entry.root_label.or(root_label),
+                line: None,
+                line_end: None,
+                column: None,
+            };
+        }
+    }
+
+    let fallback_path = candidates
+        .iter()
+        .find(|candidate| !has_semantic_prefix(candidate.as_str()))
+        .cloned()
+        .unwrap_or_else(|| requested_path.trim().replace('\\', "/"));
+    let (project_name, root_label) =
+        navigation_target_project_metadata(state, fallback_path.as_str());
+
+    super::types::StudioNavigationTarget {
+        path: fallback_path.clone(),
+        category: inferred_navigation_category(fallback_path.as_str(), false),
+        project_name,
+        root_label,
+        line: None,
+        line_end: None,
+        column: None,
+    }
+}
+
+fn navigation_target_project_metadata(
+    state: &StudioState,
+    path: &str,
+) -> (Option<String>, Option<String>) {
+    resolved_vfs_roots(state)
+        .into_iter()
+        .filter_map(|root| {
+            if path == root.request_root {
+                return Some((root.request_root.len(), root.project_name, root.root_label));
+            }
+
+            path.strip_prefix(root.request_root.as_str())
+                .filter(|suffix| suffix.starts_with('/'))
+                .map(|_| (root.request_root.len(), root.project_name, root.root_label))
+        })
+        .max_by_key(|(request_root_len, _, _)| *request_root_len)
+        .map(|(_, project_name, root_label)| (project_name, root_label))
+        .unwrap_or((None, None))
+}
+
+fn semantic_lookup_candidates(requested_path: &str) -> Vec<String> {
+    let mut candidates = Vec::new();
+    let without_dollar = requested_path.strip_prefix('$').unwrap_or(requested_path);
+    if let Some(rest) = strip_ascii_prefix_case_insensitive(without_dollar, "wendao://") {
+        let normalized = rest.trim_start_matches('/').to_string();
+        push_unique_candidate(&mut candidates, normalized);
+    }
+    if let Some(rest) = strip_ascii_prefix_case_insensitive(without_dollar, "id:") {
+        let normalized = rest.trim_start_matches('/').to_string();
+        push_unique_candidate(&mut candidates, normalized);
+    }
+    candidates
+}
+
+fn strip_ascii_prefix_case_insensitive<'a>(value: &'a str, prefix: &str) -> Option<&'a str> {
+    value
+        .get(..prefix.len())
+        .filter(|candidate| candidate.eq_ignore_ascii_case(prefix))
+        .map(|_| &value[prefix.len()..])
+}
+
+fn has_semantic_prefix(value: &str) -> bool {
+    let trimmed = value.trim_start_matches('$');
+    trimmed
+        .get(..9)
+        .is_some_and(|prefix| prefix.eq_ignore_ascii_case("wendao://"))
+        || trimmed
+            .get(..3)
+            .is_some_and(|prefix| prefix.eq_ignore_ascii_case("id:"))
+}
+
+fn inferred_navigation_category(path: &str, is_dir: bool) -> String {
+    if is_dir {
+        return "folder".to_string();
+    }
+    if path.starts_with("knowledge/") {
+        return "knowledge".to_string();
+    }
+    if path.ends_with("SKILL.md") {
+        return "skill".to_string();
+    }
+    "doc".to_string()
 }
 
 pub(crate) fn studio_display_path(state: &StudioState, graph_path: &str) -> String {
@@ -295,10 +480,9 @@ pub(crate) fn studio_display_path(state: &StudioState, graph_path: &str) -> Stri
 fn push_root(
     roots: &mut Vec<ResolvedVfsRoot>,
     seen_fs_paths: &mut HashSet<String>,
-    seen_request_roots: &mut HashSet<String>,
     candidate: Option<ResolvedVfsRoot>,
 ) {
-    let Some(mut candidate) = candidate else {
+    let Some(candidate) = candidate else {
         return;
     };
     if !candidate.filesystem_path.exists() {
@@ -313,80 +497,85 @@ fn push_root(
         return;
     }
 
-    if !seen_request_roots.insert(candidate.request_root.clone()) {
-        let mut suffix = 2usize;
-        loop {
-            let alternative = format!("{}-{suffix}", candidate.request_root);
-            if seen_request_roots.insert(alternative.clone()) {
-                candidate.request_root.clone_from(&alternative);
-                break;
-            }
-            suffix += 1;
+    roots.push(candidate);
+}
+
+fn assign_request_roots(roots: &mut [ResolvedVfsRoot]) {
+    let mut seen_labels = HashSet::new();
+    let mut duplicate_labels = HashSet::new();
+
+    for root in roots.iter() {
+        if !seen_labels.insert(root.request_root.clone()) {
+            duplicate_labels.insert(root.request_root.clone());
         }
     }
 
-    roots.push(candidate);
+    let mut seen_request_roots = HashSet::new();
+    for root in roots.iter_mut() {
+        if duplicate_labels.contains(root.request_root.as_str())
+            && let (Some(project_name), Some(root_label)) =
+                (root.project_name.as_deref(), root.root_label.as_deref())
+        {
+            root.request_root = scoped_request_root(project_name, root_label);
+        }
+
+        if !seen_request_roots.insert(root.request_root.clone()) {
+            let mut suffix = 2usize;
+            loop {
+                let alternative = format!("{}-{suffix}", root.request_root);
+                if seen_request_roots.insert(alternative.clone()) {
+                    root.request_root = alternative;
+                    break;
+                }
+                suffix += 1;
+            }
+        }
+    }
 }
 
 fn resolve_project_root_candidate(
     state: &StudioState,
     project: &UiProjectConfig,
     raw: &str,
+    file_filters: Vec<pathing::ProjectFileFilter>,
 ) -> Option<ResolvedVfsRoot> {
     let normalized = normalize_configured_root(raw)?;
     let filesystem_path =
-        resolve_project_filesystem_root(state, project.root.as_str(), normalized.as_str());
+        resolve_project_filesystem_root(state, project.root.as_str(), normalized.as_str())?;
     let root_label = configured_root_label(
         normalized.as_str(),
         filesystem_path.as_path(),
         project.name.as_str(),
     )?;
+    let filter_prefix = if normalized == "." {
+        String::new()
+    } else {
+        normalized.clone()
+    };
     Some(ResolvedVfsRoot {
         display_name: root_label.clone(),
         request_root: root_label.clone(),
         filesystem_path,
         project_name: Some(project.name.clone()),
         root_label: Some(root_label),
+        project_root: Some(project.root.clone()),
+        project_dirs: project.dirs.clone(),
+        filter_prefix,
+        file_filters,
     })
 }
 
 fn normalize_configured_root(raw: &str) -> Option<String> {
-    let trimmed = raw.trim();
-    if trimmed.is_empty() {
-        return None;
-    }
-    if trimmed == "." {
-        return Some(".".to_string());
-    }
-    let normalized = trimmed
-        .replace('\\', "/")
-        .trim_end_matches('/')
-        .trim_start_matches("./")
-        .to_string();
-    if normalized.is_empty() {
-        None
-    } else {
-        Some(normalized)
-    }
+    pathing::normalize_project_dir_root(raw)
 }
 
-fn resolve_project_filesystem_root(state: &StudioState, root: &str, normalized: &str) -> PathBuf {
-    let project_root = if Path::new(root).is_absolute() {
-        PathBuf::from(root)
-    } else if root == "." {
-        state.project_root.clone()
-    } else {
-        state.project_root.join(root)
-    };
-
-    let candidate = Path::new(normalized);
-    if candidate.is_absolute() {
-        candidate.to_path_buf()
-    } else if normalized == "." {
-        project_root
-    } else {
-        project_root.join(normalized)
-    }
+fn resolve_project_filesystem_root(
+    state: &StudioState,
+    root: &str,
+    normalized: &str,
+) -> Option<PathBuf> {
+    let project_root = pathing::resolve_path_like(state.config_root.as_path(), root)?;
+    pathing::resolve_path_like(project_root.as_path(), normalized)
 }
 
 fn configured_root_label(
@@ -410,6 +599,14 @@ fn root_leaf_label(normalized: &str, filesystem_path: &Path) -> Option<String> {
         },
         |component| Some(component.to_string_lossy().to_string()),
     )
+}
+
+fn scoped_request_root(project_name: &str, root_label: &str) -> String {
+    if root_label == project_name {
+        project_name.to_string()
+    } else {
+        format!("{project_name}/{root_label}")
+    }
 }
 
 fn normalize_graph_index_path(state: &StudioState, full_path: &Path) -> String {
@@ -445,23 +642,74 @@ fn push_unique_candidate(candidates: &mut Vec<String>, candidate: String) {
     candidates.push(candidate);
 }
 
-fn resolve_vfs_path(state: &StudioState, requested_path: &str) -> Result<PathBuf, VfsError> {
-    let (root, rest) = requested_path
-        .split_once('/')
-        .unwrap_or((requested_path, ""));
-    let full_path = resolved_vfs_roots(state)
+fn resolve_vfs_path(
+    state: &StudioState,
+    requested_path: &str,
+) -> Result<ResolvedVfsPath, VfsError> {
+    let normalized_request = requested_path.trim().replace('\\', "/");
+    let Some((candidate, normalized_rest)) = resolved_vfs_roots(state)
         .into_iter()
-        .find(|candidate| candidate.request_root == root)
-        .map(|candidate| candidate.filesystem_path.join(rest))
-        .ok_or_else(|| VfsError::UnknownRoot(root.to_string()))?;
-    Ok(full_path)
+        .filter_map(|candidate| {
+            if normalized_request == candidate.request_root {
+                return Some((candidate, String::new()));
+            }
+
+            normalized_request
+                .strip_prefix(candidate.request_root.as_str())
+                .filter(|suffix| suffix.starts_with('/'))
+                .map(|suffix| (candidate, suffix.trim_start_matches('/').to_string()))
+        })
+        .max_by_key(|(candidate, _)| candidate.request_root.len())
+    else {
+        let unknown_root = normalized_request
+            .split('/')
+            .next()
+            .unwrap_or(normalized_request.as_str())
+            .to_string();
+        return Err(VfsError::UnknownRoot(unknown_root));
+    };
+    let full_path = if normalized_rest.is_empty() {
+        candidate.filesystem_path.clone()
+    } else {
+        candidate.filesystem_path.join(normalized_rest.as_str())
+    };
+    Ok(ResolvedVfsPath {
+        full_path,
+        root: candidate,
+        rest: normalized_rest,
+    })
+}
+
+fn project_file_filters(project: &UiProjectConfig) -> Vec<pathing::ProjectFileFilter> {
+    project
+        .dirs
+        .iter()
+        .filter_map(|entry| pathing::compile_project_dir_filter(entry.as_str()))
+        .collect()
+}
+
+fn join_filter_path(prefix: &str, path: &str) -> String {
+    let normalized_path = path.trim_start_matches('/').replace('\\', "/");
+    if prefix.is_empty() || prefix == "." {
+        normalized_path
+    } else if normalized_path.is_empty() {
+        prefix.to_string()
+    } else {
+        format!("{prefix}/{normalized_path}")
+    }
+}
+
+fn matches_file_filters(path: &str, filters: &[pathing::ProjectFileFilter]) -> bool {
+    pathing::matches_project_file_filters(path, filters)
 }
 
 fn classify_file_category(root: &str, path: &Path) -> VfsCategory {
-    if path.file_name().and_then(|name| name.to_str()) == Some("SKILL.md") || root.contains("skill")
+    let root_leaf = root.rsplit('/').next().unwrap_or(root);
+    if path.file_name().and_then(|name| name.to_str()) == Some("SKILL.md")
+        || root_leaf.contains("skill")
     {
         VfsCategory::Skill
-    } else if root == "knowledge" {
+    } else if root_leaf == "knowledge" {
         VfsCategory::Knowledge
     } else if matches!(
         path.extension().and_then(|ext| ext.to_str()),

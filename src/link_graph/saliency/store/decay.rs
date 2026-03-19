@@ -1,4 +1,6 @@
-use super::common::{now_unix_i64, parse_saliency_payload_any_node, redis_client, resolve_runtime};
+use super::common::{
+    now_unix_i64, parse_saliency_payload_any_node, redis_connection, resolve_runtime,
+};
 use crate::link_graph::runtime_config::DEFAULT_LINK_GRAPH_VALKEY_KEY_PREFIX;
 use crate::link_graph::saliency::{
     LINK_GRAPH_SALIENCY_SCHEMA_VERSION, LinkGraphSaliencyDecaySweepRequest,
@@ -41,10 +43,7 @@ pub fn valkey_saliency_decay_all_with_valkey(
         .unwrap_or(DEFAULT_LINK_GRAPH_VALKEY_KEY_PREFIX);
     let now_unix = request.now_unix.unwrap_or_else(now_unix_i64);
     let policy = LinkGraphSaliencyPolicy::default();
-    let client = redis_client(valkey_url)?;
-    let mut conn = client
-        .get_connection()
-        .map_err(|err| format!("failed to connect valkey for link_graph saliency store: {err}"))?;
+    let mut conn = redis_connection(valkey_url)?;
 
     let keys = scan_saliency_keys(&mut conn, prefix)?;
     let mut result = LinkGraphSaliencyDecaySweepResult {
@@ -100,8 +99,15 @@ fn scan_saliency_keys(
     let mut cursor: u64 = 0;
     let mut keys = Vec::new();
     let mut seen = HashSet::new();
+    let mut seen_cursors: HashSet<u64> = HashSet::new();
 
     loop {
+        if !seen_cursors.insert(cursor) {
+            return Err(format!(
+                "failed to SCAN link_graph saliency keys: repeated cursor {cursor}"
+            ));
+        }
+
         let (next_cursor, batch): (u64, Vec<String>) = redis::cmd("SCAN")
             .arg(cursor)
             .arg("MATCH")

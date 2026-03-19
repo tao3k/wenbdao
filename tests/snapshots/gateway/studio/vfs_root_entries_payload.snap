@@ -1,18 +1,9 @@
 ---
-source: packages/rust/crates/xiuxian-wendao/src/gateway/studio/../../../tests/unit/gateway/studio/support.rs
+source: packages/rust/crates/xiuxian-wendao/src/gateway/studio/test_support.rs
 expression: value
 ---
 {
   "entries": [
-    {
-      "contentType": null,
-      "isDir": true,
-      "name": "blueprints",
-      "path": "blueprints",
-      "projectName": null,
-      "rootLabel": null,
-      "size": 0
-    },
     {
       "contentType": null,
       "isDir": true,
@@ -29,15 +20,6 @@ expression: value
       "path": "internal_skills",
       "projectName": "kernel",
       "rootLabel": "internal_skills",
-      "size": 0
-    },
-    {
-      "contentType": null,
-      "isDir": true,
-      "name": "knowledge",
-      "path": "knowledge",
-      "projectName": null,
-      "rootLabel": null,
       "size": 0
     }
   ]

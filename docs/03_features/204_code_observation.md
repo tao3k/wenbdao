@@ -40,6 +40,16 @@ If a pattern is syntactically invalid, the auditor provides granular feedback:
 </issue>
 ```
 
+## Studio Gateway Status (2026-03-19)
+
+- `:OBSERVE:` metadata now participates in Wendao Studio definition resolution through backend-shared `lang:` and `scope:` hints.
+- Studio graph symbol navigation now resolves through the same backend resolver used by `/api/search/definition`.
+- Studio search payloads now ship display-ready `navigationTarget` metadata so Qianji Studio does not need to infer code-vs-doc routing from Markdown observation payloads or raw paths.
+- Studio graph payloads now also ship `navigationTarget` on live `/api/graph/neighbors` responses, replacing the older split `navigationPath`/`line`/`column` shape with the same backend-owned navigation contract used by search.
+- Bilink graph-miss fallback resolution now also lives in the gateway through `GET /api/vfs/resolve?path=`, so semantic path normalization no longer depends on frontend candidate expansion.
+- Studio VFS scan payloads now expose `project_root` and `project_dirs` alongside `project_name` and `root_label`, so FileTree grouping and hover provenance remain gateway-owned.
+- Qianji Studio still keeps minimal search and graph fallbacks when transitional payloads omit top-level `navigationTarget`, but the intended contract remains backend-owned navigation metadata and is now exercised by the live gateway test lane.
+
 :RELATIONS:
 :LINKS: [[01_core/101_triple_a_protocol]], [[03_features/205_semantic_auditor]]
 :END:

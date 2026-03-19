@@ -45,6 +45,9 @@ pub use context_snapshot::{
     valkey_quantum_context_snapshot_rollback, valkey_quantum_context_snapshot_rollback_with_valkey,
     valkey_quantum_context_snapshot_save, valkey_quantum_context_snapshot_save_with_valkey,
 };
+pub use index::search::quantum_fusion::openai_ignition::{
+    OpenAiCompatibleSemanticIgnition, OpenAiCompatibleSemanticIgnitionError,
+};
 pub use index::search::quantum_fusion::scoring::{
     BatchQuantumScorer, BatchQuantumScorerError, QUANTUM_SALIENCY_COLUMN,
 };
@@ -71,10 +74,11 @@ pub use models::{
     LinkGraphRelatedPprDiagnostics, LinkGraphRelatedPprOptions, LinkGraphRetrievalBudget,
     LinkGraphRetrievalMode, LinkGraphRetrievalPlanInput, LinkGraphRetrievalPlanRecord,
     LinkGraphScope, LinkGraphSearchFilters, LinkGraphSearchOptions, LinkGraphSemanticDocument,
-    LinkGraphSemanticDocumentKind, LinkGraphSemanticDocumentScope, LinkGraphSemanticSearchPolicy,
-    LinkGraphSortField, LinkGraphSortOrder, LinkGraphSortTerm, LinkGraphStats, LinkGraphTagFilter,
-    MarkdownBlock, MarkdownBlockKind, PageIndexMeta, PageIndexNode, QuantumAnchorHit,
-    QuantumContext, QuantumFusionOptions, QuantumFusionTelemetry, QuantumSemanticSearchRequest,
+    LinkGraphSemanticDocumentKind, LinkGraphSemanticDocumentScope,
+    LinkGraphSemanticIgnitionTelemetry, LinkGraphSemanticSearchPolicy, LinkGraphSortField,
+    LinkGraphSortOrder, LinkGraphSortTerm, LinkGraphStats, LinkGraphTagFilter, MarkdownBlock,
+    MarkdownBlockKind, PageIndexMeta, PageIndexNode, QuantumAnchorHit, QuantumContext,
+    QuantumFusionOptions, QuantumFusionTelemetry, QuantumSemanticSearchRequest,
 };
 pub use narrator::narrate_subgraph;
 pub use parser::blocks::extract_blocks;

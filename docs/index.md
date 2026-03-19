@@ -31,6 +31,8 @@ Standardized documentation repository for the Wendao DocOS Kernel, leveraging AS
 - [[03_features/203_agentic_navigation]]: Reasoning-driven discovery.
 - [[03_features/204_code_observation]]: Non-invasive sgrep binding.
 - [[03_features/205_semantic_auditor]]: Native sentinel engine.
+- [[03_features/206_openai_semantic_ignition]]: OpenAI-compatible query ignition bridge.
+- [[03_features/207_gateway_openapi_contract_surface]]: Stable gateway OpenAPI contract surface for `rest_docs`.
 
 ## 📁 05_research: Theoretical Hardening
 
@@ -54,5 +56,5 @@ Standardized documentation repository for the Wendao DocOS Kernel, leveraging AS
 
 :FOOTER:
 :STANDARDS: v2.0
-:LAST_SYNC: 2024-03-14
+:LAST_SYNC: 2026-03-18
 :END:

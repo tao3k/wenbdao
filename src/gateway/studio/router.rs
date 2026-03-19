@@ -14,20 +14,22 @@ use serde::Deserialize;
 use xiuxian_io::PrjDirs;
 use xiuxian_zhenfa::ZhenfaSignal;
 
+use crate::gateway::openapi::paths as openapi_paths;
 use crate::link_graph::LinkGraphIndex;
 use crate::unified_symbol::UnifiedSymbolIndex;
 
 use super::types::{
-    ApiError, AstSearchHit, GraphNeighborsResponse, NodeNeighbors, UiConfig, UiProjectConfig,
-    VfsContentResponse, VfsEntry, VfsScanResult,
+    ApiError, AstSearchHit, GraphNeighborsResponse, MarkdownAnalysisResponse, NodeNeighbors,
+    UiConfig, UiProjectConfig, VfsContentResponse, VfsEntry, VfsScanResult,
 };
-use super::{graph, search, vfs};
+use super::{analysis, graph, pathing, search, vfs};
 
 /// Shared state for the Studio API.
 ///
 /// Contains configuration, VFS roots, and cached graph index.
 pub struct StudioState {
     pub(crate) project_root: PathBuf,
+    pub(crate) config_root: PathBuf,
     pub(crate) ui_config: Arc<RwLock<UiConfig>>,
     pub(crate) graph_index: Arc<RwLock<Option<Arc<LinkGraphIndex>>>>,
     pub(crate) symbol_index: Arc<RwLock<Option<Arc<UnifiedSymbolIndex>>>>,
@@ -69,8 +71,10 @@ impl StudioState {
     #[must_use]
     pub fn new() -> Self {
         let project_root = PrjDirs::project_root();
+        let config_root = resolve_studio_config_root(project_root.as_path());
         Self {
             project_root,
+            config_root,
             ui_config: Arc::new(RwLock::new(UiConfig {
                 projects: Vec::new(),
             })),
@@ -136,6 +140,7 @@ impl StudioState {
         }
 
         let project_root = self.project_root.clone();
+        let config_root = self.config_root.clone();
         let configured_projects = self.configured_projects();
         if configured_projects.is_empty() {
             return Err(StudioApiError::bad_request(
@@ -145,7 +150,11 @@ impl StudioState {
         }
 
         let build = tokio::task::spawn_blocking(move || {
-            let include_dirs = graph_include_dirs(project_root.as_path(), &configured_projects);
+            let include_dirs = graph_include_dirs(
+                project_root.as_path(),
+                config_root.as_path(),
+                &configured_projects,
+            );
             if include_dirs.is_empty() {
                 Err(
                     "configured link_graph.projects did not produce any graph include dirs"
@@ -184,6 +193,7 @@ impl StudioState {
 
     pub(crate) async fn symbol_index(&self) -> Result<Arc<UnifiedSymbolIndex>, StudioApiError> {
         let project_root = self.project_root.clone();
+        let config_root = self.config_root.clone();
         let configured_projects = self.configured_projects();
         if configured_projects.is_empty() {
             return Err(StudioApiError::bad_request(
@@ -202,7 +212,11 @@ impl StudioState {
         }
 
         let build = tokio::task::spawn_blocking(move || {
-            search::build_symbol_index(project_root.as_path(), &configured_projects)
+            search::build_symbol_index(
+                project_root.as_path(),
+                config_root.as_path(),
+                &configured_projects,
+            )
         })
         .await
         .map_err(|error| {
@@ -233,6 +247,7 @@ impl StudioState {
 
     pub(crate) async fn ast_index(&self) -> Result<Arc<Vec<AstSearchHit>>, StudioApiError> {
         let project_root = self.project_root.clone();
+        let config_root = self.config_root.clone();
         let configured_projects = self.configured_projects();
         if configured_projects.is_empty() {
             return Err(StudioApiError::bad_request(
@@ -251,7 +266,11 @@ impl StudioState {
         }
 
         let build = tokio::task::spawn_blocking(move || {
-            search::build_ast_index(project_root.as_path(), &configured_projects)
+            search::build_ast_index(
+                project_root.as_path(),
+                config_root.as_path(),
+                &configured_projects,
+            )
         })
         .await
         .map_err(|error| {
@@ -299,6 +318,11 @@ struct GraphNeighborsQuery {
     limit: Option<usize>,
 }
 
+#[derive(Debug, Deserialize)]
+struct MarkdownAnalysisQuery {
+    path: Option<String>,
+}
+
 /// Create the Studio API router with all endpoints.
 ///
 /// # Endpoints
@@ -306,33 +330,69 @@ struct GraphNeighborsQuery {
 /// - `GET /api/vfs` - List root entries
 /// - `GET /api/vfs/scan` - Scan all VFS roots
 /// - `GET /api/vfs/cat?path=` - Read file content
+/// - `GET /api/vfs/resolve?path=` - Resolve a studio navigation target from a semantic path
 /// - `GET /api/vfs/{*path}` - Get single entry
 /// - `GET /api/neighbors/{*id}` - Get node neighbors
 /// - `GET /api/graph/neighbors/{*id}` - Get graph neighbors
 /// - `GET /api/topology/3d` - Get deterministic graph topology payload
 /// - `GET /api/search` - Search knowledge base
+/// - `GET /api/search/attachments` - Search markdown attachment references
 /// - `GET /api/search/ast` - Search AST definitions
 /// - `GET /api/search/definition` - Resolve the best semantic definition hit
 /// - `GET /api/search/references` - Search symbol references and usages
 /// - `GET /api/search/symbols` - Search project symbols
 /// - `GET /api/search/autocomplete` - Search autocomplete suggestions
+/// - `GET /api/analysis/markdown?path=` - Compile Markdown structural IR + Mermaid projections
 /// - `GET/POST /api/ui/config` - UI configuration
 pub fn studio_routes() -> Router<Arc<GatewayState>> {
     Router::new()
-        .route("/api/vfs", get(vfs_root_entries))
-        .route("/api/vfs/scan", get(vfs_scan))
-        .route("/api/vfs/cat", get(vfs_cat))
-        .route("/api/vfs/{*path}", get(vfs_entry))
-        .route("/api/neighbors/{*id}", get(node_neighbors))
-        .route("/api/graph/neighbors/{*id}", get(graph_neighbors))
-        .route("/api/topology/3d", get(topology_3d))
-        .route("/api/search", get(search::search_knowledge))
-        .route("/api/search/ast", get(search::search_ast))
-        .route("/api/search/definition", get(search::search_definition))
-        .route("/api/search/references", get(search::search_references))
-        .route("/api/search/symbols", get(search::search_symbols))
-        .route("/api/search/autocomplete", get(search::search_autocomplete))
-        .route("/api/ui/config", get(get_ui_config).post(set_ui_config))
+        .route(openapi_paths::API_VFS_ROOT_AXUM_PATH, get(vfs_root_entries))
+        .route(openapi_paths::API_VFS_SCAN_AXUM_PATH, get(vfs_scan))
+        .route(openapi_paths::API_VFS_CAT_AXUM_PATH, get(vfs_cat))
+        .route("/api/vfs/resolve", get(vfs_resolve))
+        .route(openapi_paths::API_VFS_ENTRY_AXUM_PATH, get(vfs_entry))
+        .route(openapi_paths::API_NEIGHBORS_AXUM_PATH, get(node_neighbors))
+        .route(
+            openapi_paths::API_GRAPH_NEIGHBORS_AXUM_PATH,
+            get(graph_neighbors),
+        )
+        .route(openapi_paths::API_TOPOLOGY_3D_AXUM_PATH, get(topology_3d))
+        .route(
+            openapi_paths::API_SEARCH_AXUM_PATH,
+            get(search::search_knowledge),
+        )
+        .route(
+            openapi_paths::API_SEARCH_ATTACHMENTS_AXUM_PATH,
+            get(search::search_attachments),
+        )
+        .route(
+            openapi_paths::API_SEARCH_AST_AXUM_PATH,
+            get(search::search_ast),
+        )
+        .route(
+            openapi_paths::API_SEARCH_DEFINITION_AXUM_PATH,
+            get(search::search_definition),
+        )
+        .route(
+            openapi_paths::API_SEARCH_REFERENCES_AXUM_PATH,
+            get(search::search_references),
+        )
+        .route(
+            openapi_paths::API_SEARCH_SYMBOLS_AXUM_PATH,
+            get(search::search_symbols),
+        )
+        .route(
+            openapi_paths::API_SEARCH_AUTOCOMPLETE_AXUM_PATH,
+            get(search::search_autocomplete),
+        )
+        .route(
+            openapi_paths::API_ANALYSIS_MARKDOWN_AXUM_PATH,
+            get(analysis_markdown),
+        )
+        .route(
+            openapi_paths::API_UI_CONFIG_AXUM_PATH,
+            get(get_ui_config).post(set_ui_config),
+        )
 }
 
 /// Create the Studio API router with state already attached.
@@ -376,6 +436,20 @@ async fn vfs_cat(
     Ok(Json(payload))
 }
 
+async fn vfs_resolve(
+    Query(query): Query<VfsCatQuery>,
+    State(state): State<Arc<GatewayState>>,
+) -> Result<Json<super::types::StudioNavigationTarget>, StudioApiError> {
+    let path = query
+        .path
+        .as_deref()
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .ok_or_else(|| StudioApiError::bad_request("MISSING_PATH", "`path` is required"))?;
+    let payload = vfs::resolve_navigation_target(state.studio.as_ref(), path);
+    Ok(Json(payload))
+}
+
 async fn node_neighbors(
     AxumPath(id): AxumPath<String>,
     State(state): State<Arc<GatewayState>>,
@@ -402,6 +476,31 @@ async fn topology_3d(
     State(state): State<Arc<GatewayState>>,
 ) -> Result<Json<super::types::Topology3D>, StudioApiError> {
     let payload = graph::topology_3d(state.as_ref()).await?;
+    Ok(Json(payload))
+}
+
+async fn analysis_markdown(
+    Query(query): Query<MarkdownAnalysisQuery>,
+    State(state): State<Arc<GatewayState>>,
+) -> Result<Json<MarkdownAnalysisResponse>, StudioApiError> {
+    let path = query
+        .path
+        .as_deref()
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .ok_or_else(|| StudioApiError::bad_request("MISSING_PATH", "`path` is required"))?;
+
+    let payload = analysis::analyze_markdown(state.studio.as_ref(), path)
+        .await
+        .map_err(|error| match error {
+            analysis::AnalysisError::UnsupportedContentType(content_type) => {
+                StudioApiError::bad_request(
+                    "UNSUPPORTED_CONTENT_TYPE",
+                    format!("Expected markdown file, received {content_type}"),
+                )
+            }
+            analysis::AnalysisError::Vfs(vfs_error) => StudioApiError::from(vfs_error),
+        })?;
     Ok(Json(payload))
 }
 
@@ -438,10 +537,7 @@ fn sanitize_projects(raw: Vec<UiProjectConfig>) -> Vec<UiProjectConfig> {
         out.push(UiProjectConfig {
             name: name.to_string(),
             root,
-            paths: sanitize_path_list(project.paths),
-            watch_patterns: sanitize_pattern_list(project.watch_patterns),
-            include_dirs_auto: project.include_dirs_auto,
-            include_dirs_auto_candidates: sanitize_path_list(project.include_dirs_auto_candidates),
+            dirs: sanitize_path_list(project.dirs),
         });
     }
     out
@@ -451,7 +547,7 @@ fn sanitize_path_list(raw: Vec<String>) -> Vec<String> {
     let mut seen = HashSet::new();
     let mut out = Vec::new();
     for path in raw {
-        let Some(normalized) = sanitize_path_like(path.as_str()) else {
+        let Some(normalized) = pathing::normalize_project_dir_entry(path.as_str()) else {
             continue;
         };
         if seen.insert(normalized.clone()) {
@@ -461,50 +557,40 @@ fn sanitize_path_list(raw: Vec<String>) -> Vec<String> {
     out
 }
 
-fn sanitize_pattern_list(raw: Vec<String>) -> Vec<String> {
-    let mut seen = HashSet::new();
-    let mut out = Vec::new();
-    for pattern in raw {
-        let trimmed = pattern.trim();
-        if trimmed.is_empty() {
-            continue;
-        }
-        let normalized = trimmed.replace('\\', "/");
-        if seen.insert(normalized.clone()) {
-            out.push(normalized);
-        }
-    }
-    out
-}
-
 fn sanitize_path_like(raw: &str) -> Option<String> {
-    let trimmed = raw.trim();
-    if trimmed.is_empty() {
-        return None;
-    }
-    if trimmed == "." {
-        return Some(".".to_string());
-    }
-    let normalized = trimmed
-        .replace('\\', "/")
-        .trim_end_matches('/')
-        .trim_start_matches("./")
-        .to_string();
-    if normalized.is_empty() {
-        None
+    pathing::normalize_path_like(raw)
+}
+
+fn resolve_studio_config_root(project_root: &Path) -> PathBuf {
+    let candidate = PrjDirs::data_home().join("qianji-studio");
+    if candidate.exists() {
+        candidate
     } else {
-        Some(normalized)
+        project_root.to_path_buf()
     }
 }
 
-fn graph_include_dirs(project_root: &Path, projects: &[UiProjectConfig]) -> Vec<String> {
+fn graph_include_dirs(
+    project_root: &Path,
+    config_root: &Path,
+    projects: &[UiProjectConfig],
+) -> Vec<String> {
     let mut seen = HashSet::new();
     let mut include_dirs = Vec::new();
 
     for project in projects {
-        let project_base = join_relative_path(project_root, project.root.as_str());
-        for path in &project.paths {
-            let candidate = join_relative_path(project_base.as_path(), path.as_str());
+        let Some(project_base) = pathing::resolve_path_like(config_root, project.root.as_str())
+        else {
+            continue;
+        };
+        for dir_entry in &project.dirs {
+            let Some(dir) = pathing::normalize_project_dir_root(dir_entry.as_str()) else {
+                continue;
+            };
+            let Some(candidate) = pathing::resolve_path_like(project_base.as_path(), dir.as_str())
+            else {
+                continue;
+            };
             let Ok(relative) = candidate.strip_prefix(project_root) else {
                 continue;
             };
@@ -525,13 +611,6 @@ fn graph_include_dirs(project_root: &Path, projects: &[UiProjectConfig]) -> Vec<
     }
 
     include_dirs
-}
-
-fn join_relative_path(base: &Path, raw: &str) -> PathBuf {
-    if raw == "." {
-        return base.to_path_buf();
-    }
-    base.join(raw.replace('\\', "/"))
 }
 
 #[derive(Debug)]

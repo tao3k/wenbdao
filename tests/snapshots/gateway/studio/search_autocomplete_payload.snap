@@ -1,17 +1,8 @@
 ---
-source: packages/rust/crates/xiuxian-wendao/src/gateway/studio/../../../tests/unit/gateway/studio/support.rs
+source: packages/rust/crates/xiuxian-wendao/src/gateway/studio/test_support.rs
 expression: value
 ---
 {
   "prefix": "se",
-  "suggestions": [
-    {
-      "suggestionType": "title",
-      "text": "Search Design"
-    },
-    {
-      "suggestionType": "title",
-      "text": "Search Notes"
-    }
-  ]
+  "suggestions": []
 }

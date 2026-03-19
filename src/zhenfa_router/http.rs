@@ -10,7 +10,7 @@ use std::path::PathBuf;
 use xiuxian_zhenfa::{MethodRegistry, ZhenfaRouter};
 
 use super::models::{WendaoSearchHttpResponse, WendaoSearchRequest};
-use super::rpc::{execute_search, search_from_rpc_params};
+use super::rpc::{execute_search_async, search_from_rpc_params};
 use crate::link_graph::{
     LinkGraphDirection, LinkGraphDocument, LinkGraphIndex, LinkGraphMetadata, LinkGraphNeighbor,
     LinkGraphPlannedSearchPayload, LinkGraphSearchOptions, LinkGraphStats,
@@ -136,7 +136,8 @@ struct GraphStatsQuery {
 async fn search_http(
     Json(body): Json<WendaoSearchRequest>,
 ) -> Result<Json<WendaoSearchHttpResponse>, (StatusCode, Json<Value>)> {
-    execute_search(&body)
+    execute_search_async(&body)
+        .await
         .map(|result| Json(WendaoSearchHttpResponse { result }))
         .map_err(|error: String| internal_http_error(error.as_str()))
 }
@@ -154,13 +155,15 @@ async fn search_planned_http(
     let base_options =
         parse_search_options(body.options).map_err(|error| bad_request(error.as_str()))?;
 
-    let payload = index.search_planned_payload_with_agentic(
-        query,
-        limit,
-        base_options,
-        body.include_provisional,
-        body.provisional_limit,
-    );
+    let payload = index
+        .search_planned_payload_with_agentic_async(
+            query,
+            limit,
+            base_options,
+            body.include_provisional,
+            body.provisional_limit,
+        )
+        .await;
     Ok(Json(payload))
 }
 

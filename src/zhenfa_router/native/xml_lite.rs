@@ -23,6 +23,17 @@ pub(crate) fn render_xml_lite(payload: &LinkGraphPlannedSearchPayload) -> String
         );
     }
 
+    if let Some(ref semantic_ignition) = payload.semantic_ignition {
+        let _ = writeln!(
+            rendered,
+            "<semantic_ignition backend=\"{}\" backend_name=\"{}\" contexts=\"{}\" error=\"{}\"/>",
+            escape_xml_attr(&semantic_ignition.backend),
+            escape_xml_attr(semantic_ignition.backend_name.as_deref().unwrap_or("")),
+            semantic_ignition.context_count,
+            escape_xml_attr(semantic_ignition.error.as_deref().unwrap_or("")),
+        );
+    }
+
     for hit in &payload.results {
         let _ = writeln!(
             rendered,
@@ -31,6 +42,16 @@ pub(crate) fn render_xml_lite(payload: &LinkGraphPlannedSearchPayload) -> String
             escape_xml_attr(&hit.path),
             hit.score,
             escape_xml_text(&hit.title),
+        );
+    }
+    for context in &payload.quantum_contexts {
+        let _ = writeln!(
+            rendered,
+            "  <hit id=\"{}\" path=\"{}\" score=\"{:.4}\" type=\"quantum\">{}</hit>",
+            escape_xml_attr(&context.anchor_id),
+            escape_xml_attr(&context.path),
+            context.saliency_score,
+            escape_xml_text(&context.doc_id),
         );
     }
     rendered

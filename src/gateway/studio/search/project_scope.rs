@@ -1,12 +1,13 @@
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 
+use crate::gateway::studio::pathing;
 use crate::gateway::studio::types::UiProjectConfig;
 
 #[derive(Debug, Clone, Default)]
-pub(super) struct SearchProjectMetadata {
-    pub(super) project_name: Option<String>,
-    pub(super) root_label: Option<String>,
+pub(crate) struct SearchProjectMetadata {
+    pub(crate) project_name: Option<String>,
+    pub(crate) root_label: Option<String>,
 }
 
 pub(super) fn normalize_path(path: &Path) -> String {
@@ -14,39 +15,20 @@ pub(super) fn normalize_path(path: &Path) -> String {
 }
 
 pub(super) fn normalize_config_path(value: &str) -> Option<String> {
-    let trimmed = value.trim();
-    if trimmed.is_empty() {
-        return None;
-    }
-
-    if trimmed == "." {
-        return Some(".".to_string());
-    }
-
-    let normalized = trimmed
-        .replace('\\', "/")
-        .trim_end_matches('/')
-        .trim_start_matches("./")
-        .to_string();
-
-    if normalized.is_empty() {
-        None
-    } else {
-        Some(normalized)
-    }
+    pathing::normalize_project_dir_root(value)
 }
 
 pub(super) fn configured_project_scan_roots(
-    project_root: &Path,
+    config_root: &Path,
     projects: &[UiProjectConfig],
 ) -> Vec<PathBuf> {
     let mut roots = Vec::new();
     let mut seen = HashSet::new();
 
     for project in projects {
-        for configured_path in &project.paths {
+        for configured_path in &project.dirs {
             let Some(scope_path) = resolve_project_scope_path(
-                project_root,
+                config_root,
                 project.root.as_str(),
                 configured_path.as_str(),
             ) else {
@@ -66,33 +48,19 @@ pub(super) fn configured_project_scan_roots(
 }
 
 pub(super) fn resolve_project_root_path(
-    project_root: &Path,
+    config_root: &Path,
     configured_root: &str,
 ) -> Option<PathBuf> {
-    let normalized_root = normalize_config_path(configured_root)?;
-    if Path::new(normalized_root.as_str()).is_absolute() {
-        Some(PathBuf::from(normalized_root))
-    } else if normalized_root == "." {
-        Some(project_root.to_path_buf())
-    } else {
-        Some(project_root.join(normalized_root))
-    }
+    pathing::resolve_path_like(config_root, configured_root)
 }
 
 pub(super) fn resolve_project_scope_path(
-    project_root: &Path,
+    config_root: &Path,
     configured_root: &str,
     configured_path: &str,
 ) -> Option<PathBuf> {
-    let project_base = resolve_project_root_path(project_root, configured_root)?;
-    let normalized_path = normalize_config_path(configured_path)?;
-    if Path::new(normalized_path.as_str()).is_absolute() {
-        Some(PathBuf::from(normalized_path))
-    } else if normalized_path == "." {
-        Some(project_base)
-    } else {
-        Some(project_base.join(normalized_path))
-    }
+    let project_base = resolve_project_root_path(config_root, configured_root)?;
+    pathing::resolve_path_like(project_base.as_path(), configured_path)
 }
 
 pub(super) fn index_path_for_entry(project_root: &Path, path: &Path) -> String {
@@ -100,8 +68,9 @@ pub(super) fn index_path_for_entry(project_root: &Path, path: &Path) -> String {
         .map_or_else(|_| normalize_path(path), normalize_path)
 }
 
-pub(super) fn project_metadata_for_path(
+pub(crate) fn project_metadata_for_path(
     project_root: &Path,
+    config_root: &Path,
     projects: &[UiProjectConfig],
     hit_path: &str,
 ) -> SearchProjectMetadata {
@@ -114,8 +83,7 @@ pub(super) fn project_metadata_for_path(
     let mut best_root_match: Option<(usize, SearchProjectMetadata)> = None;
 
     for project in projects {
-        let Some(project_root_path) =
-            resolve_project_root_path(project_root, project.root.as_str())
+        let Some(project_root_path) = resolve_project_root_path(config_root, project.root.as_str())
         else {
             continue;
         };
@@ -133,12 +101,12 @@ pub(super) fn project_metadata_for_path(
             },
         );
 
-        for configured_path in &project.paths {
+        for configured_path in &project.dirs {
             let Some(normalized_path) = normalize_config_path(configured_path.as_str()) else {
                 continue;
             };
             let Some(candidate_scope) = resolve_project_scope_path(
-                project_root,
+                config_root,
                 project.root.as_str(),
                 normalized_path.as_str(),
             ) else {

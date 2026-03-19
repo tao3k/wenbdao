@@ -1,4 +1,4 @@
-use super::common::{parse_saliency_payload, redis_client, resolve_runtime};
+use super::common::{parse_saliency_payload, redis_connection, resolve_runtime};
 use crate::link_graph::runtime_config::DEFAULT_LINK_GRAPH_VALKEY_KEY_PREFIX;
 use crate::link_graph::saliency::{LinkGraphSaliencyPolicy, LinkGraphSaliencyState, saliency_key};
 use std::collections::{HashMap, HashSet};
@@ -57,10 +57,7 @@ pub fn valkey_saliency_get_with_valkey(
     let cache_key = saliency_key(trimmed, prefix);
 
     let policy = LinkGraphSaliencyPolicy::default();
-    let client = redis_client(valkey_url)?;
-    let mut conn = client
-        .get_connection()
-        .map_err(|err| format!("failed to connect valkey for link_graph saliency store: {err}"))?;
+    let mut conn = redis_connection(valkey_url)?;
 
     let raw = redis::cmd("GET")
         .arg(&cache_key)
@@ -134,10 +131,7 @@ pub fn valkey_saliency_get_many_with_valkey(
     }
 
     let policy = LinkGraphSaliencyPolicy::default();
-    let client = redis_client(valkey_url)?;
-    let mut conn = client
-        .get_connection()
-        .map_err(|err| format!("failed to connect valkey for link_graph saliency store: {err}"))?;
+    let mut conn = redis_connection(valkey_url)?;
 
     let mut states: HashMap<String, LinkGraphSaliencyState> = HashMap::new();
     let mut offset: usize = 0;

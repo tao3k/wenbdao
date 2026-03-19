@@ -1,5 +1,5 @@
 ---
-source: packages/rust/crates/xiuxian-wendao/src/gateway/studio/../../../tests/unit/gateway/studio/support.rs
+source: packages/rust/crates/xiuxian-wendao/src/gateway/studio/test_support.rs
 expression: value
 ---
 {
@@ -15,6 +15,15 @@ expression: value
     "rootLabel": "packages",
     "score": 1.15,
     "signature": "pub struct AlphaService {"
+  },
+  "navigationTarget": {
+    "category": "doc",
+    "column": null,
+    "line": 1,
+    "lineEnd": 3,
+    "path": "packages/rust/crates/demo/src/service.rs",
+    "projectName": "kernel",
+    "rootLabel": "packages"
   },
   "query": "AlphaService",
   "selectedScope": "definition",

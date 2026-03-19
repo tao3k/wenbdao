@@ -2,6 +2,7 @@ use super::*;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
+use xiuxian_wendao::gateway::openapi::paths as openapi_paths;
 
 fn write_temp_gateway_config(contents: &str) -> PathBuf {
     let unique = SystemTime::now()
@@ -91,9 +92,9 @@ async fn test_gateway_server_bind() {
     let (tx, _rx) = mpsc::unbounded_channel();
     let app_state = Arc::new(AppState::new(None, Some(tx)));
     let app: Router<Arc<AppState>> = Router::new()
-        .route("/api/health", get(health))
-        .route("/api/stats", get(stats))
-        .route("/api/notify", get(notify_status))
+        .route(openapi_paths::API_HEALTH_AXUM_PATH, get(health))
+        .route(openapi_paths::API_STATS_AXUM_PATH, get(stats))
+        .route(openapi_paths::API_NOTIFY_AXUM_PATH, get(notify_status))
         .with_state(app_state);
 
     // Bind to a random available port

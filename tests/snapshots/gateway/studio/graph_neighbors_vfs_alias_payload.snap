@@ -1,25 +1,25 @@
 ---
-source: packages/rust/crates/xiuxian-wendao/src/gateway/studio/../../../tests/unit/gateway/studio/support.rs
+source: packages/rust/crates/xiuxian-wendao/src/gateway/studio/test_support.rs
 expression: value
 ---
 {
   "center": {
     "distance": 0,
-    "id": "docs-2/index.md",
+    "id": "beta/docs/index.md",
     "isCenter": true,
     "label": "Beta",
     "nodeType": "doc",
-    "path": "docs-2/index.md"
+    "path": "beta/docs/index.md"
   },
   "links": [],
   "nodes": [
     {
       "distance": 0,
-      "id": "docs-2/index.md",
+      "id": "beta/docs/index.md",
       "isCenter": true,
       "label": "Beta",
       "nodeType": "doc",
-      "path": "docs-2/index.md"
+      "path": "beta/docs/index.md"
     }
   ],
   "totalLinks": 0,

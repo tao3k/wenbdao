@@ -8,6 +8,21 @@ watch_patterns = ["**/*.md", "**/*.markdown", "**/SKILL.md"]
 include_dirs_auto = true
 include_dirs_auto_candidates = ["docs", "assets/knowledge", "packages"]
 
+[link_graph.retrieval]
+mode = "hybrid"
+candidate_multiplier = 4
+max_sources = 8
+hybrid_min_hits = 2
+hybrid_min_top_score = 0.25
+graph_rows_per_source = 8
+
+[link_graph.retrieval.semantic_ignition]
+backend = "disabled"
+# vector_store_path = ".cache/wendao/vector-store"
+# table_name = "wendao_semantic_docs"
+# embedding_base_url = "http://127.0.0.1:11434"
+# embedding_model = "glm-5"
+
 # Gateway HTTP server configuration
 [gateway]
 # Port for the Wendao API gateway (default: 9517)

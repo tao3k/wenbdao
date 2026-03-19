@@ -161,7 +161,7 @@ impl QuantumSemanticSearchRequest<'_> {
     /// Return true when no search should be performed.
     #[must_use]
     pub fn is_empty(&self) -> bool {
-        self.query_vector.is_empty() || self.candidate_limit == 0
+        self.candidate_limit == 0 || (self.query_vector.is_empty() && self.query_text.is_none())
     }
 
     /// Check whether a vector score passes the configured filter.

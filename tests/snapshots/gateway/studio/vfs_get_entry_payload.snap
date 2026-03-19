@@ -1,5 +1,5 @@
 ---
-source: packages/rust/crates/xiuxian-wendao/src/gateway/studio/../../../tests/unit/gateway/studio/support.rs
+source: packages/rust/crates/xiuxian-wendao/src/gateway/studio/test_support.rs
 expression: value
 ---
 {
@@ -7,5 +7,12 @@ expression: value
   "isDir": false,
   "name": "guide.md",
   "path": "docs/guide.md",
+  "projectDirs": [
+    "docs",
+    "internal_skills"
+  ],
+  "projectName": "kernel",
+  "projectRoot": ".",
+  "rootLabel": "docs",
   "size": 16
 }

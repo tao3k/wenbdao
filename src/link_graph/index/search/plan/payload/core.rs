@@ -10,7 +10,29 @@ use crate::link_graph::{
 use std::collections::HashMap;
 
 impl LinkGraphIndex {
-    pub(in crate::link_graph::index::search::plan) fn search_planned_payload_with_agentic_core(
+    pub(in crate::link_graph::index::search::plan) async fn search_planned_payload_with_agentic_core_async(
+        &self,
+        query: &str,
+        limit: usize,
+        base_options: crate::link_graph::LinkGraphSearchOptions,
+        include_provisional: Option<bool>,
+        provisional_limit: Option<usize>,
+        promoted_overlay: Option<LinkGraphPromotedOverlayTelemetry>,
+    ) -> LinkGraphPlannedSearchPayload {
+        let mut payload = self.search_planned_payload_with_agentic_core_sync(
+            query,
+            limit,
+            base_options,
+            include_provisional,
+            provisional_limit,
+            promoted_overlay,
+        );
+        self.enrich_planned_payload_with_quantum_contexts(&mut payload)
+            .await;
+        payload
+    }
+
+    pub(in crate::link_graph::index::search::plan) fn search_planned_payload_with_agentic_core_sync(
         &self,
         query: &str,
         limit: usize,
@@ -152,6 +174,8 @@ impl LinkGraphIndex {
             provisional_error,
             promoted_overlay,
             ccs_audit,
+            semantic_ignition: None,
+            quantum_contexts: Vec::new(),
         }
     }
 

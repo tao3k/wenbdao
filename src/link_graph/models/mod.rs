@@ -27,8 +27,8 @@ pub use records::{
     LinkGraphPlannedSearchPayload, LinkGraphPromotedOverlayTelemetry,
     LinkGraphRelatedPprDiagnostics, LinkGraphRetrievalBudget, LinkGraphRetrievalMode,
     LinkGraphRetrievalPlanInput, LinkGraphRetrievalPlanRecord, LinkGraphSemanticDocument,
-    LinkGraphSemanticDocumentKind, LinkGraphStats, MarkdownBlock, MarkdownBlockKind, PageIndexMeta,
-    PageIndexNode, QuantumAnchorHit, QuantumContext, QuantumFusionOptions, QuantumFusionTelemetry,
-    QuantumSemanticSearchRequest,
+    LinkGraphSemanticDocumentKind, LinkGraphSemanticIgnitionTelemetry, LinkGraphStats,
+    MarkdownBlock, MarkdownBlockKind, PageIndexMeta, PageIndexNode, QuantumAnchorHit,
+    QuantumContext, QuantumFusionOptions, QuantumFusionTelemetry, QuantumSemanticSearchRequest,
 };
 pub use semantic_policy::{LinkGraphSemanticDocumentScope, LinkGraphSemanticSearchPolicy};

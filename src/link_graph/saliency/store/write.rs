@@ -1,4 +1,4 @@
-use super::common::{normalize_policy, now_unix_i64, redis_client, resolve_runtime};
+use super::common::{normalize_policy, now_unix_i64, redis_connection, resolve_runtime};
 use super::read::load_current_state;
 use crate::link_graph::runtime_config::{
     DEFAULT_LINK_GRAPH_VALKEY_KEY_PREFIX, resolve_link_graph_coactivation_runtime,
@@ -357,10 +357,7 @@ pub fn valkey_saliency_del(node_id: &str) -> Result<(), String> {
         return Ok(());
     }
     let cache_key = saliency_key(trimmed, &key_prefix);
-    let client = redis_client(&valkey_url)?;
-    let mut conn = client
-        .get_connection()
-        .map_err(|err| format!("failed to connect valkey for link_graph saliency store: {err}"))?;
+    let mut conn = redis_connection(&valkey_url)?;
     redis::cmd("DEL")
         .arg(&cache_key)
         .query::<i64>(&mut conn)
@@ -417,10 +414,7 @@ pub fn valkey_saliency_touch_with_valkey(
     let now_unix = now_unix.unwrap_or_else(now_unix_i64);
 
     let policy = normalize_policy(alpha, minimum_saliency, maximum_saliency);
-    let client = redis_client(valkey_url)?;
-    let mut conn = client
-        .get_connection()
-        .map_err(|err| format!("failed to connect valkey for link_graph saliency store: {err}"))?;
+    let mut conn = redis_connection(valkey_url)?;
 
     let state = apply_touch_with_connection(
         &mut conn,

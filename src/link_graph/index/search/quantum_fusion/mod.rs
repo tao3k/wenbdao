@@ -1,4 +1,5 @@
 mod anchor_batch;
+pub mod openai_ignition;
 mod scored_context;
 mod semantic_anchor;
 mod topology_expansion;

@@ -1,5 +1,5 @@
 ---
-source: packages/rust/crates/xiuxian-wendao/src/gateway/studio/../../../tests/unit/gateway/studio/support.rs
+source: packages/rust/crates/xiuxian-wendao/src/gateway/studio/test_support.rs
 expression: value
 ---
 {
@@ -7,29 +7,29 @@ expression: value
     {
       "isDir": true,
       "name": "docs",
-      "path": "docs",
+      "path": "alpha/docs",
+      "projectName": "alpha",
+      "rootLabel": "docs"
+    },
+    {
+      "isDir": false,
+      "name": "guide.md",
+      "path": "alpha/docs/guide.md",
       "projectName": "alpha",
       "rootLabel": "docs"
     },
     {
       "isDir": true,
       "name": "docs",
-      "path": "docs-2",
+      "path": "beta/docs",
       "projectName": "beta",
       "rootLabel": "docs"
     },
     {
       "isDir": false,
       "name": "guide.md",
-      "path": "docs-2/guide.md",
+      "path": "beta/docs/guide.md",
       "projectName": "beta",
-      "rootLabel": "docs"
-    },
-    {
-      "isDir": false,
-      "name": "guide.md",
-      "path": "docs/guide.md",
-      "projectName": "alpha",
       "rootLabel": "docs"
     }
   ]

@@ -23,7 +23,10 @@ use tokio::sync::mpsc;
 
 use crate::types::{Cli, GatewayArgs, GatewayCommand, GatewayStartArgs};
 use xiuxian_wendao::LinkGraphIndex;
-use xiuxian_wendao::gateway::studio::{GatewayState, studio_routes};
+use xiuxian_wendao::gateway::{
+    openapi::paths as openapi_paths,
+    studio::{GatewayState, studio_routes},
+};
 use xiuxian_zhenfa::{NotificationService, WebhookConfig, ZhenfaSignal, notification_worker};
 
 /// Default port for the gateway server.
@@ -81,9 +84,9 @@ async fn handle_start(
 
     // 3. Build the Axum router
     let app = Router::new()
-        .route("/api/health", get(health))
-        .route("/api/stats", get(stats))
-        .route("/api/notify", get(notify_status))
+        .route(openapi_paths::API_HEALTH_AXUM_PATH, get(health))
+        .route(openapi_paths::API_STATS_AXUM_PATH, get(stats))
+        .route(openapi_paths::API_NOTIFY_AXUM_PATH, get(notify_status))
         .merge(studio_routes())
         .with_state(app_state);
 
@@ -91,9 +94,18 @@ async fn handle_start(
     let addr = SocketAddr::from(([127, 0, 0, 1], port));
     info!("Starting Wendao Gateway on port {port}");
     info!("Endpoints:");
-    info!("  - GET /api/health  - Health check");
-    info!("  - GET /api/stats   - Graph statistics");
-    info!("  - GET /api/notify  - Notification service status");
+    info!(
+        "  - GET {}  - Health check",
+        openapi_paths::API_HEALTH_AXUM_PATH
+    );
+    info!(
+        "  - GET {}   - Graph statistics",
+        openapi_paths::API_STATS_AXUM_PATH
+    );
+    info!(
+        "  - GET {}  - Notification service status",
+        openapi_paths::API_NOTIFY_AXUM_PATH
+    );
 
     let listener = tokio::net::TcpListener::bind(addr).await?;
     Ok(axum::serve(listener, app).await?)

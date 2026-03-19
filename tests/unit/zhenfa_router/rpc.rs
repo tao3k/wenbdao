@@ -2,7 +2,10 @@
 
 use super::*;
 
-use crate::link_graph::{LinkGraphConfidenceLevel, LinkGraphRetrievalMode};
+use crate::link_graph::{
+    LinkGraphConfidenceLevel, LinkGraphRetrievalMode, LinkGraphSemanticIgnitionTelemetry,
+    QuantumContext,
+};
 
 #[test]
 fn normalize_limit_clamps_range() {
@@ -40,6 +43,23 @@ fn render_markdown_includes_hits() {
         graph_confidence_score: 0.9,
         graph_confidence_level: LinkGraphConfidenceLevel::High,
         retrieval_plan: None,
+        semantic_ignition: Some(LinkGraphSemanticIgnitionTelemetry {
+            backend: "openai_compatible".to_string(),
+            backend_name: Some("openai-compatible+xiuxian-vector".to_string()),
+            context_count: 1,
+            error: None,
+        }),
+        quantum_contexts: vec![QuantumContext {
+            anchor_id: "alpha".to_string(),
+            doc_id: "alpha".to_string(),
+            path: "notes/alpha.md".to_string(),
+            semantic_path: vec!["Alpha".to_string(), "Design".to_string()],
+            trace_label: None,
+            related_clusters: Vec::new(),
+            saliency_score: 0.88,
+            vector_score: 0.91,
+            topology_score: 0.42,
+        }],
         results: vec![],
         provisional_suggestions: vec![],
         provisional_error: None,
@@ -51,4 +71,6 @@ fn render_markdown_includes_hits() {
     assert!(rendered.contains("Wendao Search Results"));
     assert!(rendered.contains("Alpha Note"));
     assert!(rendered.contains("section: Design"));
+    assert!(rendered.contains("semantic_ignition: openai-compatible+xiuxian-vector"));
+    assert!(rendered.contains("Quantum Contexts"));
 }

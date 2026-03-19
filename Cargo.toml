@@ -68,6 +68,7 @@ sha2 = "0.10"
 
 # Fast regex for entity reference extraction (10-100x faster than Python)
 regex = "1"
+globset = { workspace = true }
 once_cell = "1"
 lazy_static = "1"
 comrak = { workspace = true }

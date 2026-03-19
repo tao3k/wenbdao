@@ -123,6 +123,8 @@ pub struct LinkGraphAttachment {
 /// Attachment search hit.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LinkGraphAttachmentHit {
+    /// Source document id (relative path without extension).
+    pub source_id: String,
     /// Source note stem.
     pub source_stem: String,
     /// Source note title.

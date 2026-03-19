@@ -4,7 +4,10 @@ use crate::link_graph::runtime_config::{
 use crate::link_graph::saliency::{
     LINK_GRAPH_SALIENCY_SCHEMA_VERSION, LinkGraphSaliencyPolicy, LinkGraphSaliencyState,
 };
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
+
+const VALKEY_CONNECT_TIMEOUT: Duration = Duration::from_secs(3);
+const VALKEY_IO_TIMEOUT: Duration = Duration::from_secs(5);
 
 pub(in crate::link_graph::saliency::store) fn now_unix_i64() -> i64 {
     SystemTime::now()
@@ -91,6 +94,24 @@ pub(in crate::link_graph::saliency::store) fn redis_client(
 ) -> Result<redis::Client, String> {
     redis::Client::open(valkey_url)
         .map_err(|err| format!("invalid valkey url for link_graph saliency store: {err}"))
+}
+
+pub(in crate::link_graph::saliency::store) fn redis_connection(
+    valkey_url: &str,
+) -> Result<redis::Connection, String> {
+    let client = redis_client(valkey_url)?;
+    let conn = client
+        .get_connection_with_timeout(VALKEY_CONNECT_TIMEOUT)
+        .map_err(|err| format!("failed to connect valkey for link_graph saliency store: {err}"))?;
+
+    if let Err(err) = conn.set_read_timeout(Some(VALKEY_IO_TIMEOUT)) {
+        log::warn!("failed to set valkey read timeout for link_graph saliency store: {err}");
+    }
+    if let Err(err) = conn.set_write_timeout(Some(VALKEY_IO_TIMEOUT)) {
+        log::warn!("failed to set valkey write timeout for link_graph saliency store: {err}");
+    }
+
+    Ok(conn)
 }
 
 pub(in crate::link_graph::saliency::store) fn resolve_runtime() -> Result<(String, String), String>

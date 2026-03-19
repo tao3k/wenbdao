@@ -1,0 +1,10 @@
+---
+source: packages/rust/crates/xiuxian-wendao/src/gateway/studio/test_support.rs
+expression: value
+---
+{
+  "hitCount": 0,
+  "paths": [],
+  "query": "wendao",
+  "selectedMode": "vector_only"
+}

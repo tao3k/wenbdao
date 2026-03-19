@@ -1,34 +1,10 @@
 ---
-source: packages/rust/crates/xiuxian-wendao/src/gateway/studio/../../../tests/unit/gateway/studio/support.rs
+source: packages/rust/crates/xiuxian-wendao/src/gateway/studio/test_support.rs
 expression: value
 ---
 {
-  "dirCount": 5,
+  "dirCount": 3,
   "entries": [
-    {
-      "category": "folder",
-      "contentType": null,
-      "hasFrontmatter": false,
-      "isDir": true,
-      "name": "blueprints",
-      "path": "blueprints",
-      "projectName": null,
-      "rootLabel": null,
-      "size": 0,
-      "wendaoId": null
-    },
-    {
-      "category": "doc",
-      "contentType": "text/plain",
-      "hasFrontmatter": false,
-      "isDir": false,
-      "name": "default.bpmn",
-      "path": "blueprints/default.bpmn",
-      "projectName": null,
-      "rootLabel": null,
-      "size": 8,
-      "wendaoId": null
-    },
     {
       "category": "folder",
       "contentType": null,
@@ -88,31 +64,7 @@ expression: value
       "rootLabel": "internal_skills",
       "size": 21,
       "wendaoId": null
-    },
-    {
-      "category": "folder",
-      "contentType": null,
-      "hasFrontmatter": false,
-      "isDir": true,
-      "name": "knowledge",
-      "path": "knowledge",
-      "projectName": null,
-      "rootLabel": null,
-      "size": 0,
-      "wendaoId": null
-    },
-    {
-      "category": "knowledge",
-      "contentType": "text/markdown",
-      "hasFrontmatter": false,
-      "isDir": false,
-      "name": "context.md",
-      "path": "knowledge/context.md",
-      "projectName": null,
-      "rootLabel": null,
-      "size": 18,
-      "wendaoId": null
     }
   ],
-  "fileCount": 4
+  "fileCount": 2
 }

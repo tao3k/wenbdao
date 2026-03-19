@@ -1,0 +1,499 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Wendao Gateway",
+    "version": "v1",
+    "description": "Stable contract surface for the Wendao HTTP gateway, including health, studio, VFS, graph, and search endpoints."
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:9517",
+      "description": "Default local Wendao gateway endpoint."
+    }
+  ],
+  "paths": {
+    "/api/health": {
+      "get": {
+        "operationId": "gatewayHealth",
+        "tags": ["gateway"],
+        "summary": "Health check",
+        "description": "Return a lightweight readiness response for the Wendao gateway process.",
+        "responses": {
+          "200": {
+            "description": "Gateway process is alive and able to serve requests."
+          },
+          "503": {
+            "description": "Gateway process is not yet ready to accept traffic."
+          }
+        }
+      }
+    },
+    "/api/stats": {
+      "get": {
+        "operationId": "gatewayStats",
+        "tags": ["gateway"],
+        "summary": "Gateway statistics",
+        "description": "Return graph statistics when an index is loaded, or an explanatory error payload when the gateway has no active index.",
+        "responses": {
+          "200": {
+            "description": "Graph statistics payload or a no-index status payload."
+          },
+          "500": {
+            "description": "Gateway failed to collect or serialize statistics."
+          }
+        }
+      }
+    },
+    "/api/notify": {
+      "get": {
+        "operationId": "gatewayNotifyStatus",
+        "tags": ["gateway"],
+        "summary": "Notification worker status",
+        "description": "Report whether the notification worker is active and whether webhook delivery is configured.",
+        "responses": {
+          "200": {
+            "description": "Notification worker status and webhook configuration state."
+          },
+          "500": {
+            "description": "Gateway failed to resolve notification worker state."
+          }
+        }
+      }
+    },
+    "/api/vfs": {
+      "get": {
+        "operationId": "studioVfsRootEntries",
+        "tags": ["studio-vfs"],
+        "summary": "List root VFS entries",
+        "description": "Return the top-level virtual file system entries visible to the studio explorer.",
+        "responses": {
+          "200": {
+            "description": "Visible VFS entries at the current studio root."
+          },
+          "400": {
+            "description": "Studio UI configuration is missing or does not expose any visible roots."
+          }
+        }
+      }
+    },
+    "/api/vfs/scan": {
+      "get": {
+        "operationId": "studioVfsScan",
+        "tags": ["studio-vfs"],
+        "summary": "Scan the VFS tree",
+        "description": "Scan the configured studio file tree and return structured entry metadata for explorer rendering.",
+        "responses": {
+          "200": {
+            "description": "Structured scan result with entries, counts, and scan timing."
+          },
+          "400": {
+            "description": "Studio UI configuration is missing or does not expose any visible roots."
+          }
+        }
+      }
+    },
+    "/api/vfs/cat": {
+      "get": {
+        "operationId": "studioVfsCat",
+        "tags": ["studio-vfs"],
+        "summary": "Read VFS file content",
+        "description": "Return UTF-8 file content and content-type metadata for one file in the virtual file system.",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "required": true,
+            "description": "Project-relative path for the file to read.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Requested file content and content metadata."
+          },
+          "400": {
+            "description": "The requested path is missing or invalid."
+          }
+        }
+      }
+    },
+    "/api/vfs/{path}": {
+      "get": {
+        "operationId": "studioVfsEntry",
+        "tags": ["studio-vfs"],
+        "summary": "Read one VFS entry",
+        "description": "Return metadata for one VFS file or directory selected by project-relative path.",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "path",
+            "required": true,
+            "description": "Project-relative path for the VFS entry.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Metadata for the requested VFS entry."
+          },
+          "404": {
+            "description": "The requested VFS entry does not exist."
+          }
+        }
+      }
+    },
+    "/api/neighbors/{id}": {
+      "get": {
+        "operationId": "studioNodeNeighbors",
+        "tags": ["studio-graph"],
+        "summary": "Node neighbor summary",
+        "description": "Return incoming, outgoing, and two-hop neighbor identifiers for one graph node.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Graph node identifier.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Neighbor summary for the requested node."
+          },
+          "404": {
+            "description": "The requested node could not be found."
+          }
+        }
+      }
+    },
+    "/api/graph/neighbors/{id}": {
+      "get": {
+        "operationId": "studioGraphNeighbors",
+        "tags": ["studio-graph"],
+        "summary": "Neighborhood graph payload",
+        "description": "Return nodes and links for the neighborhood surrounding one graph node.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Graph node identifier.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Graph neighborhood payload for the requested node."
+          },
+          "404": {
+            "description": "The requested node could not be found."
+          }
+        }
+      }
+    },
+    "/api/topology/3d": {
+      "get": {
+        "operationId": "studioTopology3d",
+        "tags": ["studio-graph"],
+        "summary": "3D topology projection",
+        "description": "Return the current graph topology projected into a 3D-friendly layout payload.",
+        "responses": {
+          "200": {
+            "description": "3D topology payload with nodes, links, and clusters."
+          },
+          "400": {
+            "description": "Studio UI configuration is missing or the topology cannot be built for the current scope."
+          }
+        }
+      }
+    },
+    "/api/search": {
+      "get": {
+        "operationId": "studioSearchKnowledge",
+        "tags": ["studio-search"],
+        "summary": "Search knowledge",
+        "description": "Run ranked knowledge search over the current studio scope.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "description": "Search query text.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Maximum number of hits to return.",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ranked knowledge search results."
+          },
+          "400": {
+            "description": "The search query was missing or invalid."
+          }
+        }
+      }
+    },
+    "/api/search/attachments": {
+      "get": {
+        "operationId": "studioSearchAttachments",
+        "tags": ["studio-search"],
+        "summary": "Search attachments",
+        "description": "Search indexed attachment metadata across the current studio scope.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "description": "Attachment search query text.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Maximum number of hits to return.",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Attachment search results."
+          },
+          "400": {
+            "description": "The attachment search query was missing or invalid."
+          }
+        }
+      }
+    },
+    "/api/search/ast": {
+      "get": {
+        "operationId": "studioSearchAst",
+        "tags": ["studio-search"],
+        "summary": "Search AST observations",
+        "description": "Search AST-backed observations across indexed project sources.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "description": "AST search query text.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "AST search results."
+          },
+          "400": {
+            "description": "The AST search query was missing or invalid."
+          }
+        }
+      }
+    },
+    "/api/search/definition": {
+      "get": {
+        "operationId": "studioSearchDefinition",
+        "tags": ["studio-search"],
+        "summary": "Resolve definitions",
+        "description": "Resolve likely definition locations for a symbol or identifier in the current studio scope.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "description": "Identifier or symbol to resolve.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Candidate definition locations for the requested symbol."
+          },
+          "400": {
+            "description": "The definition query was missing or invalid."
+          }
+        }
+      }
+    },
+    "/api/search/references": {
+      "get": {
+        "operationId": "studioSearchReferences",
+        "tags": ["studio-search"],
+        "summary": "Search references",
+        "description": "Return code or document references for the requested identifier in the current studio scope.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "description": "Identifier or symbol to search for.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reference search results."
+          },
+          "400": {
+            "description": "The reference search query was missing or invalid."
+          }
+        }
+      }
+    },
+    "/api/search/symbols": {
+      "get": {
+        "operationId": "studioSearchSymbols",
+        "tags": ["studio-search"],
+        "summary": "Search symbols",
+        "description": "Search indexed source symbols across the configured studio projects.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "description": "Symbol search query text.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Symbol search results."
+          },
+          "400": {
+            "description": "The symbol search query was missing or invalid."
+          }
+        }
+      }
+    },
+    "/api/search/autocomplete": {
+      "get": {
+        "operationId": "studioSearchAutocomplete",
+        "tags": ["studio-search"],
+        "summary": "Autocomplete search input",
+        "description": "Return autocomplete suggestions for the current search prefix.",
+        "parameters": [
+          {
+            "name": "prefix",
+            "in": "query",
+            "required": true,
+            "description": "Search prefix to complete.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Autocomplete suggestions for the provided prefix."
+          },
+          "400": {
+            "description": "The autocomplete prefix was missing or invalid."
+          }
+        }
+      }
+    },
+    "/api/analysis/markdown": {
+      "get": {
+        "operationId": "studioMarkdownAnalysis",
+        "tags": ["studio-analysis"],
+        "summary": "Analyze Markdown structure",
+        "description": "Return the structural Markdown analysis payload used by the studio explorer and graph views.",
+        "responses": {
+          "200": {
+            "description": "Markdown analysis payload with nodes, edges, and projections."
+          },
+          "400": {
+            "description": "Requested Markdown input is missing, invalid, or outside the configured studio scope."
+          }
+        }
+      }
+    },
+    "/api/ui/config": {
+      "get": {
+        "operationId": "studioGetUiConfig",
+        "tags": ["studio-config"],
+        "summary": "Read studio UI config",
+        "description": "Return the current studio UI configuration, including project-scoped explorer settings.",
+        "responses": {
+          "200": {
+            "description": "Current studio UI configuration."
+          },
+          "500": {
+            "description": "Gateway failed to read the current studio UI configuration."
+          }
+        }
+      },
+      "post": {
+        "operationId": "studioSetUiConfig",
+        "tags": ["studio-config"],
+        "summary": "Update studio UI config",
+        "description": "Replace the current studio UI configuration and clear any cached graph or symbol indexes that depend on it.",
+        "requestBody": {
+          "required": true,
+          "description": "Studio UI configuration to persist.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "projects": {
+                    "type": "array",
+                    "description": "Configured studio project roots and indexed directories."
+                  }
+                }
+              },
+              "example": {
+                "projects": [
+                  {
+                    "name": "main",
+                    "root": "packages/rust/crates/xiuxian-wendao",
+                    "dirs": ["docs", "src"]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated studio UI configuration."
+          },
+          "400": {
+            "description": "The submitted UI configuration payload was invalid."
+          }
+        }
+      }
+    }
+  }
+}

@@ -30,10 +30,20 @@ stats_response_probe_timeout_sec = 0.05
 stats_response_refresh_timeout_sec = 5.0
 
 # Graph-first retrieval policy runtime knobs.
-retrieval_mode = "hybrid"
+[link_graph.retrieval]
+mode = "hybrid"
 candidate_multiplier = 4
 max_sources = 8
+hybrid_min_hits = 2
+hybrid_min_top_score = 0.25
 graph_rows_per_source = 8
+
+[link_graph.retrieval.semantic_ignition]
+backend = "disabled"
+# vector_store_path = ".cache/wendao/vector-store"
+# table_name = "wendao_semantic_docs"
+# embedding_base_url = "http://127.0.0.1:11434"
+# embedding_model = "glm-5"
 
 [link_graph.cache]
 valkey_url = "redis://localhost:6379/0"
@@ -44,10 +54,6 @@ ttl_seconds = 300
 max_candidates = 4096
 max_partitions = 8
 time_budget_ms = 250.0
-
-[link_graph.hybrid]
-min_hits = 2
-min_top_score = 0.25
 
 [link_graph.agentic.suggested_link]
 max_entries = 2000

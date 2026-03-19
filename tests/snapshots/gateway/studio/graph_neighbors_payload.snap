@@ -1,40 +1,44 @@
 ---
-source: packages/rust/crates/xiuxian-wendao/src/gateway/studio/../../../tests/unit/gateway/studio/support.rs
+source: packages/rust/crates/xiuxian-wendao/src/gateway/studio/test_support.rs
 expression: value
 ---
 {
   "center": {
     "distance": 0,
-    "id": "knowledge/alpha.md",
+    "id": "kernel/alpha.md",
     "isCenter": true,
     "label": "Alpha",
+    "navigationTarget": {
+      "category": "doc",
+      "path": "kernel/alpha.md"
+    },
     "nodeType": "doc",
-    "path": "knowledge/alpha.md"
+    "path": "kernel/alpha.md"
   },
   "links": [
     {
       "direction": "outgoing",
       "distance": 1,
-      "source": "knowledge/alpha.md",
-      "target": "knowledge/beta.md"
+      "source": "kernel/alpha.md",
+      "target": "kernel/beta.md"
     }
   ],
   "nodes": [
     {
       "distance": 0,
-      "id": "knowledge/alpha.md",
+      "id": "kernel/alpha.md",
       "isCenter": true,
       "label": "Alpha",
       "nodeType": "doc",
-      "path": "knowledge/alpha.md"
+      "path": "kernel/alpha.md"
     },
     {
       "distance": 1,
-      "id": "knowledge/beta.md",
+      "id": "kernel/beta.md",
       "isCenter": false,
       "label": "Beta",
       "nodeType": "doc",
-      "path": "knowledge/beta.md"
+      "path": "kernel/beta.md"
     }
   ],
   "totalLinks": 1,
