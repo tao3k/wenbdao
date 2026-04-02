@@ -12,9 +12,8 @@ mod strategy;
 mod structured_filters;
 mod traversal_candidates;
 
-use super::shared as index_shared;
+pub use super::shared::{ScoredSearchRow, deterministic_random_key, sort_hits};
 pub use crate::link_graph::{
     LinkGraphHit, LinkGraphIndex, LinkGraphScope, LinkGraphSearchOptions, ParsedLinkGraphQuery,
     parse_search_query,
 };
-pub use index_shared::{ScoredSearchRow, deterministic_random_key, sort_hits};

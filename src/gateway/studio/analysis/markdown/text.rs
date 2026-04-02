@@ -7,6 +7,7 @@ pub(super) fn collect_plain_text<'a>(node: &'a AstNode<'a>) -> String {
         match &descendant.data().value {
             NodeValue::Text(text) => push_segment(&mut output, text),
             NodeValue::Code(code) => push_segment(&mut output, code.literal.as_str()),
+            NodeValue::Math(math) => push_segment(&mut output, math.literal.as_str()),
             NodeValue::WikiLink(link) => push_segment(&mut output, link.url.as_str()),
             NodeValue::LineBreak | NodeValue::SoftBreak => push_segment(&mut output, " "),
             _ => {}

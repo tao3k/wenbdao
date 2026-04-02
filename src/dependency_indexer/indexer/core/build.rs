@@ -1,6 +1,8 @@
 use super::DependencyIndexer;
-use super::{DependencyBuildConfig, DependencyIndexResult, ExternalSymbol};
 use crate::dependency_indexer::indexer::files::find_files;
+use crate::dependency_indexer::indexer::{
+    DependencyBuildConfig, DependencyIndexResult, ExternalSymbol,
+};
 use rayon::prelude::*;
 use std::path::PathBuf;
 

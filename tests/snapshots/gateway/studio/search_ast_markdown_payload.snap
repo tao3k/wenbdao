@@ -25,7 +25,7 @@ expression: value
       "path": "docs/03_features/204_gateway_api_contracts.md",
       "projectName": "kernel",
       "rootLabel": "docs",
-      "score": 0.95,
+      "score": 0.97,
       "signature": "## AST Search"
     },
     {
@@ -48,7 +48,7 @@ expression: value
       "path": "docs/03_features/204_gateway_api_contracts.md",
       "projectName": "kernel",
       "rootLabel": "docs",
-      "score": 0.88,
+      "score": 0.93,
       "signature": "- [ ] Verify docs AST alignment."
     }
   ],

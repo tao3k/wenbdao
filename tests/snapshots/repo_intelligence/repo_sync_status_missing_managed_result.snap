@@ -1,0 +1,46 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/support/repo_intelligence.rs
+expression: value
+---
+{
+  "checked_at": "[checked-at]",
+  "checkout_path": "[checkout-path]",
+  "checkout_state": "missing",
+  "drift_state": "unknown",
+  "health_state": "missing_assets",
+  "last_fetched_at": null,
+  "mirror_path": "[mirror-path]",
+  "mirror_revision": null,
+  "mirror_state": "missing",
+  "mode": "status",
+  "refresh": "fetch",
+  "repo_id": "managed-status",
+  "revision": null,
+  "source_kind": "managed_remote",
+  "staleness_state": "unknown",
+  "status_summary": {
+    "attention_required": true,
+    "drift_state": "unknown",
+    "freshness": {
+      "checked_at": "[checked-at]",
+      "last_fetched_at": null,
+      "staleness_state": "unknown"
+    },
+    "health_state": "missing_assets",
+    "lifecycle": {
+      "checkout_ready": false,
+      "checkout_state": "missing",
+      "mirror_ready": false,
+      "mirror_state": "missing",
+      "source_kind": "managed_remote"
+    },
+    "revisions": {
+      "aligned_with_mirror": false,
+      "checkout_revision": null,
+      "mirror_revision": null,
+      "tracking_revision": null
+    }
+  },
+  "tracking_revision": null,
+  "upstream_url": "[upstream-url]"
+}

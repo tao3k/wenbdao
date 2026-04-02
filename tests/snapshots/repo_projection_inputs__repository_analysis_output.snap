@@ -1,0 +1,72 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/integration/repo_projection_inputs.rs
+assertion_line: 81
+expression: analysis
+---
+{
+  "repository": {
+    "repo_id": "demo",
+    "name": "Demo",
+    "path": "/tmp/demo",
+    "url": null,
+    "revision": "abc123",
+    "version": null,
+    "uuid": null,
+    "dependencies": []
+  },
+  "modules": [
+    {
+      "repo_id": "demo",
+      "module_id": "repo:demo:module:Demo.Controllers",
+      "qualified_name": "Demo.Controllers",
+      "path": "Controllers/package.mo"
+    }
+  ],
+  "symbols": [
+    {
+      "repo_id": "demo",
+      "symbol_id": "repo:demo:symbol:Demo.Controllers.PI",
+      "module_id": "repo:demo:module:Demo.Controllers",
+      "name": "PI",
+      "qualified_name": "Demo.Controllers.PI",
+      "kind": "type",
+      "path": "Controllers/PI.mo",
+      "line_start": null,
+      "line_end": null,
+      "signature": null
+    }
+  ],
+  "examples": [
+    {
+      "repo_id": "demo",
+      "example_id": "repo:demo:example:Controllers/Examples/Step.mo",
+      "title": "Step",
+      "path": "Controllers/Examples/Step.mo",
+      "summary": null
+    }
+  ],
+  "docs": [
+    {
+      "repo_id": "demo",
+      "doc_id": "repo:demo:doc:Controllers/UsersGuide/Tutorial/FirstSteps.mo",
+      "title": "First Steps",
+      "path": "Controllers/UsersGuide/Tutorial/FirstSteps.mo",
+      "format": "modelica_users_guide_tutorial"
+    }
+  ],
+  "relations": [
+    {
+      "repo_id": "demo",
+      "source_id": "repo:demo:doc:Controllers/UsersGuide/Tutorial/FirstSteps.mo",
+      "target_id": "repo:demo:module:Demo.Controllers",
+      "kind": "documents"
+    },
+    {
+      "repo_id": "demo",
+      "source_id": "repo:demo:example:Controllers/Examples/Step.mo",
+      "target_id": "repo:demo:module:Demo.Controllers",
+      "kind": "exampleof"
+    }
+  ],
+  "diagnostics": []
+}

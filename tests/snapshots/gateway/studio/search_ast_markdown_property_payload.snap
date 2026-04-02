@@ -25,7 +25,7 @@ expression: value
       "path": "docs/index.md",
       "projectName": "main",
       "rootLabel": "docs",
-      "score": 0.8,
+      "score": 0.86,
       "signature": ":ID: SearchBarProtocol"
     },
     {
@@ -48,7 +48,7 @@ expression: value
       "path": "docs/index.md",
       "projectName": "main",
       "rootLabel": "docs",
-      "score": 0.8,
+      "score": 0.86,
       "signature": ":OBSERVE: lang:typescript scope:\"src/components/SearchBar/**\" \"export const SearchBar: React.FC<SearchBarProps> = ({ $$$ })\""
     }
   ],

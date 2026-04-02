@@ -1,7 +1,7 @@
 id = "xiuxian.zhixing.agenda.view"
 description = "invalid"
 
-[mcp_contract]
+[tool_contract]
 name = "agenda.view"
 
 [workflow]

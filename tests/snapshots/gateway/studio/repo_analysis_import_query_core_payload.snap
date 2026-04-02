@@ -1,0 +1,34 @@
+---
+source: packages/rust/crates/xiuxian-wendao/src/gateway/studio/test_support.rs
+assertion_line: 9
+expression: value
+---
+{
+  "repo_id": "alpha/repo",
+  "imports": [
+    {
+      "repo_id": "alpha/repo",
+      "module_id": "module:BaseModelica",
+      "import_name": "solve",
+      "target_package": "SciMLBase",
+      "source_module": "BaseModelica",
+      "kind": "reexport",
+      "resolved_id": "symbol:solve"
+    }
+  ],
+  "import_hits": [
+    {
+      "import": {
+        "repo_id": "alpha/repo",
+        "module_id": "module:BaseModelica",
+        "import_name": "solve",
+        "target_package": "SciMLBase",
+        "source_module": "BaseModelica",
+        "kind": "reexport",
+        "resolved_id": "symbol:solve"
+      },
+      "score": 1.0,
+      "rank": 1
+    }
+  ]
+}

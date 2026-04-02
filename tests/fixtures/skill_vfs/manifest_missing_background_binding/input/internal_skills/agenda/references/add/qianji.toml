@@ -3,7 +3,7 @@ id = "xiuxian.zhixing.agenda.add"
 [qianhuan]
 background = "$wendao://skills-internal/agenda/MISSING.md"
 
-[mcp_contract]
+[tool_contract]
 name = "agenda.add"
 description = """
 Draft and add a new vow.

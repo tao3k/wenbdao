@@ -1,0 +1,36 @@
+use std::path::Path;
+
+use crate::analyzers::errors::RepoIntelligenceError;
+use crate::analyzers::plugin::RepositoryAnalysisOutput;
+use crate::analyzers::registry::PluginRegistry;
+
+use super::super::analysis::analyze_repository_from_config_with_registry;
+use super::super::bootstrap::bootstrap_builtin_registry;
+
+pub(super) fn with_repository_analysis<T, F>(
+    repo_id: &str,
+    config_path: Option<&Path>,
+    cwd: &Path,
+    registry: &PluginRegistry,
+    build: F,
+) -> Result<T, RepoIntelligenceError>
+where
+    F: FnOnce(&RepositoryAnalysisOutput) -> Result<T, RepoIntelligenceError>,
+{
+    let analysis =
+        analyze_repository_from_config_with_registry(repo_id, config_path, cwd, registry)?;
+    build(&analysis)
+}
+
+pub(super) fn with_bootstrapped_repository_analysis<T, F>(
+    repo_id: &str,
+    config_path: Option<&Path>,
+    cwd: &Path,
+    build: F,
+) -> Result<T, RepoIntelligenceError>
+where
+    F: FnOnce(&RepositoryAnalysisOutput) -> Result<T, RepoIntelligenceError>,
+{
+    let registry = bootstrap_builtin_registry()?;
+    with_repository_analysis(repo_id, config_path, cwd, &registry, build)
+}

@@ -158,7 +158,7 @@ A critical distinction between a static retrieval tool and a reasoning engine is
 
 ### 6.1 QMD: The Static Read-Only Index
 
-QMD provides a high-performance **MCP interface** that allows Agents to search and retrieve knowledge. Its workflow is a snapshot of the author's current document state. It lacks a feedback loop to learn new relationships discovered during reasoning.
+QMD provides a high-performance external tool interface that allows agents to search and retrieve knowledge. Its workflow is a snapshot of the author's current document state. It lacks a feedback loop to learn new relationships discovered during reasoning.
 
 ### 6.2 Wendao: The Evolutionary LinkGraph (`suggested.rs`)
 

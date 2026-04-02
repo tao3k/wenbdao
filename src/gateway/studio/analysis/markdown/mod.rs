@@ -1,6 +1,6 @@
-pub(crate) use self::compile::compile_markdown_ir;
-pub(crate) use self::property_drawers::enrich_property_drawers;
+//! Markdown analysis engine for Studio.
 
 mod compile;
-mod property_drawers;
 mod text;
+
+pub(crate) use self::compile::{CompiledDocument, compile_markdown_ir};

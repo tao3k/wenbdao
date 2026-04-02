@@ -1,0 +1,31 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/integration/support/../../support/repo_intelligence.rs
+expression: value
+---
+{
+  "hits": [
+    {
+      "gap": {
+        "doc_ids": [],
+        "entity_id": "repo:modelica-docs-planner-search:symbol:Projectionica.Controllers.NoDocs",
+        "example_ids": [],
+        "format_hints": [],
+        "gap_id": "repo:modelica-docs-planner-search:projection-gap:symbol_reference_without_documentation:repo:modelica-docs-planner-search:symbol:Projectionica.Controllers.NoDocs",
+        "kind": "symbol_reference_without_documentation",
+        "module_ids": [
+          "repo:modelica-docs-planner-search:module:Projectionica.Controllers"
+        ],
+        "page_id": "repo:modelica-docs-planner-search:projection:reference:symbol:repo:modelica-docs-planner-search:symbol:Projectionica.Controllers.NoDocs",
+        "page_kind": "reference",
+        "path": "Controllers/NoDocs.mo",
+        "repo_id": "modelica-docs-planner-search",
+        "symbol_ids": [
+          "repo:modelica-docs-planner-search:symbol:Projectionica.Controllers.NoDocs"
+        ],
+        "title": "Projectionica.Controllers.NoDocs"
+      },
+      "search_score": 70
+    }
+  ],
+  "repo_id": "modelica-docs-planner-search"
+}

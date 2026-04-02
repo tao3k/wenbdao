@@ -1,0 +1,10 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/integration/support/../../support/repo_intelligence.rs
+expression: value
+---
+{
+  "groups": [],
+  "page_count": 11,
+  "repo_id": "modelica-docs-planner-queue",
+  "total_gap_count": 0
+}

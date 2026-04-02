@@ -3,7 +3,7 @@ id = "xiuxian.zhixing.agenda.view"
 [qianhuan]
 background = "$wendao://skills-internal/agenda/SKILL.md"
 
-[mcp_contract]
+[tool_contract]
 category = "read"
 name = "agenda.view"
 description = """

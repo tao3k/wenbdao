@@ -1,7 +1,8 @@
 use super::*;
 use crate::gateway::studio::router::StudioState;
 use crate::gateway::studio::test_support::assert_studio_json_snapshot;
-use crate::gateway::studio::types::{UiConfig, UiProjectConfig};
+use crate::gateway::studio::types::{UiConfig, UiProjectConfig, UiRepoProjectConfig};
+use git2::Repository;
 use serde_json::json;
 use tempfile::tempdir;
 
@@ -35,6 +36,7 @@ fn make_vfs_fixture() -> VfsFixture {
             root: ".".to_string(),
             dirs: vec!["docs".to_string(), "internal_skills".to_string()],
         }],
+        repo_projects: Vec::new(),
     });
 
     VfsFixture {
@@ -169,6 +171,7 @@ async fn glob_dirs_filter_scan_and_read_results() {
                 "!docs/private/**".to_string(),
             ],
         }],
+        repo_projects: Vec::new(),
     });
 
     let paths = scan_roots(&state)
@@ -230,6 +233,7 @@ fn scan_roots_exposes_project_grouping_metadata_for_monorepo_docs() {
                 dirs: vec!["docs".to_string()],
             },
         ],
+        repo_projects: Vec::new(),
     });
 
     let mut project_entries = scan_roots(&state)
@@ -288,6 +292,7 @@ fn resolve_navigation_target_preserves_project_metadata_for_scoped_display_paths
                 dirs: vec!["docs".to_string()],
             },
         ],
+        repo_projects: Vec::new(),
     });
 
     let target = resolve_navigation_target(&state, "alpha/docs/guide.md");
@@ -306,7 +311,7 @@ fn scan_roots_snapshots_config_root_relative_resolution() {
     let studio_docs = temp_dir
         .path()
         .join(".data")
-        .join("qianji-studio")
+        .join("wendao-frontend")
         .join("docs");
 
     std::fs::create_dir_all(&repo_docs)
@@ -320,7 +325,7 @@ fn scan_roots_snapshots_config_root_relative_resolution() {
 
     let mut state = StudioState::new();
     state.project_root = temp_dir.path().to_path_buf();
-    state.config_root = temp_dir.path().join(".data").join("qianji-studio");
+    state.config_root = temp_dir.path().join(".data").join("wendao-frontend");
     state.set_ui_config(UiConfig {
         projects: vec![
             UiProjectConfig {
@@ -334,6 +339,7 @@ fn scan_roots_snapshots_config_root_relative_resolution() {
                 dirs: vec!["docs".to_string()],
             },
         ],
+        repo_projects: Vec::new(),
     });
 
     let mut entries = scan_roots(&state)
@@ -388,6 +394,7 @@ fn get_entry_supports_tilde_project_root() {
             root: configured_root,
             dirs: vec!["docs".to_string()],
         }],
+        repo_projects: Vec::new(),
     });
 
     let entry = get_entry(&state, "docs/guide.md")
@@ -451,6 +458,7 @@ fn scan_roots_carries_project_metadata_on_descendants() {
                 dirs: vec!["docs".to_string()],
             },
         ],
+        repo_projects: Vec::new(),
     });
 
     let entries = scan_roots(&state).entries;
@@ -477,4 +485,62 @@ fn scan_roots_carries_project_metadata_on_descendants() {
         beta_entry.project_dirs.clone().unwrap_or_default(),
         vec!["docs".to_string()]
     );
+}
+
+#[tokio::test]
+async fn scan_roots_and_read_content_support_repo_checkout_roots() {
+    let temp_dir =
+        tempdir().unwrap_or_else(|err| panic!("failed to create repo root tempdir: {err}"));
+    let repo_root = temp_dir.path().join("repos").join("mcl");
+    let modelica_dir = repo_root.join("Modelica");
+    std::fs::create_dir_all(&modelica_dir)
+        .unwrap_or_else(|err| panic!("failed to create repo fixture dirs: {err}"));
+    std::fs::write(
+        modelica_dir.join("package.mo"),
+        "within Modelica; end Modelica;\n",
+    )
+    .unwrap_or_else(|err| panic!("failed to write repo fixture file: {err}"));
+    Repository::init(&repo_root)
+        .unwrap_or_else(|err| panic!("failed to initialize git repo fixture: {err}"));
+
+    let mut state = StudioState::new();
+    state.project_root = temp_dir.path().to_path_buf();
+    state.config_root = temp_dir.path().to_path_buf();
+    state.set_ui_config(UiConfig {
+        projects: vec![UiProjectConfig {
+            name: "kernel".to_string(),
+            root: ".".to_string(),
+            dirs: vec!["docs".to_string()],
+        }],
+        repo_projects: vec![UiRepoProjectConfig {
+            id: "mcl".to_string(),
+            root: Some("repos/mcl".to_string()),
+            url: None,
+            git_ref: None,
+            refresh: Some("manual".to_string()),
+            plugins: vec!["modelica".to_string()],
+        }],
+    });
+
+    let scanned_paths = scan_roots(&state)
+        .entries
+        .into_iter()
+        .map(|entry| entry.path)
+        .collect::<Vec<_>>();
+    assert!(
+        scanned_paths.iter().any(|path| path == "mcl"),
+        "expected repo root in VFS scan payload, got: {scanned_paths:?}"
+    );
+    assert!(
+        scanned_paths
+            .iter()
+            .any(|path| path == "mcl/Modelica/package.mo"),
+        "expected repo file path in VFS scan payload, got: {scanned_paths:?}"
+    );
+
+    let payload = read_content(&state, "mcl/Modelica/package.mo")
+        .await
+        .unwrap_or_else(|err| panic!("expected repo checkout content to load: {err}"));
+    assert_eq!(payload.path, "mcl/Modelica/package.mo");
+    assert!(payload.content.contains("within Modelica;"));
 }

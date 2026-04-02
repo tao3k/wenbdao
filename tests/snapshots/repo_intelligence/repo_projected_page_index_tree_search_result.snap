@@ -1,0 +1,104 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/support/repo_intelligence.rs
+expression: value
+---
+{
+  "hits": [
+    {
+      "doc_id": "reference/problem-74154252f868",
+      "line_range": [
+        18,
+        24
+      ],
+      "node_id": "reference/problem-74154252f868#anchors",
+      "node_title": "Anchors",
+      "page_id": "repo:projection-sample:projection:reference:doc:repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:Problem",
+      "page_kind": "reference",
+      "page_title": "Problem",
+      "path": "reference/problem-74154252f868.md",
+      "repo_id": "projection-sample",
+      "structural_path": [
+        "Overview",
+        "Anchors"
+      ],
+      "text": ":ID: anchors\n:PATHS: src/ProjectionPkg.jl\n\nSymbols:\n- `ProjectionPkg.Problem` (src/ProjectionPkg.jl)"
+    },
+    {
+      "doc_id": "reference/projectionpkg-791df3111a8d",
+      "line_range": [
+        22,
+        28
+      ],
+      "node_id": "reference/projectionpkg-791df3111a8d#anchors",
+      "node_title": "Anchors",
+      "page_id": "repo:projection-sample:projection:reference:module:repo:projection-sample:module:ProjectionPkg",
+      "page_kind": "reference",
+      "page_title": "ProjectionPkg",
+      "path": "reference/projectionpkg-791df3111a8d.md",
+      "repo_id": "projection-sample",
+      "structural_path": [
+        "Overview",
+        "Anchors"
+      ],
+      "text": ":ID: anchors\n:PATHS: src/ProjectionPkg.jl\n\nModules:\n- `ProjectionPkg` (src/ProjectionPkg.jl)"
+    },
+    {
+      "doc_id": "reference/projectionpkg-problem-7c2073cdec91",
+      "line_range": [
+        19,
+        28
+      ],
+      "node_id": "reference/projectionpkg-problem-7c2073cdec91#anchors",
+      "node_title": "Anchors",
+      "page_id": "repo:projection-sample:projection:reference:symbol:repo:projection-sample:symbol:ProjectionPkg.Problem",
+      "page_kind": "reference",
+      "page_title": "ProjectionPkg.Problem",
+      "path": "reference/projectionpkg-problem-7c2073cdec91.md",
+      "repo_id": "projection-sample",
+      "structural_path": [
+        "Overview",
+        "Anchors"
+      ],
+      "text": ":ID: anchors\n:PATHS: src/ProjectionPkg.jl\n\nModules:\n- `ProjectionPkg` (src/ProjectionPkg.jl)\n\nSymbols:\n- `ProjectionPkg.Problem` (src/ProjectionPkg.jl)"
+    },
+    {
+      "doc_id": "reference/projectionpkg-solve-ff4addb9b708",
+      "line_range": [
+        19,
+        28
+      ],
+      "node_id": "reference/projectionpkg-solve-ff4addb9b708#anchors",
+      "node_title": "Anchors",
+      "page_id": "repo:projection-sample:projection:reference:symbol:repo:projection-sample:symbol:ProjectionPkg.solve",
+      "page_kind": "reference",
+      "page_title": "ProjectionPkg.solve",
+      "path": "reference/projectionpkg-solve-ff4addb9b708.md",
+      "repo_id": "projection-sample",
+      "structural_path": [
+        "Overview",
+        "Anchors"
+      ],
+      "text": ":ID: anchors\n:PATHS: src/ProjectionPkg.jl\n\nModules:\n- `ProjectionPkg` (src/ProjectionPkg.jl)\n\nSymbols:\n- `ProjectionPkg.solve` (src/ProjectionPkg.jl)"
+    },
+    {
+      "doc_id": "reference/solve-41db401ae519",
+      "line_range": [
+        18,
+        24
+      ],
+      "node_id": "reference/solve-41db401ae519#anchors",
+      "node_title": "Anchors",
+      "page_id": "repo:projection-sample:projection:reference:doc:repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:solve",
+      "page_kind": "reference",
+      "page_title": "solve",
+      "path": "reference/solve-41db401ae519.md",
+      "repo_id": "projection-sample",
+      "structural_path": [
+        "Overview",
+        "Anchors"
+      ],
+      "text": ":ID: anchors\n:PATHS: src/ProjectionPkg.jl\n\nSymbols:\n- `ProjectionPkg.solve` (src/ProjectionPkg.jl)"
+    }
+  ],
+  "repo_id": "projection-sample"
+}

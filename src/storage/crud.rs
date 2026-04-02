@@ -1,8 +1,12 @@
 use chrono::Utc;
 
 use crate::types::KnowledgeEntry;
+use crate::valkey_common::{first_non_empty_env, open_client};
 
 use super::KnowledgeStorage;
+
+const KNOWLEDGE_VALKEY_URL_ENV: &str = "XIUXIAN_WENDAO_KNOWLEDGE_VALKEY_URL";
+const DEFAULT_KNOWLEDGE_VALKEY_URL: &str = "redis://127.0.0.1/";
 
 impl KnowledgeStorage {
     /// Initialize the storage (validate Valkey connectivity).
@@ -22,14 +26,20 @@ impl KnowledgeStorage {
     }
 
     pub(super) fn entries_key(&self) -> String {
-        format!("{}:entries", self.table_name)
+        format!("{}:entries", self.table_name())
+    }
+
+    fn resolve_knowledge_valkey_url() -> String {
+        resolve_knowledge_valkey_url_with_fallback(first_non_empty_env(&[
+            KNOWLEDGE_VALKEY_URL_ENV,
+            "VALKEY_URL",
+            "REDIS_URL",
+        ]))
     }
 
     pub(super) fn redis_client() -> Result<redis::Client, String> {
-        // Correct implementation should use the url from context or env
-        let url = std::env::var("XIUXIAN_WENDAO_KNOWLEDGE_VALKEY_URL")
-            .unwrap_or_else(|_| "redis://127.0.0.1/".to_string());
-        redis::Client::open(url).map_err(|e| e.to_string())
+        let url = Self::resolve_knowledge_valkey_url();
+        open_client(url.as_str()).map_err(|e| e.to_string())
     }
 
     /// Upsert a knowledge entry.
@@ -161,5 +171,45 @@ impl KnowledgeStorage {
         let mut conn = client.get_connection()?;
         let _: i64 = redis::cmd("DEL").arg(self.entries_key()).query(&mut conn)?;
         Ok(())
+    }
+}
+
+fn resolve_knowledge_valkey_url_with_fallback(candidate: Option<String>) -> String {
+    candidate.unwrap_or_else(|| DEFAULT_KNOWLEDGE_VALKEY_URL.to_string())
+}
+
+impl KnowledgeStorage {
+    #[cfg(test)]
+    fn redis_client_from_url(valkey_url: &str) -> Result<redis::Client, String> {
+        open_client(valkey_url).map_err(|e| e.to_string())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{
+        DEFAULT_KNOWLEDGE_VALKEY_URL, KnowledgeStorage, resolve_knowledge_valkey_url_with_fallback,
+    };
+
+    #[test]
+    fn resolve_knowledge_valkey_url_uses_localhost_fallback() {
+        assert_eq!(
+            resolve_knowledge_valkey_url_with_fallback(None),
+            DEFAULT_KNOWLEDGE_VALKEY_URL.to_string()
+        );
+    }
+
+    #[test]
+    fn resolve_knowledge_valkey_url_preserves_trimmed_env_choice() {
+        assert_eq!(
+            resolve_knowledge_valkey_url_with_fallback(Some("redis://127.0.0.1/1".to_string())),
+            "redis://127.0.0.1/1".to_string()
+        );
+    }
+
+    #[test]
+    fn redis_client_opens_trimmed_valid_url() {
+        let client = KnowledgeStorage::redis_client_from_url(" redis://127.0.0.1/ ");
+        assert!(client.is_ok());
     }
 }

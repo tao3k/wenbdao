@@ -4,10 +4,15 @@ use super::schema::{LINK_GRAPH_VALKEY_CACHE_SCHEMA_VERSION, cache_schema_fingerp
 use super::snapshot::LinkGraphIndexSnapshot;
 use crate::link_graph::index::LinkGraphIndex;
 use crate::link_graph::runtime_config::LinkGraphCacheRuntimeConfig;
+use crate::valkey_common::open_client;
 use std::path::Path;
 
 fn valkey_cache_key(slot_key: &str, key_prefix: &str) -> String {
     format!("{key_prefix}:{slot_key}")
+}
+
+fn redis_client(valkey_url: &str) -> Result<redis::Client, String> {
+    open_client(valkey_url).map_err(|err| format!("invalid valkey url for link-graph cache: {err}"))
 }
 
 fn decode_cached_index_payload(
@@ -50,8 +55,7 @@ pub(in crate::link_graph::index::build) fn load_cached_index_from_valkey(
     fingerprint: &LinkGraphFingerprint,
 ) -> Result<CacheLookupOutcome, String> {
     let cache_key = valkey_cache_key(slot_key, &runtime.key_prefix);
-    let client = redis::Client::open(runtime.valkey_url.as_str())
-        .map_err(|e| format!("invalid valkey url for link-graph cache: {e}"))?;
+    let client = redis_client(runtime.valkey_url.as_str())?;
     let mut conn = client
         .get_connection()
         .map_err(|e| format!("failed to connect valkey for link-graph cache: {e}"))?;
@@ -81,8 +85,7 @@ pub(in crate::link_graph::index::build) fn save_cached_index_to_valkey(
     let payload = LinkGraphIndexSnapshot::from_index(index, fingerprint);
     let encoded = serde_json::to_string(&payload)
         .map_err(|e| format!("failed to serialize link-graph cache payload: {e}"))?;
-    let client = redis::Client::open(runtime.valkey_url.as_str())
-        .map_err(|e| format!("invalid valkey url for link-graph cache: {e}"))?;
+    let client = redis_client(runtime.valkey_url.as_str())?;
     let mut conn = client
         .get_connection()
         .map_err(|e| format!("failed to connect valkey for link-graph cache: {e}"))?;
@@ -101,4 +104,23 @@ pub(in crate::link_graph::index::build) fn save_cached_index_to_valkey(
             .map_err(|e| format!("failed to SET link-graph cache to valkey: {e}"))?;
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::redis_client;
+
+    #[test]
+    fn redis_client_opens_trimmed_valid_url() {
+        let client = redis_client(" redis://127.0.0.1/ ");
+        assert!(client.is_ok());
+    }
+
+    #[test]
+    fn redis_client_preserves_index_cache_error_context() {
+        let Err(error) = redis_client("  ") else {
+            panic!("blank URL should fail");
+        };
+        assert!(error.contains("link-graph cache"));
+    }
 }

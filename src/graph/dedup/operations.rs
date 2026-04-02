@@ -2,6 +2,7 @@
 
 use crate::entity::Entity;
 use crate::graph::{GraphError, KnowledgeGraph, read_lock};
+use crate::search::normalized_score;
 use serde_json::json;
 use std::collections::HashSet;
 use unicode_normalization::UnicodeNormalization;
@@ -31,14 +32,8 @@ impl KnowledgeGraph {
             return 0.9;
         }
 
-        // Levenshtein-based similarity
-        let max_len = std::cmp::max(n1.len(), n2.len());
-        if max_len == 0 {
-            return 1.0;
-        }
-
-        let distance = levenshtein_distance(&n1, &n2);
-        let similarity = 1.0 - bounded_ratio(distance, max_len);
+        // Edit-distance-based similarity
+        let similarity = normalized_score(&n1, &n2, false);
 
         // Apply bonus for word overlap
         let words1: HashSet<&str> = n1.split_whitespace().collect();
@@ -223,12 +218,6 @@ impl KnowledgeGraph {
 // Internal helpers
 // ---------------------------------------------------------------------------
 
-fn bounded_ratio(numerator: usize, denominator: usize) -> f32 {
-    let numerator = bounded_usize_to_f32(numerator);
-    let denominator = bounded_usize_to_f32(denominator);
-    numerator / denominator
-}
-
 fn bounded_usize_to_f32(value: usize) -> f32 {
     u16::try_from(value).map_or(f32::from(u16::MAX), f32::from)
 }
@@ -240,36 +229,4 @@ fn normalize_name(name: &str) -> String {
         .to_lowercase()
         .trim()
         .replace(|c: char| !c.is_alphanumeric() && c != ' ', "")
-}
-
-/// Calculate Levenshtein distance between two strings.
-fn levenshtein_distance(a: &str, b: &str) -> usize {
-    let a_chars: Vec<char> = a.chars().collect();
-    let b_chars: Vec<char> = b.chars().collect();
-
-    let (m, n) = (a_chars.len(), b_chars.len());
-
-    if m == 0 {
-        return n;
-    }
-    if n == 0 {
-        return m;
-    }
-
-    let mut prev = (0..=n).collect::<Vec<_>>();
-    let mut curr = vec![0; n + 1];
-
-    for i in 1..=m {
-        curr[0] = i;
-        for j in 1..=n {
-            let cost = usize::from(a_chars[i - 1] != b_chars[j - 1]);
-            let deletion = prev[j] + 1;
-            let insertion = curr[j - 1] + 1;
-            let substitution = prev[j - 1] + cost;
-            curr[j] = deletion.min(insertion).min(substitution);
-        }
-        std::mem::swap(&mut prev, &mut curr);
-    }
-
-    prev[n]
 }

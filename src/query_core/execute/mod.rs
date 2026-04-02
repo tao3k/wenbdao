@@ -1,0 +1,302 @@
+use std::sync::Arc;
+
+use arrow::array::{ArrayRef, StringArray, UInt64Array};
+use arrow::datatypes::{DataType, Field, Schema};
+use arrow::record_batch::RecordBatch;
+use async_trait::async_trait;
+
+use crate::gateway::studio::types::SearchHit;
+use crate::link_graph::{LinkGraphDirection, LinkGraphIndex};
+use crate::search_plane::SearchPlaneService;
+
+use crate::query_core::context::{GraphBackend, RetrievalBackend, WendaoExecutionContext};
+use crate::query_core::operators::{
+    ColumnMaskOp, ColumnMaskPredicate, GraphDirection, GraphNeighborsOp, PayloadFetchOp,
+    RetrievalCorpus, VectorSearchOp,
+};
+use crate::query_core::telemetry::WendaoExplainEvent;
+use crate::query_core::types::{
+    WendaoBackendKind, WendaoOperatorKind, WendaoQueryCoreError, WendaoRelation,
+};
+
+/// Retrieval backend that delegates to the existing Wendao search plane.
+pub struct SearchPlaneRetrievalBackend {
+    service: Arc<SearchPlaneService>,
+}
+
+impl SearchPlaneRetrievalBackend {
+    /// Create a retrieval adapter over the existing search-plane service.
+    #[must_use]
+    pub fn new(service: Arc<SearchPlaneService>) -> Self {
+        Self { service }
+    }
+}
+
+#[async_trait]
+impl RetrievalBackend for SearchPlaneRetrievalBackend {
+    async fn vector_search(
+        &self,
+        op: &VectorSearchOp,
+    ) -> Result<WendaoRelation, WendaoQueryCoreError> {
+        let hits = match op.corpus {
+            RetrievalCorpus::RepoContent => self
+                .service
+                .search_repo_content_chunks(
+                    op.repo_id.as_str(),
+                    op.search_term.as_str(),
+                    &op.language_filters,
+                    op.limit,
+                )
+                .await
+                .map_err(|error| WendaoQueryCoreError::Backend(error.to_string()))?,
+            RetrievalCorpus::RepoEntity => self
+                .service
+                .search_repo_entities(
+                    op.repo_id.as_str(),
+                    op.search_term.as_str(),
+                    &op.language_filters,
+                    &op.kind_filters,
+                    op.limit,
+                )
+                .await
+                .map_err(|error| WendaoQueryCoreError::Backend(error.to_string()))?,
+        };
+        let rows = hits
+            .into_iter()
+            .map(|hit| retrieval_row_from_search_hit(&hit, op.repo_id.as_str()))
+            .collect::<Vec<_>>();
+        let batch = xiuxian_vector::retrieval_rows_to_record_batch(&rows)?;
+        Ok(WendaoRelation::new(batch.schema(), vec![batch]))
+    }
+
+    async fn payload_fetch(
+        &self,
+        relation: &WendaoRelation,
+        op: &PayloadFetchOp,
+    ) -> Result<WendaoRelation, WendaoQueryCoreError> {
+        let batches = relation
+            .batches()
+            .iter()
+            .map(|batch| {
+                xiuxian_vector::payload_fetch_record_batch(batch, &op.columns, op.ids.as_ref())
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+        let schema = batches
+            .first()
+            .map(|batch| batch.schema())
+            .ok_or_else(|| WendaoQueryCoreError::InvalidRelation("missing payload batch".into()))?;
+        Ok(WendaoRelation::new(schema, batches))
+    }
+}
+
+/// Graph backend that delegates to the existing `link_graph` index.
+pub struct LinkGraphNeighborsBackend {
+    index: Arc<LinkGraphIndex>,
+}
+
+impl LinkGraphNeighborsBackend {
+    /// Create a graph adapter over an existing `LinkGraphIndex`.
+    #[must_use]
+    pub fn new(index: Arc<LinkGraphIndex>) -> Self {
+        Self { index }
+    }
+}
+
+#[async_trait]
+impl GraphBackend for LinkGraphNeighborsBackend {
+    async fn graph_neighbors(
+        &self,
+        op: &GraphNeighborsOp,
+    ) -> Result<WendaoRelation, WendaoQueryCoreError> {
+        let direction = match op.direction {
+            GraphDirection::Incoming => LinkGraphDirection::Incoming,
+            GraphDirection::Outgoing => LinkGraphDirection::Outgoing,
+            GraphDirection::Both => LinkGraphDirection::Both,
+        };
+        let center = self.index.metadata(op.node_id.as_str()).ok_or_else(|| {
+            WendaoQueryCoreError::Backend(format!("graph node `{}` not found", op.node_id))
+        })?;
+        let neighbors = self
+            .index
+            .neighbors(op.node_id.as_str(), direction, op.hops, op.limit);
+
+        let mut node_ids = vec![op.node_id.clone()];
+        let mut paths = vec![center.path.clone()];
+        let mut titles = vec![Some(center.title.clone())];
+        let mut distances = vec![0_u64];
+        let mut directions = vec!["center".to_string()];
+
+        for neighbor in neighbors {
+            node_ids.push(neighbor.stem);
+            paths.push(neighbor.path);
+            titles.push(Some(neighbor.title));
+            distances.push(u64::try_from(neighbor.distance).unwrap_or(u64::MAX));
+            directions.push(graph_direction_label(op.direction).to_string());
+        }
+
+        let schema = Arc::new(Schema::new(vec![
+            Field::new("node_id", DataType::Utf8, false),
+            Field::new("path", DataType::Utf8, false),
+            Field::new("title", DataType::Utf8, true),
+            Field::new("distance", DataType::UInt64, false),
+            Field::new("direction", DataType::Utf8, false),
+        ]));
+        let batch = RecordBatch::try_new(
+            Arc::clone(&schema),
+            vec![
+                Arc::new(StringArray::from(node_ids)) as ArrayRef,
+                Arc::new(StringArray::from(paths)) as ArrayRef,
+                Arc::new(StringArray::from(titles)) as ArrayRef,
+                Arc::new(UInt64Array::from(distances)) as ArrayRef,
+                Arc::new(StringArray::from(directions)) as ArrayRef,
+            ],
+        )?;
+        Ok(WendaoRelation::new(schema, vec![batch]))
+    }
+}
+
+/// Execute a retrieval-first search via the configured retrieval backend.
+pub async fn execute_vector_search(
+    ctx: &WendaoExecutionContext,
+    op: &VectorSearchOp,
+) -> Result<WendaoRelation, WendaoQueryCoreError> {
+    let backend = ctx
+        .retrieval_backend
+        .as_ref()
+        .ok_or(WendaoQueryCoreError::MissingBackend("retrieval"))?;
+    let relation = backend.vector_search(op).await?;
+    ctx.explain_sink.record(WendaoExplainEvent {
+        operator_kind: WendaoOperatorKind::VectorSearch,
+        backend_kind: WendaoBackendKind::SearchPlaneBackend,
+        legacy_adapter: true,
+        input_row_count: None,
+        output_row_count: Some(relation.row_count()),
+        payload_fetch: false,
+        narrow_phase_surviving_count: None,
+        payload_phase_fetched_count: None,
+        note: Some("search-plane backend".to_string()),
+    });
+    Ok(relation)
+}
+
+/// Execute a graph-neighbor lookup via the configured graph backend.
+pub async fn execute_graph_neighbors(
+    ctx: &WendaoExecutionContext,
+    op: &GraphNeighborsOp,
+) -> Result<WendaoRelation, WendaoQueryCoreError> {
+    let backend = ctx
+        .graph_backend
+        .as_ref()
+        .ok_or(WendaoQueryCoreError::MissingBackend("graph"))?;
+    let relation = backend.graph_neighbors(op).await?;
+    ctx.explain_sink.record(WendaoExplainEvent {
+        operator_kind: WendaoOperatorKind::GraphNeighbors,
+        backend_kind: WendaoBackendKind::LinkGraphBackend,
+        legacy_adapter: true,
+        input_row_count: None,
+        output_row_count: Some(relation.row_count()),
+        payload_fetch: false,
+        narrow_phase_surviving_count: None,
+        payload_phase_fetched_count: None,
+        note: Some("link-graph backend".to_string()),
+    });
+    Ok(relation)
+}
+
+/// Execute a narrow-column filter before payload hydration.
+pub fn execute_column_mask(
+    ctx: &WendaoExecutionContext,
+    op: &ColumnMaskOp,
+) -> Result<WendaoRelation, WendaoQueryCoreError> {
+    let mut rows = Vec::new();
+    for batch in op.relation.batches() {
+        rows.extend(xiuxian_vector::retrieval_rows_from_record_batch(batch)?);
+    }
+    let input_row_count = rows.len();
+
+    for predicate in &op.predicates {
+        rows.retain(|row| match predicate {
+            ColumnMaskPredicate::IdIn(ids) => ids.contains(&row.id),
+            ColumnMaskPredicate::RepoEquals(repo) => row.repo.as_deref() == Some(repo.as_str()),
+            ColumnMaskPredicate::PathContains(fragment) => row.path.contains(fragment),
+            ColumnMaskPredicate::ScoreAtLeast(min_score) => {
+                row.score.unwrap_or_default() >= *min_score
+            }
+        });
+    }
+    if let Some(limit) = op.limit {
+        rows.truncate(limit);
+    }
+
+    let batch = xiuxian_vector::retrieval_rows_to_record_batch(&rows)?;
+    let relation = WendaoRelation::new(batch.schema(), vec![batch]);
+    ctx.explain_sink.record(WendaoExplainEvent {
+        operator_kind: WendaoOperatorKind::ColumnMask,
+        backend_kind: WendaoBackendKind::QueryCoreMask,
+        legacy_adapter: false,
+        input_row_count: Some(input_row_count),
+        output_row_count: Some(relation.row_count()),
+        payload_fetch: false,
+        narrow_phase_surviving_count: Some(relation.row_count()),
+        payload_phase_fetched_count: None,
+        note: Some("narrow-column mask".to_string()),
+    });
+    Ok(relation)
+}
+
+/// Execute payload hydration and projection via the retrieval backend.
+pub async fn execute_payload_fetch(
+    ctx: &WendaoExecutionContext,
+    op: &PayloadFetchOp,
+) -> Result<WendaoRelation, WendaoQueryCoreError> {
+    let backend = ctx
+        .retrieval_backend
+        .as_ref()
+        .ok_or(WendaoQueryCoreError::MissingBackend("retrieval"))?;
+    let input_row_count = op.relation.row_count();
+    let relation = backend.payload_fetch(&op.relation, op).await?;
+    ctx.explain_sink.record(WendaoExplainEvent {
+        operator_kind: WendaoOperatorKind::PayloadFetch,
+        backend_kind: WendaoBackendKind::VectorRetrievalAdapter,
+        legacy_adapter: true,
+        input_row_count: Some(input_row_count),
+        output_row_count: Some(relation.row_count()),
+        payload_fetch: true,
+        narrow_phase_surviving_count: None,
+        payload_phase_fetched_count: Some(relation.row_count()),
+        note: Some("retrieval payload projection".to_string()),
+    });
+    Ok(relation)
+}
+
+fn retrieval_row_from_search_hit(hit: &SearchHit, repo_id: &str) -> xiuxian_vector::RetrievalRow {
+    xiuxian_vector::RetrievalRow {
+        id: hit.stem.clone(),
+        path: hit.path.clone(),
+        repo: Some(repo_id.to_string()),
+        title: hit.title.clone(),
+        score: Some(hit.score),
+        source: "legacy-search-plane".to_string(),
+        snippet: hit.best_section.clone(),
+        doc_type: hit.doc_type.clone(),
+        match_reason: hit.match_reason.clone(),
+        best_section: hit.best_section.clone(),
+        language: hit
+            .tags
+            .iter()
+            .find_map(|tag| tag.strip_prefix("lang:").map(str::to_string)),
+        line: hit
+            .navigation_target
+            .as_ref()
+            .and_then(|target| target.line)
+            .map(|line| u64::try_from(line).unwrap_or(u64::MAX)),
+    }
+}
+
+fn graph_direction_label(direction: GraphDirection) -> &'static str {
+    match direction {
+        GraphDirection::Incoming => "incoming",
+        GraphDirection::Outgoing => "outgoing",
+        GraphDirection::Both => "both",
+    }
+}

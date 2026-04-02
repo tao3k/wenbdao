@@ -1,0 +1,52 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/integration/../support/repo_intelligence.rs
+assertion_line: 32
+expression: value
+---
+{
+  "center_page": {
+    "doc_id": "",
+    "doc_ids": [],
+    "example_ids": [
+      "repo:projection-sample:example:examples/basic.jl"
+    ],
+    "format_hints": [],
+    "keywords": [
+      "",
+      "basic",
+      "examples/basic.jl"
+    ],
+    "kind": "how_to",
+    "module_ids": [],
+    "page_id": "repo:projection-sample:projection:howto:example:repo:projection-sample:example:examples/basic.jl",
+    "path": "examples/basic.jl",
+    "paths": [
+      "examples/basic.jl"
+    ],
+    "repo_id": "projection-sample",
+    "sections": [
+      {
+        "body": "Projected how-to page for `basic`.\nSource paths:\n- `examples/basic.jl`",
+        "level": 1,
+        "paths": [
+          "examples/basic.jl"
+        ],
+        "section_id": "repo:projection-sample:projection:howto:example:repo:projection-sample:example:examples/basic.jl#overview",
+        "title": "Overview"
+      },
+      {
+        "body": "Examples:\n- `basic` (examples/basic.jl)",
+        "level": 2,
+        "paths": [
+          "examples/basic.jl"
+        ],
+        "section_id": "repo:projection-sample:projection:howto:example:repo:projection-sample:example:examples/basic.jl#examples",
+        "title": "Examples"
+      }
+    ],
+    "symbol_ids": [],
+    "title": "basic"
+  },
+  "families": [],
+  "repo_id": "projection-sample"
+}

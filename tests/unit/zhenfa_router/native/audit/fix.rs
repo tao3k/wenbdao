@@ -186,6 +186,26 @@ fn test_apply_all_hash_mismatch() {
 }
 
 #[test]
+fn test_apply_all_creates_missing_file() {
+    let temp_dir = create_temp_dir();
+    let file_path = temp_dir.path().join("docs/index.md");
+
+    let fix = BatchFix::create_file(
+        file_path.to_string_lossy().to_string(),
+        "# Demo: Map of Content\n".to_string(),
+        1.0,
+    );
+    let batch = AtomicFixBatch::new(vec![fix]);
+
+    let report = batch.apply_all();
+
+    assert!(report.is_success());
+    assert_eq!(report.successes, 1);
+    assert_eq!(report.files_modified, 1);
+    assert_eq!(read_file(&file_path), "# Demo: Map of Content\n");
+}
+
+#[test]
 fn test_fix_preview_display() {
     let preview = FixPreview {
         line_number: 42,

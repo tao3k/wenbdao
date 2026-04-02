@@ -1,0 +1,97 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/integration/support/../../support/repo_intelligence.rs
+expression: value
+---
+{
+  "documents": [
+    {
+      "kind": "explanation",
+      "markdown": "# README\n:PROPERTIES:\n:TYPE: PROJECTED_PAGE\n:KIND: explanation\n:FORMATS: md\n:END:\n\n# Overview\n:ID: overview\n:PATHS: README.md\n\nProjected explanation page for `README`.\nFormat hints:\n- `md`\nSource paths:\n- `README.md`\n\n## Anchors\n:ID: anchors\n:PATHS: package.mo\n\nModules:\n- `Projectionica` (package.mo)\n\n## Sources\n:ID: sources\n:PATHS: README.md\n\nDocumentation:\n- `README` (README.md)\n",
+      "page_id": "repo:modelica-docs-markdown-documents:projection:explanation:doc:repo:modelica-docs-markdown-documents:doc:README.md",
+      "path": "explanation/readme-de0e6917b6e1.md",
+      "repo_id": "modelica-docs-markdown-documents",
+      "title": "README"
+    },
+    {
+      "kind": "explanation",
+      "markdown": "# package documentation\n:PROPERTIES:\n:TYPE: PROJECTED_PAGE\n:KIND: explanation\n:FORMATS: modelica_annotation\n:END:\n\n# Overview\n:ID: overview\n:PATHS: package.mo#annotation.documentation\n\nProjected explanation page for `package documentation`.\nFormat hints:\n- `modelica_annotation`\nSource paths:\n- `package.mo#annotation.documentation`\n\n## Anchors\n:ID: anchors\n:PATHS: package.mo\n\nModules:\n- `Projectionica` (package.mo)\n\n## Sources\n:ID: sources\n:PATHS: package.mo#annotation.documentation\n\nDocumentation:\n- `package documentation` (package.mo#annotation.documentation)\n",
+      "page_id": "repo:modelica-docs-markdown-documents:projection:explanation:doc:repo:modelica-docs-markdown-documents:doc:package.mo#annotation.documentation",
+      "path": "explanation/package-documentation-45b7712eabaa.md",
+      "repo_id": "modelica-docs-markdown-documents",
+      "title": "package documentation"
+    },
+    {
+      "kind": "how_to",
+      "markdown": "# Step\n:PROPERTIES:\n:TYPE: PROJECTED_PAGE\n:KIND: howto\n:FORMATS: modelica_users_guide_page, modelica_users_guide_tutorial, modelica_users_guide_tutorial_annotation\n:END:\n\n# Overview\n:ID: overview\n:PATHS: Controllers/Examples/Step.mo, Controllers/UsersGuide/Tutorial/FirstSteps.mo, Controllers/UsersGuide/Tutorial/FirstSteps.mo#annotation.documentation, Controllers/UsersGuide/package.mo\n\nProjected how-to page for `Step`.\nFormat hints:\n- `modelica_users_guide_page`\n- `modelica_users_guide_tutorial`\n- `modelica_users_guide_tutorial_annotation`\nSource paths:\n- `Controllers/Examples/Step.mo`\n- `Controllers/UsersGuide/Tutorial/FirstSteps.mo`\n- `Controllers/UsersGuide/Tutorial/FirstSteps.mo#annotation.documentation`\n- `Controllers/UsersGuide/package.mo`\n\n## Anchors\n:ID: anchors\n:PATHS: Controllers/package.mo\n\nModules:\n- `Projectionica.Controllers` (Controllers/package.mo)\n\n## Supporting Docs\n:ID: sources\n:PATHS: Controllers/UsersGuide/Tutorial/FirstSteps.mo, Controllers/UsersGuide/Tutorial/FirstSteps.mo#annotation.documentation, Controllers/UsersGuide/package.mo\n\nDocumentation:\n- `FirstSteps` (Controllers/UsersGuide/Tutorial/FirstSteps.mo)\n- `FirstSteps documentation` (Controllers/UsersGuide/Tutorial/FirstSteps.mo#annotation.documentation)\n- `UsersGuide` (Controllers/UsersGuide/package.mo)\n\n## Examples\n:ID: examples\n:PATHS: Controllers/Examples/Step.mo\n\nExamples:\n- `Step` (Controllers/Examples/Step.mo)\n",
+      "page_id": "repo:modelica-docs-markdown-documents:projection:howto:example:repo:modelica-docs-markdown-documents:example:Controllers/Examples/Step.mo",
+      "path": "howto/step-dfc5c3caf13d.md",
+      "repo_id": "modelica-docs-markdown-documents",
+      "title": "Step"
+    },
+    {
+      "kind": "how_to",
+      "markdown": "# UsersGuide\n:PROPERTIES:\n:TYPE: PROJECTED_PAGE\n:KIND: howto\n:FORMATS: modelica_users_guide_page\n:END:\n\n# Overview\n:ID: overview\n:PATHS: Controllers/Examples/Step.mo, Controllers/UsersGuide/package.mo\n\nProjected how-to page for `UsersGuide`.\nFormat hints:\n- `modelica_users_guide_page`\nSource paths:\n- `Controllers/Examples/Step.mo`\n- `Controllers/UsersGuide/package.mo`\n\n## Anchors\n:ID: anchors\n:PATHS: Controllers/UsersGuide/package.mo, Controllers/package.mo\n\nModules:\n- `Projectionica.Controllers` (Controllers/package.mo)\n- `Projectionica.Controllers.UsersGuide` (Controllers/UsersGuide/package.mo)\n\n## Supporting Docs\n:ID: sources\n:PATHS: Controllers/UsersGuide/package.mo\n\nDocumentation:\n- `UsersGuide` (Controllers/UsersGuide/package.mo)\n\n## Examples\n:ID: examples\n:PATHS: Controllers/Examples/Step.mo\n\nExamples:\n- `Step` (Controllers/Examples/Step.mo)\n",
+      "page_id": "repo:modelica-docs-markdown-documents:projection:howto:doc:repo:modelica-docs-markdown-documents:doc:Controllers/UsersGuide/package.mo",
+      "path": "howto/usersguide-a1632c127aa4.md",
+      "repo_id": "modelica-docs-markdown-documents",
+      "title": "UsersGuide"
+    },
+    {
+      "kind": "reference",
+      "markdown": "# PI documentation\n:PROPERTIES:\n:TYPE: PROJECTED_PAGE\n:KIND: reference\n:FORMATS: modelica_annotation\n:END:\n\n# Overview\n:ID: overview\n:PATHS: Controllers/PI.mo#annotation.documentation\n\nProjected reference page for `PI documentation`.\nFormat hints:\n- `modelica_annotation`\nSource paths:\n- `Controllers/PI.mo#annotation.documentation`\n\n## Anchors\n:ID: anchors\n:PATHS: Controllers/PI.mo\n\nSymbols:\n- `Projectionica.Controllers.PI` (Controllers/PI.mo)\n\n## Documentation\n:ID: sources\n:PATHS: Controllers/PI.mo#annotation.documentation\n\nDocumentation:\n- `PI documentation` (Controllers/PI.mo#annotation.documentation)\n",
+      "page_id": "repo:modelica-docs-markdown-documents:projection:reference:doc:repo:modelica-docs-markdown-documents:doc:Controllers/PI.mo#annotation.documentation",
+      "path": "reference/pi-documentation-f0779a7dd44a.md",
+      "repo_id": "modelica-docs-markdown-documents",
+      "title": "PI documentation"
+    },
+    {
+      "kind": "reference",
+      "markdown": "# Projectionica\n:PROPERTIES:\n:TYPE: PROJECTED_PAGE\n:KIND: reference\n:FORMATS: md, modelica_annotation\n:END:\n\n# Overview\n:ID: overview\n:PATHS: README.md, package.mo, package.mo#annotation.documentation\n\nProjected reference page for `Projectionica`.\nFormat hints:\n- `md`\n- `modelica_annotation`\nSource paths:\n- `README.md`\n- `package.mo`\n- `package.mo#annotation.documentation`\n\n## Anchors\n:ID: anchors\n:PATHS: package.mo\n\nModules:\n- `Projectionica` (package.mo)\n\n## Documentation\n:ID: sources\n:PATHS: README.md, package.mo#annotation.documentation\n\nDocumentation:\n- `README` (README.md)\n- `package documentation` (package.mo#annotation.documentation)\n",
+      "page_id": "repo:modelica-docs-markdown-documents:projection:reference:module:repo:modelica-docs-markdown-documents:module:Projectionica",
+      "path": "reference/projectionica-92e148e55c55.md",
+      "repo_id": "modelica-docs-markdown-documents",
+      "title": "Projectionica"
+    },
+    {
+      "kind": "reference",
+      "markdown": "# Projectionica.Controllers\n:PROPERTIES:\n:TYPE: PROJECTED_PAGE\n:KIND: reference\n:FORMATS: modelica_annotation, modelica_users_guide_page, modelica_users_guide_tutorial, modelica_users_guide_tutorial_annotation\n:END:\n\n# Overview\n:ID: overview\n:PATHS: Controllers/Examples/Step.mo, Controllers/PI.mo#annotation.documentation, Controllers/UsersGuide/Tutorial/FirstSteps.mo, Controllers/UsersGuide/Tutorial/FirstSteps.mo#annotation.documentation, Controllers/UsersGuide/package.mo, Controllers/package.mo\n\nProjected reference page for `Projectionica.Controllers`.\nFormat hints:\n- `modelica_annotation`\n- `modelica_users_guide_page`\n- `modelica_users_guide_tutorial`\n- `modelica_users_guide_tutorial_annotation`\nSource paths:\n- `Controllers/Examples/Step.mo`\n- `Controllers/PI.mo#annotation.documentation`\n- `Controllers/UsersGuide/Tutorial/FirstSteps.mo`\n- `Controllers/UsersGuide/Tutorial/FirstSteps.mo#annotation.documentation`\n- `Controllers/UsersGuide/package.mo`\n- `Controllers/package.mo`\n\n## Anchors\n:ID: anchors\n:PATHS: Controllers/package.mo\n\nModules:\n- `Projectionica.Controllers` (Controllers/package.mo)\n\n## Documentation\n:ID: sources\n:PATHS: Controllers/UsersGuide/Tutorial/FirstSteps.mo, Controllers/UsersGuide/Tutorial/FirstSteps.mo#annotation.documentation, Controllers/PI.mo#annotation.documentation, Controllers/UsersGuide/package.mo\n\nDocumentation:\n- `FirstSteps` (Controllers/UsersGuide/Tutorial/FirstSteps.mo)\n- `FirstSteps documentation` (Controllers/UsersGuide/Tutorial/FirstSteps.mo#annotation.documentation)\n- `PI documentation` (Controllers/PI.mo#annotation.documentation)\n- `UsersGuide` (Controllers/UsersGuide/package.mo)\n\n## Examples\n:ID: examples\n:PATHS: Controllers/Examples/Step.mo\n\nExamples:\n- `Step` (Controllers/Examples/Step.mo)\n",
+      "page_id": "repo:modelica-docs-markdown-documents:projection:reference:module:repo:modelica-docs-markdown-documents:module:Projectionica.Controllers",
+      "path": "reference/projectionica-controllers-f36a5c6f6c1c.md",
+      "repo_id": "modelica-docs-markdown-documents",
+      "title": "Projectionica.Controllers"
+    },
+    {
+      "kind": "reference",
+      "markdown": "# Projectionica.Controllers.PI\n:PROPERTIES:\n:TYPE: PROJECTED_PAGE\n:KIND: reference\n:FORMATS: modelica_annotation\n:END:\n\n# Overview\n:ID: overview\n:PATHS: Controllers/PI.mo, Controllers/PI.mo#annotation.documentation\n\nProjected reference page for `Projectionica.Controllers.PI`.\nFormat hints:\n- `modelica_annotation`\nSource paths:\n- `Controllers/PI.mo`\n- `Controllers/PI.mo#annotation.documentation`\n\n## Anchors\n:ID: anchors\n:PATHS: Controllers/PI.mo, Controllers/package.mo\n\nModules:\n- `Projectionica.Controllers` (Controllers/package.mo)\n\nSymbols:\n- `Projectionica.Controllers.PI` (Controllers/PI.mo)\n\n## Documentation\n:ID: sources\n:PATHS: Controllers/PI.mo#annotation.documentation\n\nDocumentation:\n- `PI documentation` (Controllers/PI.mo#annotation.documentation)\n",
+      "page_id": "repo:modelica-docs-markdown-documents:projection:reference:symbol:repo:modelica-docs-markdown-documents:symbol:Projectionica.Controllers.PI",
+      "path": "reference/projectionica-controllers-pi-ee85c122013e.md",
+      "repo_id": "modelica-docs-markdown-documents",
+      "title": "Projectionica.Controllers.PI"
+    },
+    {
+      "kind": "reference",
+      "markdown": "# Projectionica.Controllers.UsersGuide\n:PROPERTIES:\n:TYPE: PROJECTED_PAGE\n:KIND: reference\n:FORMATS: modelica_users_guide_page, modelica_users_guide_tutorial, modelica_users_guide_tutorial_annotation\n:END:\n\n# Overview\n:ID: overview\n:PATHS: Controllers/UsersGuide/Tutorial/FirstSteps.mo, Controllers/UsersGuide/Tutorial/FirstSteps.mo#annotation.documentation, Controllers/UsersGuide/package.mo\n\nProjected reference page for `Projectionica.Controllers.UsersGuide`.\nFormat hints:\n- `modelica_users_guide_page`\n- `modelica_users_guide_tutorial`\n- `modelica_users_guide_tutorial_annotation`\nSource paths:\n- `Controllers/UsersGuide/Tutorial/FirstSteps.mo`\n- `Controllers/UsersGuide/Tutorial/FirstSteps.mo#annotation.documentation`\n- `Controllers/UsersGuide/package.mo`\n\n## Anchors\n:ID: anchors\n:PATHS: Controllers/UsersGuide/package.mo\n\nModules:\n- `Projectionica.Controllers.UsersGuide` (Controllers/UsersGuide/package.mo)\n\n## Documentation\n:ID: sources\n:PATHS: Controllers/UsersGuide/Tutorial/FirstSteps.mo, Controllers/UsersGuide/Tutorial/FirstSteps.mo#annotation.documentation, Controllers/UsersGuide/package.mo\n\nDocumentation:\n- `FirstSteps` (Controllers/UsersGuide/Tutorial/FirstSteps.mo)\n- `FirstSteps documentation` (Controllers/UsersGuide/Tutorial/FirstSteps.mo#annotation.documentation)\n- `UsersGuide` (Controllers/UsersGuide/package.mo)\n",
+      "page_id": "repo:modelica-docs-markdown-documents:projection:reference:module:repo:modelica-docs-markdown-documents:module:Projectionica.Controllers.UsersGuide",
+      "path": "reference/projectionica-controllers-usersguide-a0ee1c41fae6.md",
+      "repo_id": "modelica-docs-markdown-documents",
+      "title": "Projectionica.Controllers.UsersGuide"
+    },
+    {
+      "kind": "tutorial",
+      "markdown": "# FirstSteps\n:PROPERTIES:\n:TYPE: PROJECTED_PAGE\n:KIND: tutorial\n:FORMATS: modelica_users_guide_tutorial\n:END:\n\n# Overview\n:ID: overview\n:PATHS: Controllers/Examples/Step.mo, Controllers/UsersGuide/Tutorial/FirstSteps.mo\n\nProjected tutorial page for `FirstSteps`.\nFormat hints:\n- `modelica_users_guide_tutorial`\nSource paths:\n- `Controllers/Examples/Step.mo`\n- `Controllers/UsersGuide/Tutorial/FirstSteps.mo`\n\n## Anchors\n:ID: anchors\n:PATHS: Controllers/UsersGuide/package.mo, Controllers/package.mo\n\nModules:\n- `Projectionica.Controllers` (Controllers/package.mo)\n- `Projectionica.Controllers.UsersGuide` (Controllers/UsersGuide/package.mo)\n\n## Sources\n:ID: sources\n:PATHS: Controllers/UsersGuide/Tutorial/FirstSteps.mo\n\nDocumentation:\n- `FirstSteps` (Controllers/UsersGuide/Tutorial/FirstSteps.mo)\n\n## Examples\n:ID: examples\n:PATHS: Controllers/Examples/Step.mo\n\nExamples:\n- `Step` (Controllers/Examples/Step.mo)\n",
+      "page_id": "repo:modelica-docs-markdown-documents:projection:tutorial:doc:repo:modelica-docs-markdown-documents:doc:Controllers/UsersGuide/Tutorial/FirstSteps.mo",
+      "path": "tutorial/firststeps-7cd044e60576.md",
+      "repo_id": "modelica-docs-markdown-documents",
+      "title": "FirstSteps"
+    },
+    {
+      "kind": "tutorial",
+      "markdown": "# FirstSteps documentation\n:PROPERTIES:\n:TYPE: PROJECTED_PAGE\n:KIND: tutorial\n:FORMATS: modelica_users_guide_tutorial_annotation\n:END:\n\n# Overview\n:ID: overview\n:PATHS: Controllers/Examples/Step.mo, Controllers/UsersGuide/Tutorial/FirstSteps.mo#annotation.documentation\n\nProjected tutorial page for `FirstSteps documentation`.\nFormat hints:\n- `modelica_users_guide_tutorial_annotation`\nSource paths:\n- `Controllers/Examples/Step.mo`\n- `Controllers/UsersGuide/Tutorial/FirstSteps.mo#annotation.documentation`\n\n## Anchors\n:ID: anchors\n:PATHS: Controllers/UsersGuide/package.mo, Controllers/package.mo\n\nModules:\n- `Projectionica.Controllers` (Controllers/package.mo)\n- `Projectionica.Controllers.UsersGuide` (Controllers/UsersGuide/package.mo)\n\n## Sources\n:ID: sources\n:PATHS: Controllers/UsersGuide/Tutorial/FirstSteps.mo#annotation.documentation\n\nDocumentation:\n- `FirstSteps documentation` (Controllers/UsersGuide/Tutorial/FirstSteps.mo#annotation.documentation)\n\n## Examples\n:ID: examples\n:PATHS: Controllers/Examples/Step.mo\n\nExamples:\n- `Step` (Controllers/Examples/Step.mo)\n",
+      "page_id": "repo:modelica-docs-markdown-documents:projection:tutorial:doc:repo:modelica-docs-markdown-documents:doc:Controllers/UsersGuide/Tutorial/FirstSteps.mo#annotation.documentation",
+      "path": "tutorial/firststeps-documentation-38b5532b5cfd.md",
+      "repo_id": "modelica-docs-markdown-documents",
+      "title": "FirstSteps documentation"
+    }
+  ],
+  "repo_id": "modelica-docs-markdown-documents"
+}

@@ -11,6 +11,10 @@ pub struct ZhixingIndexSummary {
     pub journal_documents: usize,
     /// Number of agenda markdown files indexed as `DOCUMENT`.
     pub agenda_documents: usize,
+    /// Number of embedded skill-reference graph entities indexed into the graph.
+    pub skill_reference_entities_added: usize,
+    /// Number of embedded skill-reference graph relations linked into the graph.
+    pub skill_reference_relations: usize,
     /// Number of task checklist entries indexed as `OTHER(Task)`.
     pub task_entities: usize,
     /// Number of entities that were newly inserted (not updated in place).
@@ -47,12 +51,18 @@ impl ZhixingWendaoIndexer {
 
         summary.journal_documents = self.index_document_dir("journal", "Journal", &mut summary)?;
         summary.agenda_documents = self.index_document_dir("agenda", "Agenda", &mut summary)?;
+        let (skill_reference_entities, skill_reference_relations) =
+            self.index_embedded_skill_references()?;
+        summary.skill_reference_entities_added = skill_reference_entities;
+        summary.skill_reference_relations = skill_reference_relations;
         summary.task_entities = self.index_agenda_tasks(&mut summary)?;
 
         log::info!(
-            "Zhixing domain indexed successfully into Wendao (journal_documents={}, agenda_documents={}, task_entities={}, entities_added={}, relations_linked={}).",
+            "Zhixing domain indexed successfully into Wendao (journal_documents={}, agenda_documents={}, skill_reference_entities_added={}, skill_reference_relations={}, task_entities={}, entities_added={}, relations_linked={}).",
             summary.journal_documents,
             summary.agenda_documents,
+            summary.skill_reference_entities_added,
+            summary.skill_reference_relations,
             summary.task_entities,
             summary.entities_added,
             summary.relations_linked

@@ -1,0 +1,207 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/integration/../support/repo_intelligence.rs
+assertion_line: 22
+expression: value
+---
+{
+  "analysis": {
+    "diagnostics": [],
+    "docs": [
+      {
+        "doc_id": "repo:sample:doc:README.md",
+        "format": "md",
+        "path": "README.md",
+        "repo_id": "sample",
+        "title": "README.md"
+      },
+      {
+        "doc_id": "repo:sample:doc:docs/guide.md",
+        "format": "md",
+        "path": "docs/guide.md",
+        "repo_id": "sample",
+        "title": "guide"
+      },
+      {
+        "doc_id": "repo:sample:doc:src/SamplePkg.jl#symbol:Problem",
+        "format": "julia_docstring",
+        "path": "src/SamplePkg.jl#symbol:Problem",
+        "repo_id": "sample",
+        "title": "Problem"
+      },
+      {
+        "doc_id": "repo:sample:doc:src/SamplePkg.jl#symbol:solve",
+        "format": "julia_docstring",
+        "path": "src/SamplePkg.jl#symbol:solve",
+        "repo_id": "sample",
+        "title": "solve"
+      }
+    ],
+    "examples": [
+      {
+        "example_id": "repo:sample:example:examples/basic.jl",
+        "path": "examples/basic.jl",
+        "repo_id": "sample",
+        "summary": null,
+        "title": "basic"
+      },
+      {
+        "example_id": "repo:sample:example:test/runtests.jl",
+        "path": "test/runtests.jl",
+        "repo_id": "sample",
+        "summary": null,
+        "title": "runtests"
+      }
+    ],
+    "modules": [
+      {
+        "module_id": "repo:sample:module:SamplePkg",
+        "path": "src/SamplePkg.jl",
+        "qualified_name": "SamplePkg",
+        "repo_id": "sample"
+      }
+    ],
+    "relations": [
+      {
+        "kind": "uses",
+        "repo_id": "sample",
+        "source_id": "repo:sample:module:SamplePkg",
+        "target_id": "external:LinearAlgebra"
+      },
+      {
+        "kind": "uses",
+        "repo_id": "sample",
+        "source_id": "repo:sample:module:SamplePkg",
+        "target_id": "external:SciMLBase"
+      },
+      {
+        "kind": "documents",
+        "repo_id": "sample",
+        "source_id": "repo:sample:doc:src/SamplePkg.jl#symbol:Problem",
+        "target_id": "repo:sample:symbol:SamplePkg.Problem"
+      },
+      {
+        "kind": "documents",
+        "repo_id": "sample",
+        "source_id": "repo:sample:doc:src/SamplePkg.jl#symbol:solve",
+        "target_id": "repo:sample:symbol:SamplePkg.solve"
+      },
+      {
+        "kind": "contains",
+        "repo_id": "sample",
+        "source_id": "repo:sample",
+        "target_id": "repo:sample:module:SamplePkg"
+      },
+      {
+        "kind": "declares",
+        "repo_id": "sample",
+        "source_id": "repo:sample:module:SamplePkg",
+        "target_id": "repo:sample:symbol:SamplePkg.Problem"
+      },
+      {
+        "kind": "declares",
+        "repo_id": "sample",
+        "source_id": "repo:sample:module:SamplePkg",
+        "target_id": "repo:sample:symbol:SamplePkg.solve"
+      },
+      {
+        "kind": "contains",
+        "repo_id": "sample",
+        "source_id": "repo:sample",
+        "target_id": "repo:sample:example:examples/basic.jl"
+      },
+      {
+        "kind": "contains",
+        "repo_id": "sample",
+        "source_id": "repo:sample",
+        "target_id": "repo:sample:example:test/runtests.jl"
+      },
+      {
+        "kind": "contains",
+        "repo_id": "sample",
+        "source_id": "repo:sample",
+        "target_id": "repo:sample:doc:README.md"
+      },
+      {
+        "kind": "contains",
+        "repo_id": "sample",
+        "source_id": "repo:sample",
+        "target_id": "repo:sample:doc:docs/guide.md"
+      },
+      {
+        "kind": "contains",
+        "repo_id": "sample",
+        "source_id": "repo:sample",
+        "target_id": "repo:sample:doc:src/SamplePkg.jl#symbol:Problem"
+      },
+      {
+        "kind": "contains",
+        "repo_id": "sample",
+        "source_id": "repo:sample",
+        "target_id": "repo:sample:doc:src/SamplePkg.jl#symbol:solve"
+      },
+      {
+        "kind": "documents",
+        "repo_id": "sample",
+        "source_id": "repo:sample:doc:README.md",
+        "target_id": "repo:sample:module:SamplePkg"
+      }
+    ],
+    "repository": {
+      "dependencies": [
+        "LinearAlgebra",
+        "SciMLBase"
+      ],
+      "name": "SamplePkg",
+      "path": "[repo-root]",
+      "repo_id": "sample",
+      "revision": "25479c94929b0b30fb2d8f7ff8215f3597a146d1",
+      "url": "https://example.invalid/xiuxian-wendao/samplepkg.git",
+      "uuid": "12345678-1234-1234-1234-123456789abc",
+      "version": "0.1.0"
+    },
+    "symbols": [
+      {
+        "audit_status": "unreviewed",
+        "kind": "type",
+        "line_end": null,
+        "line_start": null,
+        "module_id": "repo:sample:module:SamplePkg",
+        "name": "Problem",
+        "path": "src/SamplePkg.jl",
+        "qualified_name": "SamplePkg.Problem",
+        "repo_id": "sample",
+        "signature": null,
+        "symbol_id": "repo:sample:symbol:SamplePkg.Problem",
+        "verification_state": "verified"
+      },
+      {
+        "audit_status": "unreviewed",
+        "kind": "function",
+        "line_end": null,
+        "line_start": null,
+        "module_id": "repo:sample:module:SamplePkg",
+        "name": "solve",
+        "path": "src/SamplePkg.jl",
+        "qualified_name": "SamplePkg.solve",
+        "repo_id": "sample",
+        "signature": "solve(problem::Problem)",
+        "symbol_id": "repo:sample:symbol:SamplePkg.solve",
+        "verification_state": "verified"
+      }
+    ]
+  },
+  "overview": {
+    "display_name": "SamplePkg",
+    "doc_count": 4,
+    "example_count": 2,
+    "hierarchical_uri": "repo://sample",
+    "hierarchy": [
+      "repo",
+      "sample"
+    ],
+    "module_count": 1,
+    "repo_id": "sample",
+    "revision": "25479c94929b0b30fb2d8f7ff8215f3597a146d1",
+    "symbol_count": 2
+  }
+}

@@ -3,7 +3,8 @@ use std::collections::{HashMap, HashSet};
 
 use crate::types::{KnowledgeEntry, KnowledgeStats};
 
-use super::{KnowledgeStorage, saturating_usize_to_i64};
+use super::KnowledgeStorage;
+use super::core::saturating_usize_to_i64;
 
 impl KnowledgeStorage {
     /// Search knowledge entries by vector similarity.

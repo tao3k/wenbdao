@@ -74,7 +74,10 @@ fn push_ui_config_from_toml(fixture: &GraphFixture, toml_content: &str) {
         )
         .collect::<Vec<_>>();
 
-    fixture.state.studio.set_ui_config(UiConfig { projects });
+    fixture.state.studio.set_ui_config(UiConfig {
+        projects,
+        repo_projects: Vec::new(),
+    });
 }
 
 fn sorted_graph_nodes_payload(nodes: Vec<GraphNode>) -> Vec<serde_json::Value> {
@@ -858,11 +861,73 @@ dirs = ["docs"]
 }
 
 #[tokio::test]
+async fn graph_neighbors_resolves_relative_markdown_links_from_index_pages() {
+    let fixture = make_graph_fixture(vec![
+        (
+            "docs/index.md",
+            concat!(
+                "# Documentation Index\n\n",
+                "This file is the top-level entry for major documentation tracks.\n\n",
+                "## Testing\n\n",
+                "- [Testing Documentation](testing/README.md)\n",
+                "- [Skills Tools Benchmark CI Gate](testing/skills-tools-benchmark-ci.md)\n",
+            ),
+        ),
+        (
+            "docs/testing/README.md",
+            "# Testing Documentation\n\nBody.\n",
+        ),
+        (
+            "docs/testing/skills-tools-benchmark-ci.md",
+            "# Skills Tools Benchmark CI Gate\n\nBody.\n",
+        ),
+    ]);
+    push_ui_config_from_toml(
+        &fixture,
+        r#"
+[link_graph.projects.kernel]
+root = "."
+dirs = ["docs"]
+"#,
+    );
+
+    let result = graph_neighbors(fixture.state.as_ref(), "docs/index.md", "both", 1, 20).await;
+    let Ok(response) = result else {
+        panic!("expected relative markdown links to resolve into graph edges");
+    };
+
+    assert!(
+        response.total_nodes >= 3,
+        "expected docs/index.md to surface related documentation nodes, got {}",
+        response.total_nodes
+    );
+    assert!(
+        response.total_links >= 2,
+        "expected docs/index.md to surface outbound graph edges, got {}",
+        response.total_links
+    );
+    assert!(
+        response
+            .nodes
+            .iter()
+            .any(|node| node.path.contains("testing/README.md")),
+        "expected testing/README.md to be present in graph neighbors"
+    );
+    assert!(
+        response
+            .links
+            .iter()
+            .any(|link| link.target.contains("testing/README")),
+        "expected graph links to point at relative markdown targets"
+    );
+}
+
+#[tokio::test]
 async fn graph_neighbors_indexes_configured_projects_outside_knowledge_root() {
     let fixture = make_graph_fixture(vec![
         ("docs/overview.md", "# Overview\n\nKernel docs.\n"),
         (
-            ".data/qianji-studio/docs/03_features/202_topology_and_graph_navigation.md",
+            ".data/wendao-frontend/docs/03_features/202_topology_and_graph_navigation.md",
             "# Topology\n\nSee [[overview]].\n",
         ),
     ]);
@@ -874,7 +939,7 @@ root = "."
 dirs = ["docs"]
 
 [link_graph.projects.main]
-root = ".data/qianji-studio"
+root = ".data/wendao-frontend"
 dirs = ["docs"]
 "#,
     );
@@ -931,7 +996,7 @@ async fn graph_neighbors_rebuilds_after_ui_config_update() {
     let fixture = make_graph_fixture(vec![
         ("docs/overview.md", "# Overview\n\nKernel docs.\n"),
         (
-            ".data/qianji-studio/docs/03_features/202_topology_and_graph_navigation.md",
+            ".data/wendao-frontend/docs/03_features/202_topology_and_graph_navigation.md",
             "# Topology\n\nSee [[overview]].\n",
         ),
     ]);
@@ -958,7 +1023,7 @@ root = "."
 dirs = ["docs"]
 
 [link_graph.projects.main]
-root = ".data/qianji-studio"
+root = ".data/wendao-frontend"
 dirs = ["docs"]
 "#,
     );

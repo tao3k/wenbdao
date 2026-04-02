@@ -1,6 +1,6 @@
 id = "xiuxian.zhixing.agenda.add"
 
-[mcp_contract]
+[tool_contract]
 name = "agenda.add"
 description = "missing structure"
 

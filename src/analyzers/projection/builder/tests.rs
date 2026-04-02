@@ -1,0 +1,41 @@
+use crate::analyzers::ProjectionPageKind;
+
+use super::anchors::TargetAnchors;
+use super::kinds::doc_projection_kind;
+
+#[test]
+fn doc_projection_kind_honors_reference_format_without_symbol_targets() {
+    let doc = crate::analyzers::records::DocRecord {
+        repo_id: "repo".to_string(),
+        doc_id: "repo:doc:solve".to_string(),
+        title: "Solve Linear Systems".to_string(),
+        path: "docs/solve.md".to_string(),
+        format: Some("reference".to_string()),
+    };
+
+    assert_eq!(
+        doc_projection_kind(&doc, &TargetAnchors::default()),
+        ProjectionPageKind::Reference
+    );
+}
+
+#[test]
+fn doc_projection_kind_upgrades_explanation_docs_when_symbol_anchored() {
+    let doc = crate::analyzers::records::DocRecord {
+        repo_id: "repo".to_string(),
+        doc_id: "repo:doc:solver".to_string(),
+        title: "Solver Notes".to_string(),
+        path: "docs/solver.md".to_string(),
+        format: None,
+    };
+
+    let targets = TargetAnchors {
+        module_ids: Vec::new(),
+        symbol_ids: vec!["repo:symbol:solve".to_string()],
+    };
+
+    assert_eq!(
+        doc_projection_kind(&doc, &targets),
+        ProjectionPageKind::Reference
+    );
+}

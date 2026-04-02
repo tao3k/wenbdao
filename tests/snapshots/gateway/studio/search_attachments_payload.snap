@@ -7,9 +7,9 @@ expression: value
   "hits": [
     {
       "attachmentExt": "png",
-      "attachmentId": "att://docs/alpha/assets/topology.png",
+      "attachmentId": "att://docs/alpha/docs/assets/topology.png",
       "attachmentName": "topology.png",
-      "attachmentPath": "assets/topology.png",
+      "attachmentPath": "docs/assets/topology.png",
       "kind": "image",
       "path": "docs/alpha.md",
       "score": 0.5,

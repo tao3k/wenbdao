@@ -1,7 +1,7 @@
-use super::super::{LinkGraphPprSubgraphMode, LinkGraphRelatedPprOptions};
-use super::constants::{
+use crate::link_graph::index::ppr::constants::{
     RELATED_PPR_DEFAULT_ALPHA, RELATED_PPR_DEFAULT_MAX_ITER, RELATED_PPR_DEFAULT_TOL,
 };
+use crate::link_graph::index::{LinkGraphPprSubgraphMode, LinkGraphRelatedPprOptions};
 
 pub(super) fn resolve_related_ppr_runtime(
     options: Option<&LinkGraphRelatedPprOptions>,

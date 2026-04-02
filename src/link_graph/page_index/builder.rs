@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 /// Build a deterministic page tree for one document from flat parsed sections.
-pub(in crate::link_graph) fn build_page_index_tree(
+pub(crate) fn build_page_index_tree(
     doc_id: &str,
     doc_title: &str,
     sections: &[IndexedSection],

@@ -13,6 +13,7 @@ impl LinkGraphIndex {
     pub(in crate::link_graph::index::search::plan) async fn search_planned_payload_with_agentic_core_async(
         &self,
         query: &str,
+        query_vector: &[f32],
         limit: usize,
         base_options: crate::link_graph::LinkGraphSearchOptions,
         include_provisional: Option<bool>,
@@ -26,8 +27,9 @@ impl LinkGraphIndex {
             include_provisional,
             provisional_limit,
             promoted_overlay,
+            (!query_vector.is_empty()).then(|| query_vector.to_vec()),
         );
-        self.enrich_planned_payload_with_quantum_contexts(&mut payload)
+        self.enrich_planned_payload_with_quantum_contexts(&mut payload, query_vector)
             .await;
         payload
     }
@@ -40,6 +42,7 @@ impl LinkGraphIndex {
         include_provisional: Option<bool>,
         provisional_limit: Option<usize>,
         promoted_overlay: Option<LinkGraphPromotedOverlayTelemetry>,
+        query_vector_override: Option<Vec<f32>>,
     ) -> LinkGraphPlannedSearchPayload {
         let parsed = parse_search_query(query, base_options);
         let effective_limit = parsed.limit_override.unwrap_or(limit);
@@ -54,6 +57,7 @@ impl LinkGraphIndex {
                 Vec::new(),
                 None,
                 promoted_overlay,
+                query_vector_override,
             );
         }
 
@@ -76,6 +80,7 @@ impl LinkGraphIndex {
             provisional_suggestions,
             provisional_error,
             promoted_overlay,
+            query_vector_override,
         )
     }
 
@@ -131,6 +136,7 @@ impl LinkGraphIndex {
         provisional_suggestions: Vec<LinkGraphSuggestedLink>,
         provisional_error: Option<String>,
         promoted_overlay: Option<LinkGraphPromotedOverlayTelemetry>,
+        query_vector_override: Option<Vec<f32>>,
     ) -> LinkGraphPlannedSearchPayload {
         let hit_count = rows.len();
         let section_hit_count = rows
@@ -175,6 +181,8 @@ impl LinkGraphIndex {
             promoted_overlay,
             ccs_audit,
             semantic_ignition: None,
+            julia_rerank: None,
+            query_vector: query_vector_override,
             quantum_contexts: Vec::new(),
         }
     }

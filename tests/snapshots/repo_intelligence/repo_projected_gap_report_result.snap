@@ -1,0 +1,130 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/integration/../support/repo_projection_support.rs
+expression: value
+---
+{
+  "repo_id": "demo",
+  "summary": {
+    "page_count": 11,
+    "gap_count": 5,
+    "by_kind": [
+      {
+        "kind": "module_reference_without_documentation",
+        "count": 1
+      },
+      {
+        "kind": "symbol_reference_without_documentation",
+        "count": 1
+      },
+      {
+        "kind": "symbol_reference_unverified",
+        "count": 1
+      },
+      {
+        "kind": "example_how_to_without_anchor",
+        "count": 1
+      },
+      {
+        "kind": "documentation_page_without_anchor",
+        "count": 1
+      }
+    ]
+  },
+  "gaps": [
+    {
+      "repo_id": "demo",
+      "gap_id": "repo:demo:projection-gap:module_reference_without_documentation:repo:demo:module:Demo.Utilities",
+      "kind": "module_reference_without_documentation",
+      "page_kind": "reference",
+      "page_id": "repo:demo:projection:reference:module:repo:demo:module:Demo.Utilities",
+      "entity_id": "repo:demo:module:Demo.Utilities",
+      "title": "Demo.Utilities",
+      "path": "src/Utilities.jl",
+      "module_ids": [
+        "repo:demo:module:Demo.Utilities"
+      ],
+      "symbol_ids": [],
+      "example_ids": [],
+      "doc_ids": [],
+      "format_hints": []
+    },
+    {
+      "repo_id": "demo",
+      "gap_id": "repo:demo:projection-gap:symbol_reference_without_documentation:repo:demo:symbol:Demo.Utilities.Helper",
+      "kind": "symbol_reference_without_documentation",
+      "page_kind": "reference",
+      "page_id": "repo:demo:projection:reference:symbol:repo:demo:symbol:Demo.Utilities.Helper",
+      "entity_id": "repo:demo:symbol:Demo.Utilities.Helper",
+      "title": "Demo.Utilities.Helper",
+      "path": "src/Utilities.jl",
+      "module_ids": [
+        "repo:demo:module:Demo.Utilities"
+      ],
+      "symbol_ids": [
+        "repo:demo:symbol:Demo.Utilities.Helper"
+      ],
+      "example_ids": [],
+      "doc_ids": [],
+      "format_hints": []
+    },
+    {
+      "repo_id": "demo",
+      "gap_id": "repo:demo:projection-gap:symbol_reference_unverified:repo:demo:symbol:Demo.Controllers.drift",
+      "kind": "symbol_reference_unverified",
+      "page_kind": "reference",
+      "page_id": "repo:demo:projection:reference:symbol:repo:demo:symbol:Demo.Controllers.drift",
+      "entity_id": "repo:demo:symbol:Demo.Controllers.drift",
+      "title": "Demo.Controllers.drift",
+      "path": "src/Demo.jl",
+      "module_ids": [
+        "repo:demo:module:Demo.Controllers"
+      ],
+      "symbol_ids": [
+        "repo:demo:symbol:Demo.Controllers.drift"
+      ],
+      "example_ids": [],
+      "doc_ids": [
+        "repo:demo:doc:src/Demo.jl#symbol:drift"
+      ],
+      "format_hints": [
+        "api"
+      ]
+    },
+    {
+      "repo_id": "demo",
+      "gap_id": "repo:demo:projection-gap:example_howto_without_anchor:repo:demo:example:examples/detached_demo.jl",
+      "kind": "example_how_to_without_anchor",
+      "page_kind": "how_to",
+      "page_id": "repo:demo:projection:howto:example:repo:demo:example:examples/detached_demo.jl",
+      "entity_id": "repo:demo:example:examples/detached_demo.jl",
+      "title": "Detached demo",
+      "path": "examples/detached_demo.jl",
+      "module_ids": [],
+      "symbol_ids": [],
+      "example_ids": [
+        "repo:demo:example:examples/detached_demo.jl"
+      ],
+      "doc_ids": [],
+      "format_hints": []
+    },
+    {
+      "repo_id": "demo",
+      "gap_id": "repo:demo:projection-gap:documentation_page_without_anchor:repo:demo:doc:docs/users_guide/concepts.md",
+      "kind": "documentation_page_without_anchor",
+      "page_kind": "how_to",
+      "page_id": "repo:demo:projection:howto:doc:repo:demo:doc:docs/users_guide/concepts.md",
+      "entity_id": "repo:demo:doc:docs/users_guide/concepts.md",
+      "title": "Concepts",
+      "path": "docs/users_guide/concepts.md",
+      "module_ids": [],
+      "symbol_ids": [],
+      "example_ids": [],
+      "doc_ids": [
+        "repo:demo:doc:docs/users_guide/concepts.md"
+      ],
+      "format_hints": [
+        "guide"
+      ]
+    }
+  ]
+}

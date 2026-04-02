@@ -1,0 +1,71 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/integration/support/../../support/repo_intelligence.rs
+expression: value
+---
+[
+  {
+    "kind": "contains",
+    "source_id": "repo:modelica-relations:module:Relationica",
+    "target_id": "repo:modelica-relations:module:Relationica.Controllers"
+  },
+  {
+    "kind": "contains",
+    "source_id": "repo:modelica-relations:module:Relationica.Controllers",
+    "target_id": "repo:modelica-relations:module:Relationica.Controllers.UsersGuide"
+  },
+  {
+    "kind": "declares",
+    "source_id": "repo:modelica-relations:module:Relationica.Controllers",
+    "target_id": "repo:modelica-relations:symbol:Relationica.Controllers.PI"
+  },
+  {
+    "kind": "documents",
+    "source_id": "repo:modelica-relations:doc:Controllers/PI.mo#annotation.documentation",
+    "target_id": "repo:modelica-relations:symbol:Relationica.Controllers.PI"
+  },
+  {
+    "kind": "documents",
+    "source_id": "repo:modelica-relations:doc:Controllers/UsersGuide/Tutorial/FirstSteps.mo",
+    "target_id": "repo:modelica-relations:module:Relationica.Controllers"
+  },
+  {
+    "kind": "documents",
+    "source_id": "repo:modelica-relations:doc:Controllers/UsersGuide/Tutorial/FirstSteps.mo",
+    "target_id": "repo:modelica-relations:module:Relationica.Controllers.UsersGuide"
+  },
+  {
+    "kind": "documents",
+    "source_id": "repo:modelica-relations:doc:Controllers/UsersGuide/Tutorial/FirstSteps.mo#annotation.documentation",
+    "target_id": "repo:modelica-relations:module:Relationica.Controllers"
+  },
+  {
+    "kind": "documents",
+    "source_id": "repo:modelica-relations:doc:Controllers/UsersGuide/Tutorial/FirstSteps.mo#annotation.documentation",
+    "target_id": "repo:modelica-relations:module:Relationica.Controllers.UsersGuide"
+  },
+  {
+    "kind": "documents",
+    "source_id": "repo:modelica-relations:doc:Controllers/UsersGuide/package.mo",
+    "target_id": "repo:modelica-relations:module:Relationica.Controllers"
+  },
+  {
+    "kind": "documents",
+    "source_id": "repo:modelica-relations:doc:Controllers/UsersGuide/package.mo",
+    "target_id": "repo:modelica-relations:module:Relationica.Controllers.UsersGuide"
+  },
+  {
+    "kind": "documents",
+    "source_id": "repo:modelica-relations:doc:README.md",
+    "target_id": "repo:modelica-relations:module:Relationica"
+  },
+  {
+    "kind": "documents",
+    "source_id": "repo:modelica-relations:doc:package.mo#annotation.documentation",
+    "target_id": "repo:modelica-relations:module:Relationica"
+  },
+  {
+    "kind": "exampleof",
+    "source_id": "repo:modelica-relations:example:Controllers/Examples/Step.mo",
+    "target_id": "repo:modelica-relations:module:Relationica.Controllers"
+  }
+]

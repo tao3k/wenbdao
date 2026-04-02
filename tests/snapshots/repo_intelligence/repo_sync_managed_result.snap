@@ -1,0 +1,46 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/support/repo_intelligence.rs
+expression: value
+---
+{
+  "checked_at": "[checked-at]",
+  "checkout_path": "[checkout-path]",
+  "checkout_state": "created",
+  "drift_state": "in_sync",
+  "health_state": "healthy",
+  "last_fetched_at": "[last-fetched-at]",
+  "mirror_path": "[mirror-path]",
+  "mirror_revision": "4608e320ddd550bc0454fd25a6382101d4e298d9",
+  "mirror_state": "created",
+  "mode": "ensure",
+  "refresh": "fetch",
+  "repo_id": "managed-sync",
+  "revision": "4608e320ddd550bc0454fd25a6382101d4e298d9",
+  "source_kind": "managed_remote",
+  "staleness_state": "fresh",
+  "status_summary": {
+    "attention_required": false,
+    "drift_state": "in_sync",
+    "freshness": {
+      "checked_at": "[checked-at]",
+      "last_fetched_at": "[last-fetched-at]",
+      "staleness_state": "fresh"
+    },
+    "health_state": "healthy",
+    "lifecycle": {
+      "checkout_ready": true,
+      "checkout_state": "created",
+      "mirror_ready": true,
+      "mirror_state": "created",
+      "source_kind": "managed_remote"
+    },
+    "revisions": {
+      "aligned_with_mirror": true,
+      "checkout_revision": "4608e320ddd550bc0454fd25a6382101d4e298d9",
+      "mirror_revision": "4608e320ddd550bc0454fd25a6382101d4e298d9",
+      "tracking_revision": "4608e320ddd550bc0454fd25a6382101d4e298d9"
+    }
+  },
+  "tracking_revision": "4608e320ddd550bc0454fd25a6382101d4e298d9",
+  "upstream_url": "[upstream-url]"
+}

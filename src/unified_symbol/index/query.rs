@@ -1,100 +1,304 @@
-use super::{SymbolSource, UnifiedSymbol, UnifiedSymbolIndex};
+use std::collections::HashSet;
+
+use crate::search::{FuzzyMatcher, FuzzySearchOptions, LexicalMatcher, SearchDocument};
+use crate::unified_symbol::symbol::SymbolSource;
+use crate::unified_symbol::{UnifiedSymbol, UnifiedSymbolIndex};
 
 impl UnifiedSymbolIndex {
+    /// Search for project symbols.
+    #[must_use]
+    pub fn search_project(&self, query: &str, limit: usize) -> Vec<UnifiedSymbol> {
+        self.search_project_with_options(query, limit, FuzzySearchOptions::symbol_search())
+    }
+
+    /// Search for project symbols with explicit fuzzy options.
+    #[must_use]
+    pub fn search_project_with_options(
+        &self,
+        query: &str,
+        limit: usize,
+        options: FuzzySearchOptions,
+    ) -> Vec<UnifiedSymbol> {
+        self.search_with_filter(query, limit, Some("project"), options)
+    }
+
+    /// Search for external symbols.
+    #[must_use]
+    pub fn search_external(&self, query: &str, limit: usize) -> Vec<UnifiedSymbol> {
+        self.search_external_with_options(query, limit, FuzzySearchOptions::symbol_search())
+    }
+
+    /// Search for external symbols with explicit fuzzy options.
+    #[must_use]
+    pub fn search_external_with_options(
+        &self,
+        query: &str,
+        limit: usize,
+        options: FuzzySearchOptions,
+    ) -> Vec<UnifiedSymbol> {
+        self.search_with_filter(query, limit, Some("external"), options)
+    }
+
+    /// Search for symbols within a specific crate.
+    #[must_use]
+    pub fn search_crate(&self, crate_name: &str, query: &str, limit: usize) -> Vec<UnifiedSymbol> {
+        self.search_crate_with_options(
+            crate_name,
+            query,
+            limit,
+            FuzzySearchOptions::symbol_search(),
+        )
+    }
+
+    /// Search for symbols within a specific crate with explicit fuzzy options.
+    #[must_use]
+    pub fn search_crate_with_options(
+        &self,
+        crate_name: &str,
+        query: &str,
+        limit: usize,
+        options: FuzzySearchOptions,
+    ) -> Vec<UnifiedSymbol> {
+        let results = self.search_unified_with_options(query, limit * 2, options);
+        results
+            .into_iter()
+            .filter(|s| s.crate_name == crate_name)
+            .take(limit)
+            .collect()
+    }
+
     /// Search across both project and external symbols.
     #[must_use]
-    pub fn search_unified(&self, pattern: &str, limit: usize) -> Vec<&UnifiedSymbol> {
-        let pattern = pattern.to_lowercase();
-        let mut results: Vec<&UnifiedSymbol> = self
+    pub fn search_unified(&self, query_str: &str, limit: usize) -> Vec<UnifiedSymbol> {
+        self.search_unified_with_options(query_str, limit, FuzzySearchOptions::symbol_search())
+    }
+
+    /// Search across both project and external symbols with explicit fuzzy options.
+    #[must_use]
+    pub fn search_unified_with_options(
+        &self,
+        query_str: &str,
+        limit: usize,
+        options: FuzzySearchOptions,
+    ) -> Vec<UnifiedSymbol> {
+        self.search_with_filter(query_str, limit, None, options)
+    }
+
+    fn search_with_filter(
+        &self,
+        query_str: &str,
+        limit: usize,
+        source_filter: Option<&str>,
+        options: FuzzySearchOptions,
+    ) -> Vec<UnifiedSymbol> {
+        let mut results = Vec::new();
+        let mut seen = HashSet::new();
+
+        if let Some(exact_results) = self.search_tantivy_exact(query_str, limit, source_filter) {
+            push_unique_symbols(&mut results, &mut seen, exact_results, limit);
+        }
+
+        if results.len() < limit
+            && let Some(fuzzy_results) =
+                self.search_tantivy_fuzzy(query_str, limit, source_filter, options)
+        {
+            push_unique_symbols(&mut results, &mut seen, fuzzy_results, limit);
+        }
+
+        if results.len() < limit {
+            let fallback_results =
+                self.search_memory_fallback(query_str, limit, source_filter, options);
+            push_unique_symbols(&mut results, &mut seen, fallback_results, limit);
+        }
+
+        results
+    }
+
+    fn search_tantivy_exact(
+        &self,
+        query_str: &str,
+        limit: usize,
+        source_filter: Option<&str>,
+    ) -> Option<Vec<UnifiedSymbol>> {
+        let Ok(records) = self
+            .search_index
+            .search_exact(query_str, limit.saturating_mul(2))
+        else {
+            return None;
+        };
+        Some(self.symbols_from_search_documents(records, limit, source_filter))
+    }
+
+    fn search_tantivy_fuzzy(
+        &self,
+        query_str: &str,
+        limit: usize,
+        source_filter: Option<&str>,
+        options: FuzzySearchOptions,
+    ) -> Option<Vec<UnifiedSymbol>> {
+        let Ok(matches) =
+            self.search_index
+                .search_fuzzy(query_str, limit.saturating_mul(2), options)
+        else {
+            return None;
+        };
+
+        let mut results = Vec::new();
+        for fuzzy_match in matches {
+            if let Some(symbol) =
+                self.symbol_from_search_id(fuzzy_match.item.id.as_str(), source_filter)
+            {
+                results.push(symbol);
+            }
+
+            if results.len() >= limit {
+                break;
+            }
+        }
+
+        Some(results)
+    }
+
+    fn search_memory_fallback(
+        &self,
+        query_str: &str,
+        limit: usize,
+        source_filter: Option<&str>,
+        options: FuzzySearchOptions,
+    ) -> Vec<UnifiedSymbol> {
+        let query_lower = query_str.to_lowercase();
+        let mut results = Vec::new();
+
+        for &idx in self.by_name.get(&query_lower).unwrap_or(&Vec::new()) {
+            let s = &self.symbols[idx];
+            if Self::matches_filter(s, source_filter) {
+                results.push(s.clone());
+            }
+        }
+
+        for (name, indices) in &self.by_name {
+            if results.len() >= limit {
+                break;
+            }
+            if name != &query_lower && name.starts_with(&query_lower) {
+                for &idx in indices {
+                    let s = &self.symbols[idx];
+                    if Self::matches_filter(s, source_filter) {
+                        results.push(s.clone());
+                    }
+                    if results.len() >= limit {
+                        break;
+                    }
+                }
+            }
+        }
+
+        if !results.is_empty() {
+            results.truncate(limit);
+            return results;
+        }
+
+        let filtered_symbols = self
             .symbols
             .iter()
-            .filter(|symbol| symbol.name.to_lowercase().contains(&pattern))
-            .collect();
+            .filter(|symbol| Self::matches_filter(symbol, source_filter))
+            .cloned()
+            .collect::<Vec<_>>();
+        let matcher =
+            LexicalMatcher::new(filtered_symbols.as_slice(), unified_symbol_name, options);
+        let fuzzy_matches = matcher
+            .search(query_str, limit)
+            .expect("lexical matcher is infallible");
+        results.extend(
+            fuzzy_matches
+                .into_iter()
+                .map(|fuzzy_match| fuzzy_match.item),
+        );
 
         results.truncate(limit);
         results
     }
 
-    /// Search only project symbols.
-    #[must_use]
-    pub fn search_project(&self, pattern: &str, limit: usize) -> Vec<&UnifiedSymbol> {
-        let pattern = pattern.to_lowercase();
-        self.symbols
-            .iter()
-            .filter(|symbol| symbol.name.to_lowercase().contains(&pattern) && symbol.is_project())
-            .take(limit)
-            .collect()
+    fn matches_filter(symbol: &UnifiedSymbol, filter: Option<&str>) -> bool {
+        match filter {
+            None => true,
+            Some("project") => symbol.source == SymbolSource::Project,
+            Some("external") => matches!(symbol.source, SymbolSource::External(_)),
+            _ => false,
+        }
     }
 
-    /// Search only external symbols.
+    /// Find all external symbol usages for a given crate.
     #[must_use]
-    pub fn search_external(&self, pattern: &str, limit: usize) -> Vec<&UnifiedSymbol> {
-        let pattern = pattern.to_lowercase();
-        self.symbols
-            .iter()
-            .filter(|symbol| symbol.name.to_lowercase().contains(&pattern) && symbol.is_external())
-            .take(limit)
-            .collect()
-    }
-
-    /// Search within a specific crate (project or external).
-    #[must_use]
-    pub fn search_crate(
-        &self,
-        crate_name: &str,
-        pattern: &str,
-        limit: usize,
-    ) -> Vec<&UnifiedSymbol> {
-        let pattern = pattern.to_lowercase();
-        self.symbols
-            .iter()
-            .filter(|symbol| {
-                symbol.crate_name == crate_name && symbol.name.to_lowercase().contains(&pattern)
-            })
-            .take(limit)
-            .collect()
-    }
-
-    /// Find where an external crate's symbols are used in the project.
-    #[must_use]
-    pub fn find_external_usage(&self, crate_name: &str) -> Vec<&str> {
+    pub fn find_external_usage(&self, crate_name: &str) -> Vec<String> {
         self.external_usage
             .get(crate_name)
-            .map(|rows| rows.iter().map(String::as_str).collect())
+            .cloned()
             .unwrap_or_default()
     }
 
-    /// Find project files that use a specific external symbol.
+    /// Find all symbols defined in a given project file.
     #[must_use]
-    pub fn find_symbol_usage(&self, symbol_name: &str, crate_name: &str) -> Vec<&str> {
-        self.symbols
-            .iter()
-            .filter(|symbol| {
-                symbol.name == symbol_name
-                    && matches!(symbol.source, SymbolSource::External(ref c) if c == crate_name)
-            })
-            .map(|symbol| symbol.location.as_str())
-            .collect()
+    pub fn find_symbols_in_file(&self, file_path: &str) -> Vec<String> {
+        self.project_files
+            .get(file_path)
+            .cloned()
+            .unwrap_or_default()
     }
 
-    /// Get all external crates used in the project.
-    #[must_use]
-    pub fn get_external_crates(&self) -> Vec<&str> {
-        self.external_usage.keys().map(String::as_str).collect()
+    fn symbols_from_search_documents(
+        &self,
+        records: Vec<SearchDocument>,
+        limit: usize,
+        source_filter: Option<&str>,
+    ) -> Vec<UnifiedSymbol> {
+        let mut results = Vec::new();
+        for record in records {
+            if let Some(symbol) = self.symbol_from_search_id(record.id.as_str(), source_filter) {
+                results.push(symbol);
+            }
+            if results.len() >= limit {
+                break;
+            }
+        }
+        results
     }
 
-    /// Get all project crates.
-    #[must_use]
-    pub fn get_project_crates(&self) -> Vec<&str> {
-        let mut crates: Vec<&str> = self
-            .symbols
-            .iter()
-            .filter(|symbol| symbol.is_project())
-            .map(|symbol| symbol.crate_name.as_str())
-            .collect();
-
-        crates.sort_unstable();
-        crates.dedup();
-        crates
+    fn symbol_from_search_id(
+        &self,
+        search_id: &str,
+        source_filter: Option<&str>,
+    ) -> Option<UnifiedSymbol> {
+        let idx = search_id.parse::<usize>().ok()?;
+        let symbol = self.symbols.get(idx)?;
+        Self::matches_filter(symbol, source_filter).then(|| symbol.clone())
     }
+}
+
+fn unified_symbol_name(symbol: &UnifiedSymbol) -> &str {
+    symbol.name.as_str()
+}
+
+fn push_unique_symbols(
+    results: &mut Vec<UnifiedSymbol>,
+    seen: &mut HashSet<String>,
+    candidates: Vec<UnifiedSymbol>,
+    limit: usize,
+) {
+    for symbol in candidates {
+        let dedupe_key = symbol_dedupe_key(&symbol);
+        if seen.insert(dedupe_key) {
+            results.push(symbol);
+        }
+        if results.len() >= limit {
+            break;
+        }
+    }
+}
+
+fn symbol_dedupe_key(symbol: &UnifiedSymbol) -> String {
+    format!(
+        "{}::{}::{}::{}::{:?}",
+        symbol.name, symbol.kind, symbol.location, symbol.crate_name, symbol.source
+    )
 }

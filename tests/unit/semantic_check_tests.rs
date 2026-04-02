@@ -115,11 +115,14 @@ fn test_xml_escape() {
 
 #[test]
 fn test_node_status_parsing() {
-    assert_eq!(NodeStatus::from_str("STABLE"), NodeStatus::Stable);
-    assert_eq!(NodeStatus::from_str("stable"), NodeStatus::Stable);
-    assert_eq!(NodeStatus::from_str("DRAFT"), NodeStatus::Draft);
-    assert_eq!(NodeStatus::from_str("DEPRECATED"), NodeStatus::Deprecated);
-    assert_eq!(NodeStatus::from_str("UNKNOWN"), NodeStatus::Stable);
+    assert_eq!(NodeStatus::parse_lossy("STABLE"), NodeStatus::Stable);
+    assert_eq!(NodeStatus::parse_lossy("stable"), NodeStatus::Stable);
+    assert_eq!(NodeStatus::parse_lossy("DRAFT"), NodeStatus::Draft);
+    assert_eq!(
+        NodeStatus::parse_lossy("DEPRECATED"),
+        NodeStatus::Deprecated
+    );
+    assert_eq!(NodeStatus::parse_lossy("UNKNOWN"), NodeStatus::Stable);
 }
 
 #[test]
@@ -149,6 +152,50 @@ fn test_issue_type_to_code() {
     assert_eq!(
         issue_type_to_code("invalid_observation_pattern"),
         "ERR_INVALID_OBSERVER_PATTERN"
+    );
+    assert_eq!(
+        issue_type_to_code("doc_identity_protocol"),
+        "ERR_DOC_IDENTITY_PROTOCOL"
+    );
+    assert_eq!(
+        issue_type_to_code("missing_package_docs_tree"),
+        "WARN_MISSING_PACKAGE_DOCS_TREE"
+    );
+    assert_eq!(
+        issue_type_to_code("missing_package_docs_index"),
+        "ERR_MISSING_PACKAGE_DOCS_INDEX"
+    );
+    assert_eq!(
+        issue_type_to_code("missing_package_docs_section_landing"),
+        "WARN_MISSING_PACKAGE_DOCS_SECTION"
+    );
+    assert_eq!(
+        issue_type_to_code("missing_package_docs_index_section_link"),
+        "WARN_MISSING_PACKAGE_DOCS_INDEX_LINK"
+    );
+    assert_eq!(
+        issue_type_to_code("missing_package_docs_index_relations_block"),
+        "WARN_MISSING_PACKAGE_DOCS_RELATIONS_BLOCK"
+    );
+    assert_eq!(
+        issue_type_to_code("missing_package_docs_index_footer_block"),
+        "WARN_MISSING_PACKAGE_DOCS_FOOTER_BLOCK"
+    );
+    assert_eq!(
+        issue_type_to_code("incomplete_package_docs_index_footer_block"),
+        "WARN_INCOMPLETE_PACKAGE_DOCS_FOOTER_BLOCK"
+    );
+    assert_eq!(
+        issue_type_to_code("stale_package_docs_index_footer_standards"),
+        "WARN_STALE_PACKAGE_DOCS_FOOTER_STANDARDS"
+    );
+    assert_eq!(
+        issue_type_to_code("missing_package_docs_index_relation_link"),
+        "WARN_MISSING_PACKAGE_DOCS_RELATION_LINK"
+    );
+    assert_eq!(
+        issue_type_to_code("stale_package_docs_index_relation_link"),
+        "WARN_STALE_PACKAGE_DOCS_RELATION_LINK"
     );
     assert_eq!(issue_type_to_code("unknown"), "UNKNOWN");
 }
@@ -208,6 +255,48 @@ fn test_build_file_reports() {
     assert_eq!(reports[1].error_count, 1);
     assert_eq!(reports[1].warning_count, 0);
     assert_eq!(reports[1].health_score, 80);
+}
+
+#[test]
+fn test_build_file_reports_deduplicates_alias_doc_paths() {
+    let cwd = std::env::current_dir().unwrap_or_else(|error| panic!("cwd: {error}"));
+    let temp = tempfile::tempdir_in(&cwd).unwrap_or_else(|error| panic!("tempdir: {error}"));
+    let doc_path = temp.path().join("docs/index.md");
+    let parent = doc_path
+        .parent()
+        .unwrap_or_else(|| panic!("parent directory should exist"));
+    std::fs::create_dir_all(parent).unwrap_or_else(|error| panic!("create dir: {error}"));
+    std::fs::write(&doc_path, "# Demo\n").unwrap_or_else(|error| panic!("write doc: {error}"));
+
+    let absolute_path = doc_path
+        .canonicalize()
+        .unwrap_or_else(|error| panic!("canonicalize: {error}"))
+        .to_string_lossy()
+        .to_string();
+    let relative_path = doc_path
+        .strip_prefix(&cwd)
+        .unwrap_or_else(|error| panic!("strip prefix: {error}"))
+        .to_string_lossy()
+        .to_string();
+
+    let issues = vec![SemanticIssue {
+        severity: "warning".to_string(),
+        issue_type: "doc_identity_protocol".to_string(),
+        doc: absolute_path.clone(),
+        node_id: absolute_path.clone(),
+        message: "Alias path warning".to_string(),
+        location: None,
+        suggestion: None,
+        fuzzy_suggestion: None,
+    }];
+
+    let docs = vec![relative_path.clone(), absolute_path];
+    let reports = build_file_reports(&issues, &docs);
+
+    assert_eq!(reports.len(), 1);
+    assert_eq!(reports[0].path, relative_path);
+    assert_eq!(reports[0].warning_count, 1);
+    assert_eq!(reports[0].error_count, 0);
 }
 
 #[test]

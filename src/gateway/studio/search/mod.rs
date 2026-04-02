@@ -1,15 +1,13 @@
-mod definition;
-mod handlers;
-mod observation_hints;
-mod project_scope;
-mod source_index;
-mod support;
+//! Search backend integration for Studio API.
 
-pub(crate) use definition::{
-    DefinitionMatchMode, DefinitionResolveOptions, resolve_best_definition,
-};
-pub(crate) use handlers::{build_ast_index, build_symbol_index};
-pub(super) use handlers::{
-    search_ast, search_attachments, search_autocomplete, search_definition, search_knowledge,
-    search_references, search_symbols,
-};
+pub mod definition;
+pub mod handlers;
+pub mod observation_hints;
+pub mod project_scope;
+pub mod source_index;
+pub mod support;
+
+pub use handlers::{build_symbol_index, search_index_status};
+
+#[cfg(test)]
+pub use handlers::build_ast_index;

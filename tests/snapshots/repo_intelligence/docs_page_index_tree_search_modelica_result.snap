@@ -1,0 +1,104 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/integration/support/../../support/repo_intelligence.rs
+expression: value
+---
+{
+  "hits": [
+    {
+      "doc_id": "reference/pi-documentation-29b7f862a8d9",
+      "line_range": [
+        18,
+        24
+      ],
+      "node_id": "reference/pi-documentation-29b7f862a8d9#anchors",
+      "node_title": "Anchors",
+      "page_id": "repo:modelica-docs-page-index-tree-search:projection:reference:doc:repo:modelica-docs-page-index-tree-search:doc:Controllers/PI.mo#annotation.documentation",
+      "page_kind": "reference",
+      "page_title": "PI documentation",
+      "path": "reference/pi-documentation-29b7f862a8d9.md",
+      "repo_id": "modelica-docs-page-index-tree-search",
+      "structural_path": [
+        "Overview",
+        "Anchors"
+      ],
+      "text": ":ID: anchors\n:PATHS: Controllers/PI.mo\n\nSymbols:\n- `Projectionica.Controllers.PI` (Controllers/PI.mo)"
+    },
+    {
+      "doc_id": "reference/projectionica-487794888fc5",
+      "line_range": [
+        21,
+        27
+      ],
+      "node_id": "reference/projectionica-487794888fc5#anchors",
+      "node_title": "Anchors",
+      "page_id": "repo:modelica-docs-page-index-tree-search:projection:reference:module:repo:modelica-docs-page-index-tree-search:module:Projectionica",
+      "page_kind": "reference",
+      "page_title": "Projectionica",
+      "path": "reference/projectionica-487794888fc5.md",
+      "repo_id": "modelica-docs-page-index-tree-search",
+      "structural_path": [
+        "Overview",
+        "Anchors"
+      ],
+      "text": ":ID: anchors\n:PATHS: package.mo\n\nModules:\n- `Projectionica` (package.mo)"
+    },
+    {
+      "doc_id": "reference/projectionica-controllers-feaebf29456b",
+      "line_range": [
+        26,
+        32
+      ],
+      "node_id": "reference/projectionica-controllers-feaebf29456b#anchors",
+      "node_title": "Anchors",
+      "page_id": "repo:modelica-docs-page-index-tree-search:projection:reference:module:repo:modelica-docs-page-index-tree-search:module:Projectionica.Controllers",
+      "page_kind": "reference",
+      "page_title": "Projectionica.Controllers",
+      "path": "reference/projectionica-controllers-feaebf29456b.md",
+      "repo_id": "modelica-docs-page-index-tree-search",
+      "structural_path": [
+        "Overview",
+        "Anchors"
+      ],
+      "text": ":ID: anchors\n:PATHS: Controllers/package.mo\n\nModules:\n- `Projectionica.Controllers` (Controllers/package.mo)"
+    },
+    {
+      "doc_id": "reference/projectionica-controllers-pi-0de01f0476e6",
+      "line_range": [
+        19,
+        28
+      ],
+      "node_id": "reference/projectionica-controllers-pi-0de01f0476e6#anchors",
+      "node_title": "Anchors",
+      "page_id": "repo:modelica-docs-page-index-tree-search:projection:reference:symbol:repo:modelica-docs-page-index-tree-search:symbol:Projectionica.Controllers.PI",
+      "page_kind": "reference",
+      "page_title": "Projectionica.Controllers.PI",
+      "path": "reference/projectionica-controllers-pi-0de01f0476e6.md",
+      "repo_id": "modelica-docs-page-index-tree-search",
+      "structural_path": [
+        "Overview",
+        "Anchors"
+      ],
+      "text": ":ID: anchors\n:PATHS: Controllers/PI.mo, Controllers/package.mo\n\nModules:\n- `Projectionica.Controllers` (Controllers/package.mo)\n\nSymbols:\n- `Projectionica.Controllers.PI` (Controllers/PI.mo)"
+    },
+    {
+      "doc_id": "reference/projectionica-controllers-usersguide-6189757aab8c",
+      "line_range": [
+        22,
+        28
+      ],
+      "node_id": "reference/projectionica-controllers-usersguide-6189757aab8c#anchors",
+      "node_title": "Anchors",
+      "page_id": "repo:modelica-docs-page-index-tree-search:projection:reference:module:repo:modelica-docs-page-index-tree-search:module:Projectionica.Controllers.UsersGuide",
+      "page_kind": "reference",
+      "page_title": "Projectionica.Controllers.UsersGuide",
+      "path": "reference/projectionica-controllers-usersguide-6189757aab8c.md",
+      "repo_id": "modelica-docs-page-index-tree-search",
+      "structural_path": [
+        "Overview",
+        "Anchors"
+      ],
+      "text": ":ID: anchors\n:PATHS: Controllers/UsersGuide/package.mo\n\nModules:\n- `Projectionica.Controllers.UsersGuide` (Controllers/UsersGuide/package.mo)"
+    }
+  ],
+  "repo_id": "modelica-docs-page-index-tree-search"
+}

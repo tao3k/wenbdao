@@ -1,25 +1,7 @@
-use std::path::Path;
-
+mod api;
 mod normalize;
 mod parse_target;
 mod scan;
+mod types;
 
-#[derive(Debug, Default)]
-pub(super) struct ExtractedLinkTargets {
-    pub note_links: Vec<String>,
-    pub attachments: Vec<String>,
-}
-
-#[derive(Debug)]
-enum ParsedTarget {
-    Note(String),
-    Attachment(String),
-}
-
-pub(super) fn extract_link_targets(
-    body: &str,
-    source_path: &Path,
-    root: &Path,
-) -> ExtractedLinkTargets {
-    scan::extract_markdown_links_with_comrak(body, source_path, root)
-}
+pub(in crate::link_graph::parser) use api::extract_link_targets;

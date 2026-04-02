@@ -1,0 +1,21 @@
+//! Gateway command implementation - starts the Axum HTTP server.
+//!
+//! This module starts the Wendao API gateway server with:
+//! - REST API endpoints for knowledge graph operations
+//! - VFS access endpoints
+//! - Health check endpoints
+//! - Webhook notification integration
+//! - Signal propagation to `NotificationService`
+
+mod command;
+mod config;
+mod health;
+mod registry;
+mod shared;
+mod status;
+
+pub(crate) use command::handle;
+
+#[cfg(test)]
+#[path = "../../../../../tests/unit/bin/wendao/execute/gateway.rs"]
+mod tests;

@@ -1,0 +1,52 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/integration/../support/repo_intelligence.rs
+expression: value
+---
+{
+  "covered_symbols": 2,
+  "docs": [
+    {
+      "doc_id": "repo:cli-coverage:doc:README.md",
+      "format": "md",
+      "path": "README.md",
+      "repo_id": "cli-coverage",
+      "title": "README.md"
+    },
+    {
+      "doc_id": "repo:cli-coverage:doc:docs/Problem.md",
+      "format": "md",
+      "path": "docs/Problem.md",
+      "repo_id": "cli-coverage",
+      "title": "Problem"
+    },
+    {
+      "doc_id": "repo:cli-coverage:doc:docs/guide.md",
+      "format": "md",
+      "path": "docs/guide.md",
+      "repo_id": "cli-coverage",
+      "title": "guide"
+    },
+    {
+      "doc_id": "repo:cli-coverage:doc:src/CliCoveragePkg.jl#symbol:Problem",
+      "format": "julia_docstring",
+      "path": "src/CliCoveragePkg.jl#symbol:Problem",
+      "repo_id": "cli-coverage",
+      "title": "Problem"
+    },
+    {
+      "doc_id": "repo:cli-coverage:doc:src/CliCoveragePkg.jl#symbol:solve",
+      "format": "julia_docstring",
+      "path": "src/CliCoveragePkg.jl#symbol:solve",
+      "repo_id": "cli-coverage",
+      "title": "solve"
+    }
+  ],
+  "hierarchical_uri": "repo://cli-coverage",
+  "hierarchy": [
+    "repo",
+    "cli-coverage"
+  ],
+  "module_id": null,
+  "repo_id": "cli-coverage",
+  "uncovered_symbols": 0
+}

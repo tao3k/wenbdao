@@ -6,6 +6,7 @@ use super::retrieval_plan::{
 use crate::link_graph::agentic::LinkGraphSuggestedLink;
 use crate::link_graph::models::query::LinkGraphSearchOptions;
 use serde::{Deserialize, Serialize};
+use xiuxian_wendao_core::transport::PluginTransportKind;
 
 /// Canonical planned-search payload used by CLI/bindings.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -47,6 +48,12 @@ pub struct LinkGraphPlannedSearchPayload {
     /// Semantic ignition telemetry for quantum enrichment.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub semantic_ignition: Option<LinkGraphSemanticIgnitionTelemetry>,
+    /// Julia rerank telemetry for optional Arrow IPC post-processing.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub julia_rerank: Option<LinkGraphJuliaRerankTelemetry>,
+    /// Optional precomputed query embedding retained for runtime semantic ignition.
+    #[serde(default, skip)]
+    pub query_vector: Option<Vec<f32>>,
     /// Quantum contexts derived from semantic ignition plus Arrow-native fusion.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub quantum_contexts: Vec<QuantumContext>,
@@ -108,6 +115,31 @@ pub struct LinkGraphSemanticIgnitionTelemetry {
     #[serde(default)]
     pub context_count: usize,
     /// Backend or orchestration error, when enrichment failed closed.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub error: Option<String>,
+}
+
+/// Julia rerank telemetry emitted on planned search payloads.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LinkGraphJuliaRerankTelemetry {
+    /// Whether the remote Julia rerank path was actually executed.
+    pub applied: bool,
+    /// Number of score rows returned by the Julia service.
+    #[serde(default)]
+    pub response_row_count: usize,
+    /// Runtime-selected transport surfaced by the negotiation seam.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub selected_transport: Option<PluginTransportKind>,
+    /// Higher-preference transport skipped before selection.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fallback_from: Option<PluginTransportKind>,
+    /// Reason the runtime fell back from a higher-preference transport.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fallback_reason: Option<String>,
+    /// Optional trace identifiers surfaced from additive Julia response columns.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub trace_ids: Vec<String>,
+    /// Transport, contract, or application error emitted by the rerank step.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub error: Option<String>,
 }

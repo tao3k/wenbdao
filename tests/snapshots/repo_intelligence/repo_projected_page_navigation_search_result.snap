@@ -1,0 +1,979 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/integration/../support/repo_intelligence.rs
+expression: value
+---
+{
+  "hits": [
+    {
+      "navigation": {
+        "center": {
+          "kind": "page",
+          "node": null,
+          "page": {
+            "doc_id": "repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:solve",
+            "doc_ids": [
+              "repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:solve"
+            ],
+            "example_ids": [],
+            "format_hints": [
+              "julia_docstring"
+            ],
+            "keywords": [
+              "julia_docstring",
+              "repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:solve",
+              "solve",
+              "src/ProjectionPkg.jl#symbol:solve"
+            ],
+            "kind": "reference",
+            "module_ids": [],
+            "page_id": "repo:projection-sample:projection:reference:doc:repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:solve",
+            "path": "src/ProjectionPkg.jl#symbol:solve",
+            "paths": [
+              "src/ProjectionPkg.jl#symbol:solve"
+            ],
+            "repo_id": "projection-sample",
+            "sections": [
+              {
+                "body": "Projected reference page for `solve`.\nFormat hints:\n- `julia_docstring`\nSource paths:\n- `src/ProjectionPkg.jl#symbol:solve`",
+                "level": 1,
+                "paths": [
+                  "src/ProjectionPkg.jl#symbol:solve"
+                ],
+                "section_id": "repo:projection-sample:projection:reference:doc:repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:solve#overview",
+                "title": "Overview"
+              },
+              {
+                "body": "Symbols:\n- `ProjectionPkg.solve` (src/ProjectionPkg.jl)",
+                "level": 2,
+                "paths": [
+                  "src/ProjectionPkg.jl"
+                ],
+                "section_id": "repo:projection-sample:projection:reference:doc:repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:solve#anchors",
+                "title": "Anchors"
+              },
+              {
+                "body": "Documentation:\n- `solve` (src/ProjectionPkg.jl#symbol:solve)",
+                "level": 2,
+                "paths": [
+                  "src/ProjectionPkg.jl#symbol:solve"
+                ],
+                "section_id": "repo:projection-sample:projection:reference:doc:repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:solve#sources",
+                "title": "Documentation"
+              }
+            ],
+            "symbol_ids": [
+              "repo:projection-sample:symbol:ProjectionPkg.solve"
+            ],
+            "title": "solve"
+          }
+        },
+        "family_cluster": null,
+        "node_context": null,
+        "related_pages": [
+          {
+            "doc_id": "repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:solve",
+            "doc_ids": [
+              "repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:solve"
+            ],
+            "example_ids": [],
+            "format_hints": [
+              "julia_docstring"
+            ],
+            "keywords": [
+              "ProjectionPkg.solve",
+              "julia_docstring",
+              "repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:solve",
+              "src/ProjectionPkg.jl"
+            ],
+            "kind": "reference",
+            "module_ids": [
+              "repo:projection-sample:module:ProjectionPkg"
+            ],
+            "page_id": "repo:projection-sample:projection:reference:symbol:repo:projection-sample:symbol:ProjectionPkg.solve",
+            "path": "src/ProjectionPkg.jl",
+            "paths": [
+              "src/ProjectionPkg.jl",
+              "src/ProjectionPkg.jl#symbol:solve"
+            ],
+            "repo_id": "projection-sample",
+            "sections": [
+              {
+                "body": "Projected reference page for `ProjectionPkg.solve`.\nFormat hints:\n- `julia_docstring`\nSource paths:\n- `src/ProjectionPkg.jl`\n- `src/ProjectionPkg.jl#symbol:solve`",
+                "level": 1,
+                "paths": [
+                  "src/ProjectionPkg.jl",
+                  "src/ProjectionPkg.jl#symbol:solve"
+                ],
+                "section_id": "repo:projection-sample:projection:reference:symbol:repo:projection-sample:symbol:ProjectionPkg.solve#overview",
+                "title": "Overview"
+              },
+              {
+                "body": "Modules:\n- `ProjectionPkg` (src/ProjectionPkg.jl)\n\nSymbols:\n- `ProjectionPkg.solve` (src/ProjectionPkg.jl)",
+                "level": 2,
+                "paths": [
+                  "src/ProjectionPkg.jl"
+                ],
+                "section_id": "repo:projection-sample:projection:reference:symbol:repo:projection-sample:symbol:ProjectionPkg.solve#anchors",
+                "title": "Anchors"
+              },
+              {
+                "body": "Documentation:\n- `solve` (src/ProjectionPkg.jl#symbol:solve)",
+                "level": 2,
+                "paths": [
+                  "src/ProjectionPkg.jl#symbol:solve"
+                ],
+                "section_id": "repo:projection-sample:projection:reference:symbol:repo:projection-sample:symbol:ProjectionPkg.solve#sources",
+                "title": "Documentation"
+              }
+            ],
+            "symbol_ids": [
+              "repo:projection-sample:symbol:ProjectionPkg.solve"
+            ],
+            "title": "ProjectionPkg.solve"
+          },
+          {
+            "doc_id": "repo:projection-sample:doc:README.md",
+            "doc_ids": [
+              "repo:projection-sample:doc:README.md",
+              "repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:solve",
+              "repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:Problem"
+            ],
+            "example_ids": [],
+            "format_hints": [
+              "julia_docstring",
+              "md"
+            ],
+            "keywords": [
+              "ProjectionPkg",
+              "README.md",
+              "julia_docstring",
+              "md",
+              "repo:projection-sample:doc:README.md"
+            ],
+            "kind": "reference",
+            "module_ids": [
+              "repo:projection-sample:module:ProjectionPkg"
+            ],
+            "page_id": "repo:projection-sample:projection:reference:module:repo:projection-sample:module:ProjectionPkg",
+            "path": "README.md",
+            "paths": [
+              "README.md",
+              "src/ProjectionPkg.jl",
+              "src/ProjectionPkg.jl#symbol:Problem",
+              "src/ProjectionPkg.jl#symbol:solve"
+            ],
+            "repo_id": "projection-sample",
+            "sections": [
+              {
+                "body": "Projected reference page for `ProjectionPkg`.\nFormat hints:\n- `julia_docstring`\n- `md`\nSource paths:\n- `README.md`\n- `src/ProjectionPkg.jl`\n- `src/ProjectionPkg.jl#symbol:Problem`\n- `src/ProjectionPkg.jl#symbol:solve`",
+                "level": 1,
+                "paths": [
+                  "README.md",
+                  "src/ProjectionPkg.jl",
+                  "src/ProjectionPkg.jl#symbol:Problem",
+                  "src/ProjectionPkg.jl#symbol:solve"
+                ],
+                "section_id": "repo:projection-sample:projection:reference:module:repo:projection-sample:module:ProjectionPkg#overview",
+                "title": "Overview"
+              },
+              {
+                "body": "Modules:\n- `ProjectionPkg` (src/ProjectionPkg.jl)",
+                "level": 2,
+                "paths": [
+                  "src/ProjectionPkg.jl"
+                ],
+                "section_id": "repo:projection-sample:projection:reference:module:repo:projection-sample:module:ProjectionPkg#anchors",
+                "title": "Anchors"
+              },
+              {
+                "body": "Documentation:\n- `Problem` (src/ProjectionPkg.jl#symbol:Problem)\n- `README.md` (README.md)\n- `solve` (src/ProjectionPkg.jl#symbol:solve)",
+                "level": 2,
+                "paths": [
+                  "src/ProjectionPkg.jl#symbol:Problem",
+                  "README.md",
+                  "src/ProjectionPkg.jl#symbol:solve"
+                ],
+                "section_id": "repo:projection-sample:projection:reference:module:repo:projection-sample:module:ProjectionPkg#sources",
+                "title": "Documentation"
+              }
+            ],
+            "symbol_ids": [],
+            "title": "ProjectionPkg"
+          }
+        ],
+        "repo_id": "projection-sample",
+        "tree": {
+          "doc_id": "reference/solve-41db401ae519",
+          "kind": "reference",
+          "page_id": "repo:projection-sample:projection:reference:doc:repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:solve",
+          "path": "reference/solve-41db401ae519.md",
+          "repo_id": "projection-sample",
+          "root_count": 2,
+          "roots": [
+            {
+              "children": [],
+              "is_thinned": false,
+              "level": 1,
+              "line_range": [
+                1,
+                7
+              ],
+              "node_id": "reference/solve-41db401ae519#solve",
+              "structural_path": [
+                "solve"
+              ],
+              "summary": ":PROPERTIES:\n:TYPE: PROJECTED_PAGE\n:KIND: reference\n:FORMATS: julia_docstring\n:END:",
+              "text": ":PROPERTIES:\n:TYPE: PROJECTED_PAGE\n:KIND: reference\n:FORMATS: julia_docstring\n:END:",
+              "title": "solve",
+              "token_count": 8
+            },
+            {
+              "children": [
+                {
+                  "children": [],
+                  "is_thinned": false,
+                  "level": 2,
+                  "line_range": [
+                    18,
+                    24
+                  ],
+                  "node_id": "reference/solve-41db401ae519#anchors",
+                  "structural_path": [
+                    "Overview",
+                    "Anchors"
+                  ],
+                  "summary": ":ID: anchors\n:PATHS: src/ProjectionPkg",
+                  "text": ":ID: anchors\n:PATHS: src/ProjectionPkg.jl\n\nSymbols:\n- `ProjectionPkg.solve` (src/ProjectionPkg.jl)",
+                  "title": "Anchors",
+                  "token_count": 8
+                },
+                {
+                  "children": [],
+                  "is_thinned": false,
+                  "level": 2,
+                  "line_range": [
+                    25,
+                    30
+                  ],
+                  "node_id": "reference/solve-41db401ae519#sources",
+                  "structural_path": [
+                    "Overview",
+                    "Documentation"
+                  ],
+                  "summary": ":ID: sources\n:PATHS: src/ProjectionPkg",
+                  "text": ":ID: sources\n:PATHS: src/ProjectionPkg.jl#symbol:solve\n\nDocumentation:\n- `solve` (src/ProjectionPkg.jl#symbol:solve)",
+                  "title": "Documentation",
+                  "token_count": 8
+                }
+              ],
+              "is_thinned": false,
+              "level": 1,
+              "line_range": [
+                8,
+                17
+              ],
+              "node_id": "reference/solve-41db401ae519#overview",
+              "structural_path": [
+                "Overview"
+              ],
+              "summary": ":ID: overview\n:PATHS: src/ProjectionPkg",
+              "text": ":ID: overview\n:PATHS: src/ProjectionPkg.jl#symbol:solve\n\nProjected reference page for `solve`.\nFormat hints:\n- `julia_docstring`\nSource paths:\n- `src/ProjectionPkg.jl#symbol:solve`",
+              "title": "Overview",
+              "token_count": 17
+            }
+          ],
+          "title": "solve"
+        }
+      },
+      "search_score": 100
+    },
+    {
+      "navigation": {
+        "center": {
+          "kind": "page",
+          "node": null,
+          "page": {
+            "doc_id": "repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:solve",
+            "doc_ids": [
+              "repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:solve"
+            ],
+            "example_ids": [],
+            "format_hints": [
+              "julia_docstring"
+            ],
+            "keywords": [
+              "ProjectionPkg.solve",
+              "julia_docstring",
+              "repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:solve",
+              "src/ProjectionPkg.jl"
+            ],
+            "kind": "reference",
+            "module_ids": [
+              "repo:projection-sample:module:ProjectionPkg"
+            ],
+            "page_id": "repo:projection-sample:projection:reference:symbol:repo:projection-sample:symbol:ProjectionPkg.solve",
+            "path": "src/ProjectionPkg.jl",
+            "paths": [
+              "src/ProjectionPkg.jl",
+              "src/ProjectionPkg.jl#symbol:solve"
+            ],
+            "repo_id": "projection-sample",
+            "sections": [
+              {
+                "body": "Projected reference page for `ProjectionPkg.solve`.\nFormat hints:\n- `julia_docstring`\nSource paths:\n- `src/ProjectionPkg.jl`\n- `src/ProjectionPkg.jl#symbol:solve`",
+                "level": 1,
+                "paths": [
+                  "src/ProjectionPkg.jl",
+                  "src/ProjectionPkg.jl#symbol:solve"
+                ],
+                "section_id": "repo:projection-sample:projection:reference:symbol:repo:projection-sample:symbol:ProjectionPkg.solve#overview",
+                "title": "Overview"
+              },
+              {
+                "body": "Modules:\n- `ProjectionPkg` (src/ProjectionPkg.jl)\n\nSymbols:\n- `ProjectionPkg.solve` (src/ProjectionPkg.jl)",
+                "level": 2,
+                "paths": [
+                  "src/ProjectionPkg.jl"
+                ],
+                "section_id": "repo:projection-sample:projection:reference:symbol:repo:projection-sample:symbol:ProjectionPkg.solve#anchors",
+                "title": "Anchors"
+              },
+              {
+                "body": "Documentation:\n- `solve` (src/ProjectionPkg.jl#symbol:solve)",
+                "level": 2,
+                "paths": [
+                  "src/ProjectionPkg.jl#symbol:solve"
+                ],
+                "section_id": "repo:projection-sample:projection:reference:symbol:repo:projection-sample:symbol:ProjectionPkg.solve#sources",
+                "title": "Documentation"
+              }
+            ],
+            "symbol_ids": [
+              "repo:projection-sample:symbol:ProjectionPkg.solve"
+            ],
+            "title": "ProjectionPkg.solve"
+          }
+        },
+        "family_cluster": null,
+        "node_context": null,
+        "related_pages": [
+          {
+            "doc_id": "repo:projection-sample:doc:README.md",
+            "doc_ids": [
+              "repo:projection-sample:doc:README.md",
+              "repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:solve",
+              "repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:Problem"
+            ],
+            "example_ids": [],
+            "format_hints": [
+              "julia_docstring",
+              "md"
+            ],
+            "keywords": [
+              "ProjectionPkg",
+              "README.md",
+              "julia_docstring",
+              "md",
+              "repo:projection-sample:doc:README.md"
+            ],
+            "kind": "reference",
+            "module_ids": [
+              "repo:projection-sample:module:ProjectionPkg"
+            ],
+            "page_id": "repo:projection-sample:projection:reference:module:repo:projection-sample:module:ProjectionPkg",
+            "path": "README.md",
+            "paths": [
+              "README.md",
+              "src/ProjectionPkg.jl",
+              "src/ProjectionPkg.jl#symbol:Problem",
+              "src/ProjectionPkg.jl#symbol:solve"
+            ],
+            "repo_id": "projection-sample",
+            "sections": [
+              {
+                "body": "Projected reference page for `ProjectionPkg`.\nFormat hints:\n- `julia_docstring`\n- `md`\nSource paths:\n- `README.md`\n- `src/ProjectionPkg.jl`\n- `src/ProjectionPkg.jl#symbol:Problem`\n- `src/ProjectionPkg.jl#symbol:solve`",
+                "level": 1,
+                "paths": [
+                  "README.md",
+                  "src/ProjectionPkg.jl",
+                  "src/ProjectionPkg.jl#symbol:Problem",
+                  "src/ProjectionPkg.jl#symbol:solve"
+                ],
+                "section_id": "repo:projection-sample:projection:reference:module:repo:projection-sample:module:ProjectionPkg#overview",
+                "title": "Overview"
+              },
+              {
+                "body": "Modules:\n- `ProjectionPkg` (src/ProjectionPkg.jl)",
+                "level": 2,
+                "paths": [
+                  "src/ProjectionPkg.jl"
+                ],
+                "section_id": "repo:projection-sample:projection:reference:module:repo:projection-sample:module:ProjectionPkg#anchors",
+                "title": "Anchors"
+              },
+              {
+                "body": "Documentation:\n- `Problem` (src/ProjectionPkg.jl#symbol:Problem)\n- `README.md` (README.md)\n- `solve` (src/ProjectionPkg.jl#symbol:solve)",
+                "level": 2,
+                "paths": [
+                  "src/ProjectionPkg.jl#symbol:Problem",
+                  "README.md",
+                  "src/ProjectionPkg.jl#symbol:solve"
+                ],
+                "section_id": "repo:projection-sample:projection:reference:module:repo:projection-sample:module:ProjectionPkg#sources",
+                "title": "Documentation"
+              }
+            ],
+            "symbol_ids": [],
+            "title": "ProjectionPkg"
+          },
+          {
+            "doc_id": "repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:solve",
+            "doc_ids": [
+              "repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:solve"
+            ],
+            "example_ids": [],
+            "format_hints": [
+              "julia_docstring"
+            ],
+            "keywords": [
+              "julia_docstring",
+              "repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:solve",
+              "solve",
+              "src/ProjectionPkg.jl#symbol:solve"
+            ],
+            "kind": "reference",
+            "module_ids": [],
+            "page_id": "repo:projection-sample:projection:reference:doc:repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:solve",
+            "path": "src/ProjectionPkg.jl#symbol:solve",
+            "paths": [
+              "src/ProjectionPkg.jl#symbol:solve"
+            ],
+            "repo_id": "projection-sample",
+            "sections": [
+              {
+                "body": "Projected reference page for `solve`.\nFormat hints:\n- `julia_docstring`\nSource paths:\n- `src/ProjectionPkg.jl#symbol:solve`",
+                "level": 1,
+                "paths": [
+                  "src/ProjectionPkg.jl#symbol:solve"
+                ],
+                "section_id": "repo:projection-sample:projection:reference:doc:repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:solve#overview",
+                "title": "Overview"
+              },
+              {
+                "body": "Symbols:\n- `ProjectionPkg.solve` (src/ProjectionPkg.jl)",
+                "level": 2,
+                "paths": [
+                  "src/ProjectionPkg.jl"
+                ],
+                "section_id": "repo:projection-sample:projection:reference:doc:repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:solve#anchors",
+                "title": "Anchors"
+              },
+              {
+                "body": "Documentation:\n- `solve` (src/ProjectionPkg.jl#symbol:solve)",
+                "level": 2,
+                "paths": [
+                  "src/ProjectionPkg.jl#symbol:solve"
+                ],
+                "section_id": "repo:projection-sample:projection:reference:doc:repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:solve#sources",
+                "title": "Documentation"
+              }
+            ],
+            "symbol_ids": [
+              "repo:projection-sample:symbol:ProjectionPkg.solve"
+            ],
+            "title": "solve"
+          },
+          {
+            "doc_id": "repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:Problem",
+            "doc_ids": [
+              "repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:Problem"
+            ],
+            "example_ids": [],
+            "format_hints": [
+              "julia_docstring"
+            ],
+            "keywords": [
+              "ProjectionPkg.Problem",
+              "julia_docstring",
+              "repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:Problem",
+              "src/ProjectionPkg.jl"
+            ],
+            "kind": "reference",
+            "module_ids": [
+              "repo:projection-sample:module:ProjectionPkg"
+            ],
+            "page_id": "repo:projection-sample:projection:reference:symbol:repo:projection-sample:symbol:ProjectionPkg.Problem",
+            "path": "src/ProjectionPkg.jl",
+            "paths": [
+              "src/ProjectionPkg.jl",
+              "src/ProjectionPkg.jl#symbol:Problem"
+            ],
+            "repo_id": "projection-sample",
+            "sections": [
+              {
+                "body": "Projected reference page for `ProjectionPkg.Problem`.\nFormat hints:\n- `julia_docstring`\nSource paths:\n- `src/ProjectionPkg.jl`\n- `src/ProjectionPkg.jl#symbol:Problem`",
+                "level": 1,
+                "paths": [
+                  "src/ProjectionPkg.jl",
+                  "src/ProjectionPkg.jl#symbol:Problem"
+                ],
+                "section_id": "repo:projection-sample:projection:reference:symbol:repo:projection-sample:symbol:ProjectionPkg.Problem#overview",
+                "title": "Overview"
+              },
+              {
+                "body": "Modules:\n- `ProjectionPkg` (src/ProjectionPkg.jl)\n\nSymbols:\n- `ProjectionPkg.Problem` (src/ProjectionPkg.jl)",
+                "level": 2,
+                "paths": [
+                  "src/ProjectionPkg.jl"
+                ],
+                "section_id": "repo:projection-sample:projection:reference:symbol:repo:projection-sample:symbol:ProjectionPkg.Problem#anchors",
+                "title": "Anchors"
+              },
+              {
+                "body": "Documentation:\n- `Problem` (src/ProjectionPkg.jl#symbol:Problem)",
+                "level": 2,
+                "paths": [
+                  "src/ProjectionPkg.jl#symbol:Problem"
+                ],
+                "section_id": "repo:projection-sample:projection:reference:symbol:repo:projection-sample:symbol:ProjectionPkg.Problem#sources",
+                "title": "Documentation"
+              }
+            ],
+            "symbol_ids": [
+              "repo:projection-sample:symbol:ProjectionPkg.Problem"
+            ],
+            "title": "ProjectionPkg.Problem"
+          }
+        ],
+        "repo_id": "projection-sample",
+        "tree": {
+          "doc_id": "reference/projectionpkg-solve-ff4addb9b708",
+          "kind": "reference",
+          "page_id": "repo:projection-sample:projection:reference:symbol:repo:projection-sample:symbol:ProjectionPkg.solve",
+          "path": "reference/projectionpkg-solve-ff4addb9b708.md",
+          "repo_id": "projection-sample",
+          "root_count": 2,
+          "roots": [
+            {
+              "children": [],
+              "is_thinned": false,
+              "level": 1,
+              "line_range": [
+                1,
+                7
+              ],
+              "node_id": "reference/projectionpkg-solve-ff4addb9b708#projectionpkg-solve",
+              "structural_path": [
+                "ProjectionPkg.solve"
+              ],
+              "summary": ":PROPERTIES:\n:TYPE: PROJECTED_PAGE\n:KIND: reference\n:FORMATS: julia_docstring\n:END:",
+              "text": ":PROPERTIES:\n:TYPE: PROJECTED_PAGE\n:KIND: reference\n:FORMATS: julia_docstring\n:END:",
+              "title": "ProjectionPkg.solve",
+              "token_count": 8
+            },
+            {
+              "children": [
+                {
+                  "children": [],
+                  "is_thinned": false,
+                  "level": 2,
+                  "line_range": [
+                    19,
+                    28
+                  ],
+                  "node_id": "reference/projectionpkg-solve-ff4addb9b708#anchors",
+                  "structural_path": [
+                    "Overview",
+                    "Anchors"
+                  ],
+                  "summary": ":ID: anchors\n:PATHS: src/ProjectionPkg",
+                  "text": ":ID: anchors\n:PATHS: src/ProjectionPkg.jl\n\nModules:\n- `ProjectionPkg` (src/ProjectionPkg.jl)\n\nSymbols:\n- `ProjectionPkg.solve` (src/ProjectionPkg.jl)",
+                  "title": "Anchors",
+                  "token_count": 12
+                },
+                {
+                  "children": [],
+                  "is_thinned": false,
+                  "level": 2,
+                  "line_range": [
+                    29,
+                    34
+                  ],
+                  "node_id": "reference/projectionpkg-solve-ff4addb9b708#sources",
+                  "structural_path": [
+                    "Overview",
+                    "Documentation"
+                  ],
+                  "summary": ":ID: sources\n:PATHS: src/ProjectionPkg",
+                  "text": ":ID: sources\n:PATHS: src/ProjectionPkg.jl#symbol:solve\n\nDocumentation:\n- `solve` (src/ProjectionPkg.jl#symbol:solve)",
+                  "title": "Documentation",
+                  "token_count": 8
+                }
+              ],
+              "is_thinned": false,
+              "level": 1,
+              "line_range": [
+                8,
+                18
+              ],
+              "node_id": "reference/projectionpkg-solve-ff4addb9b708#overview",
+              "structural_path": [
+                "Overview"
+              ],
+              "summary": ":ID: overview\n:PATHS: src/ProjectionPkg",
+              "text": ":ID: overview\n:PATHS: src/ProjectionPkg.jl, src/ProjectionPkg.jl#symbol:solve\n\nProjected reference page for `ProjectionPkg.solve`.\nFormat hints:\n- `julia_docstring`\nSource paths:\n- `src/ProjectionPkg.jl`\n- `src/ProjectionPkg.jl#symbol:solve`",
+              "title": "Overview",
+              "token_count": 20
+            }
+          ],
+          "title": "ProjectionPkg.solve"
+        }
+      },
+      "search_score": 70
+    },
+    {
+      "navigation": {
+        "center": {
+          "kind": "page",
+          "node": null,
+          "page": {
+            "doc_id": "repo:projection-sample:doc:README.md",
+            "doc_ids": [
+              "repo:projection-sample:doc:README.md",
+              "repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:solve",
+              "repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:Problem"
+            ],
+            "example_ids": [],
+            "format_hints": [
+              "julia_docstring",
+              "md"
+            ],
+            "keywords": [
+              "ProjectionPkg",
+              "README.md",
+              "julia_docstring",
+              "md",
+              "repo:projection-sample:doc:README.md"
+            ],
+            "kind": "reference",
+            "module_ids": [
+              "repo:projection-sample:module:ProjectionPkg"
+            ],
+            "page_id": "repo:projection-sample:projection:reference:module:repo:projection-sample:module:ProjectionPkg",
+            "path": "README.md",
+            "paths": [
+              "README.md",
+              "src/ProjectionPkg.jl",
+              "src/ProjectionPkg.jl#symbol:Problem",
+              "src/ProjectionPkg.jl#symbol:solve"
+            ],
+            "repo_id": "projection-sample",
+            "sections": [
+              {
+                "body": "Projected reference page for `ProjectionPkg`.\nFormat hints:\n- `julia_docstring`\n- `md`\nSource paths:\n- `README.md`\n- `src/ProjectionPkg.jl`\n- `src/ProjectionPkg.jl#symbol:Problem`\n- `src/ProjectionPkg.jl#symbol:solve`",
+                "level": 1,
+                "paths": [
+                  "README.md",
+                  "src/ProjectionPkg.jl",
+                  "src/ProjectionPkg.jl#symbol:Problem",
+                  "src/ProjectionPkg.jl#symbol:solve"
+                ],
+                "section_id": "repo:projection-sample:projection:reference:module:repo:projection-sample:module:ProjectionPkg#overview",
+                "title": "Overview"
+              },
+              {
+                "body": "Modules:\n- `ProjectionPkg` (src/ProjectionPkg.jl)",
+                "level": 2,
+                "paths": [
+                  "src/ProjectionPkg.jl"
+                ],
+                "section_id": "repo:projection-sample:projection:reference:module:repo:projection-sample:module:ProjectionPkg#anchors",
+                "title": "Anchors"
+              },
+              {
+                "body": "Documentation:\n- `Problem` (src/ProjectionPkg.jl#symbol:Problem)\n- `README.md` (README.md)\n- `solve` (src/ProjectionPkg.jl#symbol:solve)",
+                "level": 2,
+                "paths": [
+                  "src/ProjectionPkg.jl#symbol:Problem",
+                  "README.md",
+                  "src/ProjectionPkg.jl#symbol:solve"
+                ],
+                "section_id": "repo:projection-sample:projection:reference:module:repo:projection-sample:module:ProjectionPkg#sources",
+                "title": "Documentation"
+              }
+            ],
+            "symbol_ids": [],
+            "title": "ProjectionPkg"
+          }
+        },
+        "family_cluster": null,
+        "node_context": null,
+        "related_pages": [
+          {
+            "doc_id": "repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:Problem",
+            "doc_ids": [
+              "repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:Problem"
+            ],
+            "example_ids": [],
+            "format_hints": [
+              "julia_docstring"
+            ],
+            "keywords": [
+              "ProjectionPkg.Problem",
+              "julia_docstring",
+              "repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:Problem",
+              "src/ProjectionPkg.jl"
+            ],
+            "kind": "reference",
+            "module_ids": [
+              "repo:projection-sample:module:ProjectionPkg"
+            ],
+            "page_id": "repo:projection-sample:projection:reference:symbol:repo:projection-sample:symbol:ProjectionPkg.Problem",
+            "path": "src/ProjectionPkg.jl",
+            "paths": [
+              "src/ProjectionPkg.jl",
+              "src/ProjectionPkg.jl#symbol:Problem"
+            ],
+            "repo_id": "projection-sample",
+            "sections": [
+              {
+                "body": "Projected reference page for `ProjectionPkg.Problem`.\nFormat hints:\n- `julia_docstring`\nSource paths:\n- `src/ProjectionPkg.jl`\n- `src/ProjectionPkg.jl#symbol:Problem`",
+                "level": 1,
+                "paths": [
+                  "src/ProjectionPkg.jl",
+                  "src/ProjectionPkg.jl#symbol:Problem"
+                ],
+                "section_id": "repo:projection-sample:projection:reference:symbol:repo:projection-sample:symbol:ProjectionPkg.Problem#overview",
+                "title": "Overview"
+              },
+              {
+                "body": "Modules:\n- `ProjectionPkg` (src/ProjectionPkg.jl)\n\nSymbols:\n- `ProjectionPkg.Problem` (src/ProjectionPkg.jl)",
+                "level": 2,
+                "paths": [
+                  "src/ProjectionPkg.jl"
+                ],
+                "section_id": "repo:projection-sample:projection:reference:symbol:repo:projection-sample:symbol:ProjectionPkg.Problem#anchors",
+                "title": "Anchors"
+              },
+              {
+                "body": "Documentation:\n- `Problem` (src/ProjectionPkg.jl#symbol:Problem)",
+                "level": 2,
+                "paths": [
+                  "src/ProjectionPkg.jl#symbol:Problem"
+                ],
+                "section_id": "repo:projection-sample:projection:reference:symbol:repo:projection-sample:symbol:ProjectionPkg.Problem#sources",
+                "title": "Documentation"
+              }
+            ],
+            "symbol_ids": [
+              "repo:projection-sample:symbol:ProjectionPkg.Problem"
+            ],
+            "title": "ProjectionPkg.Problem"
+          },
+          {
+            "doc_id": "repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:solve",
+            "doc_ids": [
+              "repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:solve"
+            ],
+            "example_ids": [],
+            "format_hints": [
+              "julia_docstring"
+            ],
+            "keywords": [
+              "ProjectionPkg.solve",
+              "julia_docstring",
+              "repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:solve",
+              "src/ProjectionPkg.jl"
+            ],
+            "kind": "reference",
+            "module_ids": [
+              "repo:projection-sample:module:ProjectionPkg"
+            ],
+            "page_id": "repo:projection-sample:projection:reference:symbol:repo:projection-sample:symbol:ProjectionPkg.solve",
+            "path": "src/ProjectionPkg.jl",
+            "paths": [
+              "src/ProjectionPkg.jl",
+              "src/ProjectionPkg.jl#symbol:solve"
+            ],
+            "repo_id": "projection-sample",
+            "sections": [
+              {
+                "body": "Projected reference page for `ProjectionPkg.solve`.\nFormat hints:\n- `julia_docstring`\nSource paths:\n- `src/ProjectionPkg.jl`\n- `src/ProjectionPkg.jl#symbol:solve`",
+                "level": 1,
+                "paths": [
+                  "src/ProjectionPkg.jl",
+                  "src/ProjectionPkg.jl#symbol:solve"
+                ],
+                "section_id": "repo:projection-sample:projection:reference:symbol:repo:projection-sample:symbol:ProjectionPkg.solve#overview",
+                "title": "Overview"
+              },
+              {
+                "body": "Modules:\n- `ProjectionPkg` (src/ProjectionPkg.jl)\n\nSymbols:\n- `ProjectionPkg.solve` (src/ProjectionPkg.jl)",
+                "level": 2,
+                "paths": [
+                  "src/ProjectionPkg.jl"
+                ],
+                "section_id": "repo:projection-sample:projection:reference:symbol:repo:projection-sample:symbol:ProjectionPkg.solve#anchors",
+                "title": "Anchors"
+              },
+              {
+                "body": "Documentation:\n- `solve` (src/ProjectionPkg.jl#symbol:solve)",
+                "level": 2,
+                "paths": [
+                  "src/ProjectionPkg.jl#symbol:solve"
+                ],
+                "section_id": "repo:projection-sample:projection:reference:symbol:repo:projection-sample:symbol:ProjectionPkg.solve#sources",
+                "title": "Documentation"
+              }
+            ],
+            "symbol_ids": [
+              "repo:projection-sample:symbol:ProjectionPkg.solve"
+            ],
+            "title": "ProjectionPkg.solve"
+          },
+          {
+            "doc_id": "repo:projection-sample:doc:README.md",
+            "doc_ids": [
+              "repo:projection-sample:doc:README.md"
+            ],
+            "example_ids": [],
+            "format_hints": [
+              "md"
+            ],
+            "keywords": [
+              "README.md",
+              "md",
+              "repo:projection-sample:doc:README.md"
+            ],
+            "kind": "explanation",
+            "module_ids": [
+              "repo:projection-sample:module:ProjectionPkg"
+            ],
+            "page_id": "repo:projection-sample:projection:explanation:doc:repo:projection-sample:doc:README.md",
+            "path": "README.md",
+            "paths": [
+              "README.md"
+            ],
+            "repo_id": "projection-sample",
+            "sections": [
+              {
+                "body": "Projected explanation page for `README.md`.\nFormat hints:\n- `md`\nSource paths:\n- `README.md`",
+                "level": 1,
+                "paths": [
+                  "README.md"
+                ],
+                "section_id": "repo:projection-sample:projection:explanation:doc:repo:projection-sample:doc:README.md#overview",
+                "title": "Overview"
+              },
+              {
+                "body": "Modules:\n- `ProjectionPkg` (src/ProjectionPkg.jl)",
+                "level": 2,
+                "paths": [
+                  "src/ProjectionPkg.jl"
+                ],
+                "section_id": "repo:projection-sample:projection:explanation:doc:repo:projection-sample:doc:README.md#anchors",
+                "title": "Anchors"
+              },
+              {
+                "body": "Documentation:\n- `README.md` (README.md)",
+                "level": 2,
+                "paths": [
+                  "README.md"
+                ],
+                "section_id": "repo:projection-sample:projection:explanation:doc:repo:projection-sample:doc:README.md#sources",
+                "title": "Sources"
+              }
+            ],
+            "symbol_ids": [],
+            "title": "README.md"
+          }
+        ],
+        "repo_id": "projection-sample",
+        "tree": {
+          "doc_id": "reference/projectionpkg-791df3111a8d",
+          "kind": "reference",
+          "page_id": "repo:projection-sample:projection:reference:module:repo:projection-sample:module:ProjectionPkg",
+          "path": "reference/projectionpkg-791df3111a8d.md",
+          "repo_id": "projection-sample",
+          "root_count": 2,
+          "roots": [
+            {
+              "children": [],
+              "is_thinned": false,
+              "level": 1,
+              "line_range": [
+                1,
+                7
+              ],
+              "node_id": "reference/projectionpkg-791df3111a8d#projectionpkg",
+              "structural_path": [
+                "ProjectionPkg"
+              ],
+              "summary": ":PROPERTIES:\n:TYPE: PROJECTED_PAGE\n:KIND: reference\n:FORMATS: julia_docstring, md\n:END:",
+              "text": ":PROPERTIES:\n:TYPE: PROJECTED_PAGE\n:KIND: reference\n:FORMATS: julia_docstring, md\n:END:",
+              "title": "ProjectionPkg",
+              "token_count": 9
+            },
+            {
+              "children": [
+                {
+                  "children": [],
+                  "is_thinned": false,
+                  "level": 2,
+                  "line_range": [
+                    22,
+                    28
+                  ],
+                  "node_id": "reference/projectionpkg-791df3111a8d#anchors",
+                  "structural_path": [
+                    "Overview",
+                    "Anchors"
+                  ],
+                  "summary": ":ID: anchors\n:PATHS: src/ProjectionPkg",
+                  "text": ":ID: anchors\n:PATHS: src/ProjectionPkg.jl\n\nModules:\n- `ProjectionPkg` (src/ProjectionPkg.jl)",
+                  "title": "Anchors",
+                  "token_count": 8
+                },
+                {
+                  "children": [],
+                  "is_thinned": false,
+                  "level": 2,
+                  "line_range": [
+                    29,
+                    36
+                  ],
+                  "node_id": "reference/projectionpkg-791df3111a8d#sources",
+                  "structural_path": [
+                    "Overview",
+                    "Documentation"
+                  ],
+                  "summary": ":ID: sources\n:PATHS: src/ProjectionPkg",
+                  "text": ":ID: sources\n:PATHS: src/ProjectionPkg.jl#symbol:Problem, README.md, src/ProjectionPkg.jl#symbol:solve\n\nDocumentation:\n- `Problem` (src/ProjectionPkg.jl#symbol:Problem)\n- `README.md` (README.md)\n- `solve` (src/ProjectionPkg.jl#symbol:solve)",
+                  "title": "Documentation",
+                  "token_count": 16
+                }
+              ],
+              "is_thinned": false,
+              "level": 1,
+              "line_range": [
+                8,
+                21
+              ],
+              "node_id": "reference/projectionpkg-791df3111a8d#overview",
+              "structural_path": [
+                "Overview"
+              ],
+              "summary": ":ID: overview\n:PATHS: README",
+              "text": ":ID: overview\n:PATHS: README.md, src/ProjectionPkg.jl, src/ProjectionPkg.jl#symbol:Problem, src/ProjectionPkg.jl#symbol:solve\n\nProjected reference page for `ProjectionPkg`.\nFormat hints:\n- `julia_docstring`\n- `md`\nSource paths:\n- `README.md`\n- `src/ProjectionPkg.jl`\n- `src/ProjectionPkg.jl#symbol:Problem`\n- `src/ProjectionPkg.jl#symbol:solve`",
+              "title": "Overview",
+              "token_count": 28
+            }
+          ],
+          "title": "ProjectionPkg"
+        }
+      },
+      "search_score": 50
+    }
+  ],
+  "repo_id": "projection-sample"
+}

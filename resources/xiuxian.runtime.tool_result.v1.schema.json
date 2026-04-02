@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "xiuxian.runtime.tool_result.v1.schema.json",
+  "title": "Xiuxian Runtime Tool Result v1",
+  "description": "Canonical shape for retained tool results across Rust/Python runtime boundaries.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["content", "isError"],
+  "properties": {
+    "content": {
+      "type": "array",
+      "description": "List of content items in the retained tool-result content shape. At least one item with type 'text' for display.",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["type", "text"],
+        "properties": {
+          "type": { "const": "text" },
+          "text": { "type": "string" }
+        }
+      }
+    },
+    "isError": {
+      "type": "boolean",
+      "description": "True when the tool returned an error (e.g. ExecutionResult.success=false)."
+    }
+  }
+}

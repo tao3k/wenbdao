@@ -35,9 +35,92 @@ Unlike Obsidian's flat structure, Wendao builds a recursive **Semantic Tree** of
 
 Fuses fuzzy **Vector Search** (semantic intuition) with precise **Graph Diffusion** (logical reasoning). Using a neurobiologically inspired **PPR algorithm** (Personalized PageRank), Wendao finds not just "similar" text, but "logically relevant" knowledge clusters.
 
-### 3. Apache Arrow IPC
+### 3. Apache Arrow Flight
 
 Built on top of the **Arrow Data Ecosystem**. Knowledge flows through the engine as columnar memory batches. This ensures **Zero-copy** overhead during retrieval, re-ranking, and injection, making it capable of handling millions of nodes at sub-millisecond latency.
+
+The business boundary is now pure Arrow Flight. The outward HTTP business
+surfaces `/api/search/{intent,attachments,references,symbols,ast}` and
+`/api/analysis/{markdown,code-ast}` are retired.
+
+The canonical business contracts are:
+
+- `/search/intent`
+- `/search/attachments`
+- `/search/references`
+- `/search/symbols`
+- `/search/ast`
+- `/analysis/markdown`
+- `/analysis/code-ast`
+
+The stable runtime metadata keys are:
+
+- `x-wendao-search-query`
+- `x-wendao-search-limit`
+- `x-wendao-analysis-path`
+- `x-wendao-analysis-repo`
+- `x-wendao-analysis-line`
+
+The bundled OpenAPI artifact now keeps only the JSON control plane for these
+families. The semantic Flight search contract is pinned by
+`tests/snapshots/gateway/studio/search_flight_service_route_contracts.snap`.
+`/api/ui/capabilities` no longer advertises a browser search Arrow transport,
+because there is no remaining browser-facing search Arrow business surface.
+
+The same `analysis/` folder is now also split by lane internally:
+
+- `analysis/service/markdown.rs`
+- `analysis/service/code_ast.rs`
+- `analysis/types/markdown.rs`
+- `analysis/types/code_ast.rs`
+
+This keeps the canonical Flight routes unchanged while removing the remaining
+mixed `service.rs` and `types.rs` internals.
+
+The old `analysis_exports.rs` forwarding hop is also gone now. Handler-level
+barrels re-export the canonical analysis routes directly from the `analysis`
+feature folder instead of bouncing through a second legacy file.
+
+The same cleanup pattern has now started on the remaining handler families:
+the old `capabilities_exports.rs` forwarding hop is gone, and
+`handlers/mod.rs` re-exports `get_ui_capabilities` and `get_plugin_artifact`
+directly from the `capabilities` feature folder.
+
+The same is now true for UI config: `ui_config_exports.rs` is gone, and
+`handlers/mod.rs` re-exports `get_ui_config` / `set_ui_config` directly from
+the `ui_config` handler module without changing the outward route names.
+
+The same cleanup now also covers VFS: `vfs_exports.rs` is gone, and
+`handlers/mod.rs` re-exports `vfs_root_entries`, `vfs_scan`, `vfs_cat`,
+`vfs_resolve`, and `vfs_entry` directly from the `vfs` handler module. During
+that cleanup, the checked-in bundled OpenAPI artifact was also brought back
+into sync with the declared route inventory by restoring the generic plugin
+artifact inspection path.
+
+The same direct re-export pattern now also covers graph handlers:
+`graph_exports.rs` is gone, and `handlers/mod.rs` re-exports
+`graph_neighbors`, `node_neighbors`, and `topology_3d` directly from the
+`graph` feature folder.
+
+Current fit audit for the remaining search-family Flight contracts is explicit:
+
+- `references`: fits the generic Flight search seam (`query + limit`)
+- `symbols`: fits the generic Flight search seam (`query + limit`)
+- `attachments`: does not fit the generic seam because it requires `ext`,
+  `kind`, and `case_sensitive`, so it now uses its own dedicated attachment
+  Flight provider seam instead
+- `ast`: not a clean generic-seam candidate; it is tied to the local
+  symbol-index path, so the canonical surface is the dedicated Flight route
+  `/search/ast` backed by its own AST provider seam
+
+That audit result is now reflected in the runtime substrate. The generic
+Flight search matcher no longer claims `/search/attachments` or `/search/ast`.
+`xiuxian-wendao-runtime` now exposes a dedicated attachment-search Flight
+contract with explicit metadata headers for `ext`, `kind`, and
+`case_sensitive`, plus a separate `AttachmentSearchFlightRouteProvider`
+boundary, and a separate `AstSearchFlightRouteProvider` boundary for the
+local symbol-index path. The semantic search contract is now locked by the
+Studio Flight snapshot suite rather than by browser Arrow IPC routes.
 
 ---
 
@@ -57,6 +140,435 @@ Wendao is physically grounded in cutting-edge RAG research:
 - **Hot Cache**: Valkey (In-memory graph adjacency and saliency scores)
 - **Cold Storage**: LanceDB (Persistent vector anchors and Arrow fragments)
 - **Protocol**: Apache Arrow (Universal knowledge transport layer)
+
+### Julia Arrow Adapter
+
+`xiuxian-wendao` now exposes a thin Julia-facing service adapter for the
+WendaoArrow transport contract. The core crate keeps the existing synchronous
+repository analyzer trait unchanged, while `analyzers::fetch_julia_flight_score_rows_for_repository`
+provides an explicit async entrypoint for:
+
+- resolving repository-configured Julia Flight transport settings
+- executing the Arrow Flight roundtrip
+- validating the WendaoArrow `v1` response contract
+- materializing `doc_id`, `analyzer_score`, and `final_score` into typed Rust rows
+
+The same boundary now also exposes `analyzers::build_julia_arrow_request_batch`
+and `analyzers::JuliaArrowRequestRow`, so higher-level retrieval code can build
+the canonical WendaoArrow `v1` request payload without duplicating Arrow schema
+construction.
+
+That contract surface now also exports canonical request/response column-name
+constants such as `JULIA_ARROW_DOC_ID_COLUMN`,
+`JULIA_ARROW_VECTOR_SCORE_COLUMN`, `JULIA_ARROW_ANALYZER_SCORE_COLUMN`, and
+`JULIA_ARROW_FINAL_SCORE_COLUMN`, so downstream crates do not need to repeat
+WendaoArrow field-name literals.
+
+The same module now also exposes `julia_arrow_request_schema(...)` and
+`julia_arrow_response_schema(...)`, so request/response fixtures can share one
+typed Arrow schema definition instead of rebuilding the WendaoArrow `v1`
+contract from repeated `Field::new(...)` literals.
+
+For link-graph semantic retrieval, `VectorStoreSemanticIgnition` now also
+provides `build_julia_rerank_request_batch(...)`, which reuses anchor ids as
+the stable request-row identity and assembles a Julia-ready Arrow batch from
+`QuantumAnchorHit` values plus the current query vector.
+
+`OpenAiCompatibleSemanticIgnition` now exposes the same
+`build_julia_rerank_request_batch(...)` surface. It resolves the effective
+query vector from either an explicit `query_vector` or an
+OpenAI-compatible embedding call, then builds the canonical WendaoArrow `v1`
+request batch from the resulting anchors and stored embeddings.
+
+For the link-graph runtime, `link_graph.retrieval.julia_rerank` is now the
+dedicated config namespace for the future WendaoArrow post-processing step.
+The runtime currently resolves `base_url`, `route`, `health_route`,
+`schema_version`, and `timeout_secs`, and planned-search payloads now keep a
+separate `julia_rerank` telemetry slot so remote Julia transport state stays
+separate from `semantic_ignition`.
+
+The OpenAI-compatible semantic-ignition runtime path now uses that config as an
+optional post-processing stage. When configured, Wendao can build the
+WendaoArrow `v1` request batch, call the remote Julia service, validate the
+Arrow response contract, and overwrite `QuantumContext.saliency_score` with the
+returned Julia `final_score`. Transport or contract failures degrade cleanly
+back to the original Rust-side quantum-fusion ordering and are recorded in
+`julia_rerank` telemetry.
+
+That runtime path is now covered by a planned-search loopback integration test
+that keeps a local mock only for `/v1/embeddings`, but sends the rerank Arrow
+IPC request to the real `.data/WendaoArrow` Julia service, then asserts the
+Julia `final_score` response actually reorders emitted `quantum_contexts`.
+
+The vector-store semantic-ignition backend can now enter the same Julia rerank
+path when the caller provides a precomputed query vector through the planned
+search runtime. Wendao keeps that vector in the in-memory payload runtime state
+only, uses it to build the WendaoArrow request batch, and still avoids
+serializing it into the external payload contract.
+
+That vector-store runtime path is also now covered against the real
+`.data/WendaoArrow` Julia service rather than a Rust-side Arrow mock.
+
+There is now also a dedicated planned-search integration that targets the
+package-owned `.data/WendaoArrow/scripts/run_stream_scoring_server.sh`
+example, so the main crate validates not only custom Julia rerank responses
+but also the official stream scoring example surface.
+
+A second package-owned integration now targets
+`.data/WendaoAnalyzer/scripts/run_stream_linear_blend_server.sh`, so the main
+crate also validates the first real analyzer package surface instead of only
+transport-layer examples.
+
+The Julia rerank runtime config can now also express analyzer-owned strategy
+selection fields:
+
+- `link_graph.retrieval.julia_rerank.service_mode`
+- `link_graph.retrieval.julia_rerank.analyzer_config_path`
+- `link_graph.retrieval.julia_rerank.analyzer_strategy`
+- `link_graph.retrieval.julia_rerank.vector_weight`
+- `link_graph.retrieval.julia_rerank.similarity_weight`
+
+These fields are additive. They do not change the Arrow transport contract, and
+they are currently validated through main integration coverage against the
+analyzer-owned test server surface. `LinkGraphJuliaRerankRuntimeConfig` now
+comes from the Julia-owned compatibility surface, while `xiuxian-wendao`
+keeps only the re-export seam. That runtime record also exposes
+`analyzer_service_descriptor()` so Rust-side code can derive the analyzer-owned
+launch contract without repeating field mapping. The same runtime surface now
+also exposes `analyzer_launch_manifest()`, which resolves the generic analyzer
+launcher path and ordered Julia CLI args into one Julia-owned manifest.
+
+For analyzer-owned deployments, the current service contract is intentionally
+split:
+
+- `xiuxian-wendao` owns remote Julia rerank addressing through
+  `link_graph.retrieval.julia_rerank.*`
+- `WendaoAnalyzer` owns analyzer strategy flags such as
+  `--analyzer-config`, `--analyzer-strategy`, `--vector-weight`, and
+  `--similarity-weight`
+- remaining HTTP and Arrow transport flags are still passed through to
+  `WendaoArrow`
+
+The Rust integration support now consumes that launch manifest directly, so it
+no longer has to hardcode the analyzer launcher script name or hand-assemble
+ordered Julia args from repeated field mapping.
+
+The same runtime surface now also exposes `deployment_artifact()`, which
+packages the resolved transport coordinates and analyzer launch manifest into
+one serializable artifact suitable for inspection or persistence. That
+artifact now also owns `to_toml_string()` and `write_toml_file(...)`, so
+runtime assembly can export the resolved Julia deployment contract without
+repeating serialization or file-write conventions outside `xiuxian-wendao`.
+The deployment artifact now also carries artifact-level inspection metadata:
+`artifact_schema_version` identifies the artifact contract itself, while
+`generated_at` records when a concrete JSON/TOML export instance was rendered.
+On top of that, the remaining Julia-shaped launch and deployment DTOs are now
+package-owned by `xiuxian-wendao-julia`, so callers that still need the
+legacy Julia compatibility records should import them from the Julia package
+rather than from `xiuxian-wendao` crate-root shims.
+
+For downstream Rust imports:
+
+- prefer `xiuxian_wendao_julia::compatibility::link_graph::*` for Julia-owned
+  deployment and launch compatibility DTOs such as
+  `LinkGraphJuliaRerankRuntimeConfig` and
+  `LinkGraphJuliaDeploymentArtifact`
+- treat `xiuxian-wendao` itself as the owner of the generic plugin-artifact
+  surfaces and runtime binding helpers
+- do not expect a crate-root `xiuxian_wendao::compatibility::*` namespace;
+  that host migration shim is retired
+
+```rust
+use xiuxian_wendao_julia::compatibility::link_graph::{
+    DEFAULT_JULIA_ANALYZER_LAUNCHER_PATH, LinkGraphJuliaDeploymentArtifact,
+    LinkGraphJuliaRerankRuntimeConfig,
+};
+
+let _ = core::mem::size_of::<LinkGraphJuliaRerankRuntimeConfig>();
+let _ = core::mem::size_of::<LinkGraphJuliaDeploymentArtifact>();
+let _launcher = DEFAULT_JULIA_ANALYZER_LAUNCHER_PATH;
+```
+
+For inspection surfaces, the same export is now visible through
+`zhenfa_router` as `wendao.plugin_artifact`, which returns one resolved
+artifact selected by `plugin_id` and `artifact_id` over the existing
+native/RPC tool boundary. The tool defaults to TOML, also supports a
+structured JSON variant via `output_format = "json"`, and accepts an optional
+`output_path` for direct TOML or JSON export instead of only returning the
+rendered payload inline.
+Studio now also exposes the same resolved artifact at
+`GET /api/ui/plugins/{plugin_id}/artifacts/{artifact_id}`, returning the
+structured generic plugin-artifact JSON directly from the gateway debug
+surface. The same endpoint also accepts `?format=toml` for parity with the
+tool-side inspection surface. That Studio inspection surface is now also
+formalized in the gateway OpenAPI route inventory around the generic
+`UiPluginArtifact` payload, so the debug endpoint no longer leaks the raw
+link-graph runtime artifact struct directly.
+The Studio JSON payload includes the same artifact-level metadata fields, so
+UI/debug consumers can distinguish artifact-contract versioning from the
+underlying WendaoArrow transport `schema_version`.
+The current frontend consumer surface now also exposes this endpoint through
+typed API client methods, so Qianji Studio can request either the structured
+JSON artifact or the TOML inspection view without issuing raw fetch calls.
+That same frontend consumer path is now also rendered in the Studio workspace
+StatusBar as a Julia rerank inspection chip, so the resolved deployment
+artifact is visible in the live UI shell instead of only through API/debug
+consumers.
+That live inspection chip now also offers direct frontend-side export actions
+for `Copy TOML` and `Download JSON`, reusing the same Studio endpoint rather
+than introducing a second deployment-debug surface.
+On the frontend side, the artifact formatting and export orchestration now sit
+behind one dedicated inspection feature folder instead of staying split across
+the workspace shell and status-bar component.
+That frontend inspection folder now also exposes a dedicated subview for the
+artifact popover, so the workspace `StatusBar` can remain a thin orchestration
+surface on the UI side as well.
+The same frontend cleanup now also extracts the repo-index diagnostics
+chip/popover into its own status-bar subview, so the main status shell is
+consistently acting as composition/orchestration rather than inline popover
+rendering.
+That status-bar cleanup now also moves derived labels and tones behind a
+frontend `statusBar/model.ts` helper, so the top-level shell is no longer
+mixing derivation with final rendering assembly.
+The Julia deployment inspection surface now also carries its own controller for
+copy/download feedback state, further reducing the amount of local UI state
+owned by the top-level StatusBar shell.
+
+A second official-example integration now targets
+`.data/WendaoArrow/scripts/run_stream_metadata_server.sh` to confirm additive
+response columns derived from request metadata do not break the planned-search
+Julia rerank path. The Julia response decoder now also surfaces optional
+additive `trace_id` columns into `julia_rerank.trace_ids`, and the planned
+search runtime writes a stable request-schema `trace_id` so the official
+metadata example can roundtrip that context without changing the core
+`doc_id / analyzer_score / final_score` contract.
+
+The integration support layer now keeps those two concerns separate:
+
+- custom-score tests launch a private Julia processor with explicit score maps
+- official-example tests launch `.data/WendaoArrow/scripts/run_stream_scoring_server.sh`
+
+At the request boundary, both `zhenfa_router::WendaoSearchRequest` and the
+planned HTTP request surface now accept an optional `query_vector`. When
+present, the router forwards it into the planned-search runtime so the
+vector-store backend can participate in Julia rerank without requiring an
+extra embedding call on the Rust side.
+
+The same optional `query_vector` is now accepted by the native
+`wendao.search` Zhenfa tool arguments, so direct tool callers and bridge-based
+LLM flows can reuse the vector-store Julia rerank path without changing the
+serialized planned-payload contract.
+
+This keeps transport ownership in the Arrow substrate while giving future
+gateway and reranking paths one stable Rust-side integration surface.
+
+### Query Core Phase 1
+
+Wendao now starts the RFC-defined query-core split with a new internal
+`query_core` module. In this layout:
+
+- `xiuxian-wendao` owns typed query operators, execution context, graph
+  adapters, and explain or telemetry contracts
+- `xiuxian-vector` owns reusable retrieval-row shaping and payload-projection
+  helpers used by the query core
+
+The currently landed Phase-1 slice is no longer only a skeleton:
+
+- repo-scoped `repo_content` code search now routes through
+  `query_core::query_repo_content_relation(...)`
+- repo-scoped `repo_entity` code search now routes through
+  `query_core::query_repo_entity_relation(...)`
+- Studio graph handlers now route `graph_neighbors` and `node_neighbors`
+  through query-core-native graph projections rather than handler-local Arrow
+  relation decoding
+- repo-scoped code-search telemetry for both `repo_content_chunk` and
+  `repo_entity` is now reflected back into Search Plane status
+- graph-side explain events now emit stable internal summaries through the
+  existing logging path instead of remaining test-only
+- graph query-core backend naming is now neutral and API-first:
+  `LinkGraphBackend` and `SearchPlaneBackend` replace the old `legacy-*`
+  labels inside explain events and tests
+- handlers no longer need to hand-assemble execution context directly; a
+  thin query-core service facade now owns the common adapter wiring
+- repo-wide `code_search` task fanout now reuses one per-repo
+  `search_repo_code_hits(...)` entrypoint, so the join-set scheduler is
+  responsible only for concurrency and timeout control, not entity/content
+  fallback semantics
+- the repo-scoped code-search policy now also has a query-core service-level
+  entrypoint. Entity-first fallback ordering and repo publication gating are
+  no longer re-decided in the scheduling layer
+- repo-scoped retrieval callers now exercise the full Phase-1 relation path:
+  `vector_search -> column_mask -> payload_fetch`. `ColumnMaskOp` and
+  `PayloadFetchOp` are no longer test-only operators
+- query-core now also has direct service-level regressions for repo code-search
+  corpus selection, so entity-preferred routing and content fallback are pinned
+  below the handler layer
+- query-core graph integration is now also projection-first. The new
+  `query_core::graph` module owns `WendaoGraphProjection`,
+  `WendaoGraphNode`, and `WendaoGraphLink`, while
+  `query_core::query_graph_neighbors_projection(...)` lets Studio graph
+  handlers consume one typed internal graph shape instead of parsing Arrow
+  columns in the route layer
+- the Studio graph handler cluster now also follows the same Phase-2 shared
+  service rule as repo and docs. `graph_neighbors`, `node_neighbors`, and
+  `topology_3d` route through one graph service boundary, so route files no
+  longer own query-core projection execution, explain logging, or topology
+  assembly directly
+- the remaining graph shared-state surface is now closed too. `graph/shared/`
+  separates graph-neighbor query parsing from graph rendering and topology
+  helpers, and `graph/shared/mod.rs` is now interface-only like the other
+  Phase-2 feature folders
+- the graph test boundary now matches that production shape. `graph/tests/support/`
+  separates fixture runtime, response helpers, assertions, and snapshot
+  shaping, while `graph/tests/mod.rs` stays interface-only
+- the router export seam now matches docs as well. `graph_exports.rs` owns the
+  outward-facing graph handler exports, so `handlers/mod.rs` no longer carries
+  a flat graph re-export block
+- the repo router export seam now matches the same pattern. `repo_exports.rs`
+  owns the outward-facing repo handler exports, so `handlers/mod.rs` no longer
+  carries a flat repo re-export block either
+- the same outward-facing export rule now also covers analysis handlers.
+  `analysis_exports.rs` owns the public analysis handler exports, so
+  `handlers/mod.rs` no longer carries a flat analysis re-export block
+- the remaining top-level router seams are now closed as well.
+  `capabilities_exports.rs`, `ui_config_exports.rs`, and `vfs_exports.rs`
+  now own the outward-facing exports for those handler clusters, so
+  `handlers/mod.rs` no longer carries any flat capability, UI-config, or VFS
+  re-export blocks
+- the analysis handler body is now closed too. `analysis/` separates markdown
+  routes, code-AST routes, shared loader logic, and query types, while
+  `analysis/mod.rs` stays interface-only
+- the capabilities handler body now follows the same pattern. `capabilities/`
+  separates UI-capabilities routes, deployment-artifact routes, and query
+  types, while `capabilities/mod.rs` stays interface-only
+- repo-analysis search handlers now route their repo-entity fast path through
+  `query_core::service`, and the repeated cache plus fast-path plus analyzer
+  fallback control flow is now centralized in one shared repo-analysis search
+  service helper with typed `run_repo_module_search(...)`,
+  `run_repo_symbol_search(...)`, and `run_repo_example_search(...)` entrypoints.
+  `module-search`, `symbol-search`, and `example-search` no longer duplicate
+  that orchestration inline
+- that same shared repo-analysis service now also owns the typed route-facing
+  entry contract end to end. The route files for module, symbol, and example
+  search no longer carry route-local fallback-builder closures; they only parse
+  request parameters and return `Json(...)` from the shared typed service
+- the shared repo-analysis service now also owns a lower-level typed contract
+  for query construction, query-core fast-path dispatch, and analyzer-artifact
+  fallback binding. Module, symbol, and example flows now vary by typed
+  contract metadata instead of carrying near-duplicate builder wiring
+- that fallback contract ownership has now been pushed one layer lower into
+  `analyzers::service::search`. Gateway-side repo-analysis orchestration now
+  composes analyzer-owned fallback contracts with query-core fast paths instead
+  of directly binding analyzer query builders and artifact result constructors
+- the repo-analysis fast-path contract has now been pushed lower as well.
+  `query_core::service` owns typed repo-entity fast-path contracts for module,
+  symbol, and example result surfaces, and the shared gateway repo-analysis
+  service now composes query-core-owned fast-path contracts with
+  analyzer-owned fallback contracts rather than binding three separate
+  repo-entity helper functions
+- that same shared Phase-2 repo-analysis service now also owns
+  `repo/import-search`. Studio routing and OpenAPI inventory expose the import
+  lane, analyzer search owns the typed import fallback contract, and the route
+  layer now validates both `MISSING_REPO` and `MISSING_IMPORT_FILTER`
+- the import lane has now landed its next Phase-2 hardening milestone too.
+  Import cache identity is derived from one canonical fallback-contract query
+  text that preserves both `package` and `module`, so combined filters no
+  longer collapse onto the same cached search key
+- `repo/import-search` is now also repo-entity aware. Import rows are
+  materialized on the repo-entity plane, query-core exposes a publication-gated
+  typed import fast path, and the shared Phase-2 repo-analysis service now
+  prefers that fast path before falling back to analyzer-owned import search
+- query-search regression coverage now starts using snapshot baselines under
+  `tests/snapshots/wendao/`. The first landed snapshots pin
+  query-core repo-code results, query-core graph projections, and typed
+  repo-entity module/symbol/example query outputs
+- repo-analysis gateway coverage now also keeps Studio-level snapshot baselines
+  under `tests/snapshots/gateway/studio/` for the shared repo-entity fast-path
+  payloads returned by `module-search`, `symbol-search`, and `example-search`
+  helper flows
+- snapshot coverage now also includes analyzer import search output and the
+  gateway-facing `repo/import-search` payload surface, so the import lane is
+  pinned at both the analyzer contract layer and the Studio response layer
+- import fast-path coverage now also includes a dedicated query-core snapshot
+  plus a gateway regression proving `run_repo_import_search(...)` can succeed
+  from repo-entity publication alone, without requiring repo-config fallback
+- the same Phase-2 service-consolidation pattern now also covers the non-search
+  repo-analysis endpoints. `repo/overview` and `repo/doc-coverage` now route
+  through one shared analysis service boundary instead of each handler owning
+  its own `with_repo_analysis(...)` orchestration
+- projected retrieval handlers now follow the same rule. `projected_retrieval`,
+  `projected_retrieval_hit`, `projected_retrieval_context`,
+  `projected_page_index_tree_search`, and `projected_page_search` now sit
+  behind one shared projected-service boundary instead of carrying repeated
+  route-local analysis orchestration
+- the same shared projected-service boundary now also owns the projected page
+  lookup cluster. `projected_pages`, `projected_gap_report`,
+  `projected_page`, `projected_page_index_tree`,
+  `projected_page_index_node`, and `projected_page_index_trees` are now thin
+  route adapters over typed service entrypoints instead of direct
+  `with_repo_analysis(...)` callers
+- that projected-service boundary now also owns the projected family and
+  navigation cluster. `projected_page_family_context`,
+  `projected_page_family_search`, `projected_page_family_cluster`,
+  `projected_page_navigation`, and `projected_page_navigation_search` now
+  route through one shared typed service seam instead of carrying route-local
+  repository-analysis orchestration
+- the remaining repo command endpoints now follow the same rule. `repo_index`,
+  `repo_index_status`, and `refine_entity_doc` now delegate through one shared
+  repo-command service instead of each route binding its own command or
+  repository-analysis orchestration
+- the next repo-handler cleanup slice has started too. The old
+  `repo/shared.rs` helper surface is now split into a `repo/shared/` feature
+  folder with separate repository-resolution and execution modules. The shared
+  repo handler boundary now follows the same feature-folder rule as the rest of
+  the repo handler surface
+- the same service-consolidation rule now also covers the docs surface.
+  `docs/search`, `docs/retrieval`, `docs/page`, `docs/family`, and
+  `docs/navigation` now delegate through one shared `docs/service.rs`
+  boundary, so docs handlers no longer own repeated route-local
+  `with_repo_analysis(...)` orchestration or retrieval-hit error translation
+- that docs-service boundary is now closed over the planner and gap surfaces
+  too. `docs/projected-gap-report` and the full `docs/planner-*` cluster now
+  delegate through the same shared service instead of binding route-local
+  repository-analysis orchestration
+- the last flat docs shared-state surface is now closed too. The old
+  `docs/types.rs` has been replaced by a `docs/types/` feature folder with
+  separate planner and projected-gap query-param modules, and route imports now
+  go through the crate-qualified docs types boundary
+- the flat docs route surface has now been closed as well. Projection-oriented
+  docs handlers now live under `docs/projection/`, planner routes live under
+  `docs/planner/`, and router re-exports keep the external endpoint surface
+  unchanged
+- the same closure now applies to the internal docs service layer. The old
+  flat `docs/service.rs` has been replaced by `docs/service/{projection,planner,runtime}.rs`,
+  so service ownership now aligns with the route and query-param boundaries
+- the top router export seam is now aligned too. Docs handler re-exports live
+  in `handlers/docs_exports.rs`, so the final outward-facing docs symbol
+  surface is grouped instead of inlined into `handlers/mod.rs`
+
+Phase 1 keeps the external gateway and CLI contract unchanged, but the first
+repo-facing internal milestone is now complete: repo code-search and
+repo-analysis fast paths both sit on Wendao-owned typed internal service
+boundaries instead of route-local adapter seams. Phase 2 has also landed its
+first two repo-analysis orchestration milestones, so the route layer now acts
+as a thin adapter over one shared typed repo-analysis service boundary, and the
+import lane now participates in that same publication-aware fast-path model.
+The same consolidation pattern now spans repo, projected, command, shared, and
+docs handler clusters instead of stopping at repo-analysis search alone. The
+docs handler surface is now fully closed over one shared docs-service seam, and
+its shared query-param and route surfaces now both follow the same
+feature-folder rule. The internal docs service layer and router export seam now
+follow it too. The last legacy `docs_exports.rs` barrel is gone as well, so the
+outward docs handler surface now binds directly to the `docs::planner` and
+`docs::projection` feature folders without an extra forwarding hop. The same is
+now true for repository handlers: `repo_exports.rs` is gone, and the outward
+repository handler surface binds directly to `handlers/repo/mod.rs`. The router
+test surface now also pins this cleanup state: `gateway/studio/router/tests`
+contains a regression test that fails if any legacy `handlers/*_exports.rs`
+files reappear. The shared OpenAPI inventory now has the same kind of guard:
+`gateway/openapi/paths/shared/tests.rs` fails if retired Flight-only HTTP paths
+such as `/api/search/ast` or `/api/analysis/*` ever re-enter the stable route
+inventory.
 
 ---
 
@@ -101,6 +613,16 @@ let engine = WendaoEngine::builder()
     .build()
     .await?;
 ```
+
+### Optional Python Bindings
+
+Enable the PyO3 surface only when you need Python interop:
+
+```bash
+cargo build -p xiuxian-wendao --features pybindings
+```
+
+This keeps the default build free of PyO3 and the Python-specific modules.
 
 ---
 

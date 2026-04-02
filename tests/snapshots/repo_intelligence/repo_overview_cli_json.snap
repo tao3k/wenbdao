@@ -1,0 +1,18 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/integration/../support/repo_intelligence.rs
+expression: value
+---
+{
+  "display_name": "CliPkg",
+  "doc_count": 4,
+  "example_count": 2,
+  "hierarchical_uri": "repo://cli-sample",
+  "hierarchy": [
+    "repo",
+    "cli-sample"
+  ],
+  "module_count": 1,
+  "repo_id": "cli-sample",
+  "revision": "4a39f5ab536e37978aa383c89fb24e4e62b5be8d",
+  "symbol_count": 2
+}

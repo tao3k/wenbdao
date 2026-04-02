@@ -1,0 +1,273 @@
+use std::path::Path;
+
+use crate::analyzers::errors::RepoIntelligenceError;
+use crate::analyzers::plugin::RepositoryAnalysisOutput;
+use crate::link_graph::parser::parse_note;
+use crate::link_graph::{
+    DEFAULT_PAGE_INDEX_THINNING_TOKEN_THRESHOLD, IndexedSection, PageIndexNode,
+    build_page_index_tree, thin_page_index_tree,
+};
+
+use super::contracts::{
+    ProjectedMarkdownDocument, ProjectedPageIndexDocument, ProjectedPageIndexNode,
+    ProjectedPageIndexSection, ProjectedPageIndexTree, ProjectionPageKind,
+};
+use super::pages::build_projected_pages;
+
+const PROJECTION_ROOT: &str = "/virtual/repo-intelligence/projection";
+
+struct ParsedProjectedDocument {
+    document: ProjectedMarkdownDocument,
+    doc_id: String,
+    title: String,
+    indexed_sections: Vec<IndexedSection>,
+    section_summaries: Vec<ProjectedPageIndexSection>,
+}
+
+/// Render projected page records into deterministic virtual markdown documents.
+#[must_use]
+pub fn render_projected_markdown_documents(
+    analysis: &RepositoryAnalysisOutput,
+) -> Vec<ProjectedMarkdownDocument> {
+    build_projected_pages(analysis)
+        .into_iter()
+        .map(|page| ProjectedMarkdownDocument {
+            repo_id: page.repo_id.clone(),
+            page_id: page.page_id.clone(),
+            kind: page.kind,
+            path: projected_markdown_path(page.kind, page.title.as_str(), page.page_id.as_str()),
+            title: page.title.clone(),
+            markdown: render_projected_markdown(
+                page.title.as_str(),
+                page.kind,
+                page.format_hints.as_slice(),
+                page.sections.as_slice(),
+            ),
+        })
+        .collect()
+}
+
+/// Build page-index-ready parsed documents from deterministic projected markdown.
+///
+/// # Errors
+///
+/// Returns [`RepoIntelligenceError::AnalysisFailed`] when a projected markdown
+/// document cannot be parsed through the existing markdown parser.
+pub fn build_projected_page_index_documents(
+    analysis: &RepositoryAnalysisOutput,
+) -> Result<Vec<ProjectedPageIndexDocument>, RepoIntelligenceError> {
+    parse_projected_documents(analysis)?
+        .into_iter()
+        .map(|parsed| {
+            Ok(ProjectedPageIndexDocument {
+                repo_id: parsed.document.repo_id,
+                page_id: parsed.document.page_id,
+                path: parsed.document.path,
+                doc_id: parsed.doc_id,
+                title: parsed.title,
+                sections: parsed.section_summaries,
+            })
+        })
+        .collect()
+}
+
+/// Build real page-index trees for projected pages using Wendao's page-index builder.
+///
+/// # Errors
+///
+/// Returns [`RepoIntelligenceError::AnalysisFailed`] when a projected markdown
+/// document cannot be parsed through the existing markdown parser.
+pub fn build_projected_page_index_trees(
+    analysis: &RepositoryAnalysisOutput,
+) -> Result<Vec<ProjectedPageIndexTree>, RepoIntelligenceError> {
+    parse_projected_documents(analysis)?
+        .into_iter()
+        .map(|parsed| {
+            let mut tree = build_page_index_tree(
+                parsed.doc_id.as_str(),
+                parsed.title.as_str(),
+                &parsed.indexed_sections,
+            );
+            thin_page_index_tree(&mut tree, DEFAULT_PAGE_INDEX_THINNING_TOKEN_THRESHOLD);
+            Ok(ProjectedPageIndexTree {
+                repo_id: parsed.document.repo_id,
+                page_id: parsed.document.page_id,
+                kind: parsed.document.kind,
+                path: parsed.document.path,
+                doc_id: parsed.doc_id,
+                title: parsed.title,
+                root_count: tree.len(),
+                roots: tree.iter().map(snapshot_page_index_node).collect(),
+            })
+        })
+        .collect()
+}
+
+fn projected_markdown_path(kind: ProjectionPageKind, title: &str, page_id: &str) -> String {
+    let slug = slugify(title);
+    let hash = blake3::hash(page_id.as_bytes()).to_hex().to_string();
+    format!("{}/{slug}-{}.md", projection_kind_token(kind), &hash[..12])
+}
+
+fn parse_projected_documents(
+    analysis: &RepositoryAnalysisOutput,
+) -> Result<Vec<ParsedProjectedDocument>, RepoIntelligenceError> {
+    let root = Path::new(PROJECTION_ROOT);
+    render_projected_markdown_documents(analysis)
+        .into_iter()
+        .map(|document| {
+            let full_path = root.join(document.path.as_str());
+            let parsed =
+                parse_note(&full_path, root, document.markdown.as_str()).ok_or_else(|| {
+                    RepoIntelligenceError::AnalysisFailed {
+                        message: format!(
+                            "failed to parse projected markdown document `{}` for `{}`",
+                            document.path, document.page_id
+                        ),
+                    }
+                })?;
+            let section_summaries = parsed
+                .sections
+                .iter()
+                .map(|section| ProjectedPageIndexSection {
+                    heading_path: section.heading_path.clone(),
+                    title: section.heading_title.clone(),
+                    level: section.heading_level,
+                    line_range: (section.line_start, section.line_end),
+                    attributes: sorted_attributes(section.attributes.clone()),
+                })
+                .collect();
+            let indexed_sections = parsed
+                .sections
+                .iter()
+                .map(IndexedSection::from_parsed)
+                .collect::<Vec<_>>();
+            Ok(ParsedProjectedDocument {
+                document,
+                doc_id: parsed.doc.id,
+                title: parsed.doc.title,
+                indexed_sections,
+                section_summaries,
+            })
+        })
+        .collect()
+}
+
+fn render_projected_markdown(
+    title: &str,
+    kind: ProjectionPageKind,
+    format_hints: &[String],
+    sections: &[super::contracts::ProjectedPageSection],
+) -> String {
+    let mut markdown = String::new();
+    markdown.push_str("# ");
+    markdown.push_str(title);
+    markdown.push_str("\n:PROPERTIES:\n");
+    markdown.push_str(":TYPE: PROJECTED_PAGE\n");
+    markdown.push_str(":KIND: ");
+    markdown.push_str(projection_kind_token(kind));
+    markdown.push('\n');
+    if !format_hints.is_empty() {
+        markdown.push_str(":FORMATS: ");
+        markdown.push_str(format_hints.join(", ").as_str());
+        markdown.push('\n');
+    }
+    markdown.push_str(":END:\n\n");
+
+    for (index, section) in sections.iter().enumerate() {
+        markdown.push_str(&"#".repeat(section.level.clamp(1, 6)));
+        markdown.push(' ');
+        markdown.push_str(section.title.as_str());
+        markdown.push('\n');
+        markdown.push_str(":ID: ");
+        markdown.push_str(section_anchor_id(section.section_id.as_str()).as_str());
+        markdown.push('\n');
+        if !section.paths.is_empty() {
+            markdown.push_str(":PATHS: ");
+            markdown.push_str(section.paths.join(", ").as_str());
+            markdown.push('\n');
+        }
+        markdown.push('\n');
+        markdown.push_str(section.body.as_str());
+        markdown.push('\n');
+        if index + 1 != sections.len() {
+            markdown.push('\n');
+        }
+    }
+
+    markdown
+}
+
+fn section_anchor_id(section_id: &str) -> String {
+    section_id
+        .rsplit('#')
+        .next()
+        .unwrap_or(section_id)
+        .to_string()
+}
+
+fn projection_kind_token(kind: ProjectionPageKind) -> &'static str {
+    match kind {
+        ProjectionPageKind::Reference => "reference",
+        ProjectionPageKind::HowTo => "howto",
+        ProjectionPageKind::Tutorial => "tutorial",
+        ProjectionPageKind::Explanation => "explanation",
+    }
+}
+
+fn slugify(raw: &str) -> String {
+    let slug = raw
+        .chars()
+        .map(|ch| match ch {
+            'a'..='z' | '0'..='9' => ch,
+            'A'..='Z' => ch.to_ascii_lowercase(),
+            _ => '-',
+        })
+        .collect::<String>();
+    let slug = slug.trim_matches('-').to_string();
+    if slug.is_empty() {
+        "page".to_string()
+    } else {
+        slug
+    }
+}
+
+fn sorted_attributes(
+    attributes: std::collections::HashMap<String, String>,
+) -> Vec<(String, String)> {
+    let mut attributes = attributes.into_iter().collect::<Vec<_>>();
+    attributes.sort_by(|left, right| left.0.cmp(&right.0).then_with(|| left.1.cmp(&right.1)));
+    attributes
+}
+
+fn snapshot_page_index_node(node: &PageIndexNode) -> ProjectedPageIndexNode {
+    ProjectedPageIndexNode {
+        node_id: node.node_id.clone(),
+        title: node.title.clone(),
+        level: node.level,
+        structural_path: node.metadata.structural_path.clone(),
+        line_range: node.metadata.line_range,
+        token_count: node.metadata.token_count,
+        is_thinned: node.metadata.is_thinned,
+        text: node.text.to_string(),
+        summary: heuristic_summary(&node.text),
+        children: node.children.iter().map(snapshot_page_index_node).collect(),
+    }
+}
+
+fn heuristic_summary(text: &str) -> Option<String> {
+    let trimmed = text.trim();
+    if trimmed.is_empty() {
+        return None;
+    }
+    // Take the first sentence or first 120 chars
+    let first_sentence = trimmed.split(['.', '!', '?']).next().unwrap_or(trimmed);
+
+    let summary = if first_sentence.len() > 120 {
+        format!("{}...", &first_sentence[..117])
+    } else {
+        first_sentence.to_string()
+    };
+
+    Some(summary)
+}

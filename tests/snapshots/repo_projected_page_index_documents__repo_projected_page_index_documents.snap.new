@@ -1,0 +1,669 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/integration/repo_projected_page_index_documents.rs
+assertion_line: 122
+expression: payload
+---
+{
+  "markdown": [
+    {
+      "kind": "how_to",
+      "markdown": "# Step\n:PROPERTIES:\n:TYPE: PROJECTED_PAGE\n:KIND: howto\n:FORMATS: modelica_users_guide_release_notes_version, modelica_users_guide_tutorial\n:END:\n\n# Overview\n:ID: overview\n:PATHS: Controllers/Examples/Step.mo, Controllers/UsersGuide/ReleaseNotes.mo#section.Version_4_1_0, Controllers/UsersGuide/Tutorial/FirstSteps.mo\n\nProjected how-to page for `Step`.\nFormat hints:\n- `modelica_users_guide_release_notes_version`\n- `modelica_users_guide_tutorial`\nSource paths:\n- `Controllers/Examples/Step.mo`\n- `Controllers/UsersGuide/ReleaseNotes.mo#section.Version_4_1_0`\n- `Controllers/UsersGuide/Tutorial/FirstSteps.mo`\n\n## Anchors\n:ID: anchors\n:PATHS: Controllers/package.mo\n\nModules:\n- `Demo.Controllers` (Controllers/package.mo)\n\n## Supporting Docs\n:ID: sources\n:PATHS: Controllers/UsersGuide/Tutorial/FirstSteps.mo, Controllers/UsersGuide/ReleaseNotes.mo#section.Version_4_1_0\n\nDocumentation:\n- `First Steps` (Controllers/UsersGuide/Tutorial/FirstSteps.mo)\n- `Version 4.1.0` (Controllers/UsersGuide/ReleaseNotes.mo#section.Version_4_1_0)\n\n## Examples\n:ID: examples\n:PATHS: Controllers/Examples/Step.mo\n\nExamples:\n- `Step` (Controllers/Examples/Step.mo)\n",
+      "page_id": "repo:demo:projection:howto:example:repo:demo:example:Controllers/Examples/Step.mo",
+      "path": "howto/step-358f907cbd83.md",
+      "repo_id": "demo",
+      "title": "Step"
+    },
+    {
+      "kind": "how_to",
+      "markdown": "# Version 4.1.0\n:PROPERTIES:\n:TYPE: PROJECTED_PAGE\n:KIND: howto\n:FORMATS: modelica_users_guide_release_notes_version\n:END:\n\n# Overview\n:ID: overview\n:PATHS: Controllers/Examples/Step.mo, Controllers/UsersGuide/ReleaseNotes.mo#section.Version_4_1_0\n\nProjected how-to page for `Version 4.1.0`.\nFormat hints:\n- `modelica_users_guide_release_notes_version`\nSource paths:\n- `Controllers/Examples/Step.mo`\n- `Controllers/UsersGuide/ReleaseNotes.mo#section.Version_4_1_0`\n\n## Anchors\n:ID: anchors\n:PATHS: Controllers/package.mo\n\nModules:\n- `Demo.Controllers` (Controllers/package.mo)\n\n## Supporting Docs\n:ID: sources\n:PATHS: Controllers/UsersGuide/ReleaseNotes.mo#section.Version_4_1_0\n\nDocumentation:\n- `Version 4.1.0` (Controllers/UsersGuide/ReleaseNotes.mo#section.Version_4_1_0)\n\n## Examples\n:ID: examples\n:PATHS: Controllers/Examples/Step.mo\n\nExamples:\n- `Step` (Controllers/Examples/Step.mo)\n",
+      "page_id": "repo:demo:projection:howto:doc:repo:demo:doc:Controllers/UsersGuide/ReleaseNotes.mo#section.Version_4_1_0",
+      "path": "howto/version-4-1-0-265743ade96c.md",
+      "repo_id": "demo",
+      "title": "Version 4.1.0"
+    },
+    {
+      "kind": "reference",
+      "markdown": "# Demo.Controllers\n:PROPERTIES:\n:TYPE: PROJECTED_PAGE\n:KIND: reference\n:FORMATS: modelica_annotation, modelica_users_guide_release_notes_version, modelica_users_guide_tutorial\n:END:\n\n# Overview\n:ID: overview\n:PATHS: Controllers/Examples/Step.mo, Controllers/PI.mo#annotation.documentation, Controllers/UsersGuide/ReleaseNotes.mo#section.Version_4_1_0, Controllers/UsersGuide/Tutorial/FirstSteps.mo, Controllers/package.mo\n\nProjected reference page for `Demo.Controllers`.\nFormat hints:\n- `modelica_annotation`\n- `modelica_users_guide_release_notes_version`\n- `modelica_users_guide_tutorial`\nSource paths:\n- `Controllers/Examples/Step.mo`\n- `Controllers/PI.mo#annotation.documentation`\n- `Controllers/UsersGuide/ReleaseNotes.mo#section.Version_4_1_0`\n- `Controllers/UsersGuide/Tutorial/FirstSteps.mo`\n- `Controllers/package.mo`\n\n## Anchors\n:ID: anchors\n:PATHS: Controllers/package.mo\n\nModules:\n- `Demo.Controllers` (Controllers/package.mo)\n\n## Documentation\n:ID: sources\n:PATHS: Controllers/UsersGuide/Tutorial/FirstSteps.mo, Controllers/PI.mo#annotation.documentation, Controllers/UsersGuide/ReleaseNotes.mo#section.Version_4_1_0\n\nDocumentation:\n- `First Steps` (Controllers/UsersGuide/Tutorial/FirstSteps.mo)\n- `PI documentation` (Controllers/PI.mo#annotation.documentation)\n- `Version 4.1.0` (Controllers/UsersGuide/ReleaseNotes.mo#section.Version_4_1_0)\n\n## Examples\n:ID: examples\n:PATHS: Controllers/Examples/Step.mo\n\nExamples:\n- `Step` (Controllers/Examples/Step.mo)\n",
+      "page_id": "repo:demo:projection:reference:module:repo:demo:module:Demo.Controllers",
+      "path": "reference/demo-controllers-c2b39e23a47d.md",
+      "repo_id": "demo",
+      "title": "Demo.Controllers"
+    },
+    {
+      "kind": "reference",
+      "markdown": "# Demo.Controllers.PI\n:PROPERTIES:\n:TYPE: PROJECTED_PAGE\n:KIND: reference\n:FORMATS: modelica_annotation\n:END:\n\n# Overview\n:ID: overview\n:PATHS: Controllers/PI.mo, Controllers/PI.mo#annotation.documentation\n\nProjected reference page for `Demo.Controllers.PI`.\nFormat hints:\n- `modelica_annotation`\nSource paths:\n- `Controllers/PI.mo`\n- `Controllers/PI.mo#annotation.documentation`\n\n## Anchors\n:ID: anchors\n:PATHS: Controllers/PI.mo, Controllers/package.mo\n\nModules:\n- `Demo.Controllers` (Controllers/package.mo)\n\nSymbols:\n- `Demo.Controllers.PI` (Controllers/PI.mo)\n\n## Documentation\n:ID: sources\n:PATHS: Controllers/PI.mo#annotation.documentation\n\nDocumentation:\n- `PI documentation` (Controllers/PI.mo#annotation.documentation)\n",
+      "page_id": "repo:demo:projection:reference:symbol:repo:demo:symbol:Demo.Controllers.PI",
+      "path": "reference/demo-controllers-pi-e27f9ce1a3d1.md",
+      "repo_id": "demo",
+      "title": "Demo.Controllers.PI"
+    },
+    {
+      "kind": "reference",
+      "markdown": "# PI documentation\n:PROPERTIES:\n:TYPE: PROJECTED_PAGE\n:KIND: reference\n:FORMATS: modelica_annotation\n:END:\n\n# Overview\n:ID: overview\n:PATHS: Controllers/PI.mo#annotation.documentation\n\nProjected reference page for `PI documentation`.\nFormat hints:\n- `modelica_annotation`\nSource paths:\n- `Controllers/PI.mo#annotation.documentation`\n\n## Anchors\n:ID: anchors\n:PATHS: Controllers/PI.mo\n\nSymbols:\n- `Demo.Controllers.PI` (Controllers/PI.mo)\n\n## Documentation\n:ID: sources\n:PATHS: Controllers/PI.mo#annotation.documentation\n\nDocumentation:\n- `PI documentation` (Controllers/PI.mo#annotation.documentation)\n",
+      "page_id": "repo:demo:projection:reference:doc:repo:demo:doc:Controllers/PI.mo#annotation.documentation",
+      "path": "reference/pi-documentation-c6fc4dbd7b2e.md",
+      "repo_id": "demo",
+      "title": "PI documentation"
+    },
+    {
+      "kind": "tutorial",
+      "markdown": "# First Steps\n:PROPERTIES:\n:TYPE: PROJECTED_PAGE\n:KIND: tutorial\n:FORMATS: modelica_users_guide_tutorial\n:END:\n\n# Overview\n:ID: overview\n:PATHS: Controllers/Examples/Step.mo, Controllers/UsersGuide/Tutorial/FirstSteps.mo\n\nProjected tutorial page for `First Steps`.\nFormat hints:\n- `modelica_users_guide_tutorial`\nSource paths:\n- `Controllers/Examples/Step.mo`\n- `Controllers/UsersGuide/Tutorial/FirstSteps.mo`\n\n## Anchors\n:ID: anchors\n:PATHS: Controllers/package.mo\n\nModules:\n- `Demo.Controllers` (Controllers/package.mo)\n\n## Sources\n:ID: sources\n:PATHS: Controllers/UsersGuide/Tutorial/FirstSteps.mo\n\nDocumentation:\n- `First Steps` (Controllers/UsersGuide/Tutorial/FirstSteps.mo)\n\n## Examples\n:ID: examples\n:PATHS: Controllers/Examples/Step.mo\n\nExamples:\n- `Step` (Controllers/Examples/Step.mo)\n",
+      "page_id": "repo:demo:projection:tutorial:doc:repo:demo:doc:Controllers/UsersGuide/Tutorial/FirstSteps.mo",
+      "path": "tutorial/first-steps-94f268aebe26.md",
+      "repo_id": "demo",
+      "title": "First Steps"
+    }
+  ],
+  "parsed": [
+    {
+      "doc_id": "howto/step-358f907cbd83",
+      "page_id": "repo:demo:projection:howto:example:repo:demo:example:Controllers/Examples/Step.mo",
+      "path": "howto/step-358f907cbd83.md",
+      "repo_id": "demo",
+      "sections": [
+        {
+          "attributes": [
+            [
+              "FORMATS",
+              "modelica_users_guide_release_notes_version, modelica_users_guide_tutorial"
+            ],
+            [
+              "KIND",
+              "howto"
+            ],
+            [
+              "TYPE",
+              "PROJECTED_PAGE"
+            ]
+          ],
+          "heading_path": "Step",
+          "level": 1,
+          "line_range": [
+            1,
+            7
+          ],
+          "title": "Step"
+        },
+        {
+          "attributes": [
+            [
+              "ID",
+              "overview"
+            ],
+            [
+              "PATHS",
+              "Controllers/Examples/Step.mo, Controllers/UsersGuide/ReleaseNotes.mo#section.Version_4_1_0, Controllers/UsersGuide/Tutorial/FirstSteps.mo"
+            ]
+          ],
+          "heading_path": "Overview",
+          "level": 1,
+          "line_range": [
+            8,
+            20
+          ],
+          "title": "Overview"
+        },
+        {
+          "attributes": [
+            [
+              "ID",
+              "anchors"
+            ],
+            [
+              "PATHS",
+              "Controllers/package.mo"
+            ]
+          ],
+          "heading_path": "Overview / Anchors",
+          "level": 2,
+          "line_range": [
+            21,
+            27
+          ],
+          "title": "Anchors"
+        },
+        {
+          "attributes": [
+            [
+              "ID",
+              "sources"
+            ],
+            [
+              "PATHS",
+              "Controllers/UsersGuide/Tutorial/FirstSteps.mo, Controllers/UsersGuide/ReleaseNotes.mo#section.Version_4_1_0"
+            ]
+          ],
+          "heading_path": "Overview / Supporting Docs",
+          "level": 2,
+          "line_range": [
+            28,
+            35
+          ],
+          "title": "Supporting Docs"
+        },
+        {
+          "attributes": [
+            [
+              "ID",
+              "examples"
+            ],
+            [
+              "PATHS",
+              "Controllers/Examples/Step.mo"
+            ]
+          ],
+          "heading_path": "Overview / Examples",
+          "level": 2,
+          "line_range": [
+            36,
+            41
+          ],
+          "title": "Examples"
+        }
+      ],
+      "title": "Step"
+    },
+    {
+      "doc_id": "howto/version-4-1-0-265743ade96c",
+      "page_id": "repo:demo:projection:howto:doc:repo:demo:doc:Controllers/UsersGuide/ReleaseNotes.mo#section.Version_4_1_0",
+      "path": "howto/version-4-1-0-265743ade96c.md",
+      "repo_id": "demo",
+      "sections": [
+        {
+          "attributes": [
+            [
+              "FORMATS",
+              "modelica_users_guide_release_notes_version"
+            ],
+            [
+              "KIND",
+              "howto"
+            ],
+            [
+              "TYPE",
+              "PROJECTED_PAGE"
+            ]
+          ],
+          "heading_path": "Version 4.1.0",
+          "level": 1,
+          "line_range": [
+            1,
+            7
+          ],
+          "title": "Version 4.1.0"
+        },
+        {
+          "attributes": [
+            [
+              "ID",
+              "overview"
+            ],
+            [
+              "PATHS",
+              "Controllers/Examples/Step.mo, Controllers/UsersGuide/ReleaseNotes.mo#section.Version_4_1_0"
+            ]
+          ],
+          "heading_path": "Overview",
+          "level": 1,
+          "line_range": [
+            8,
+            18
+          ],
+          "title": "Overview"
+        },
+        {
+          "attributes": [
+            [
+              "ID",
+              "anchors"
+            ],
+            [
+              "PATHS",
+              "Controllers/package.mo"
+            ]
+          ],
+          "heading_path": "Overview / Anchors",
+          "level": 2,
+          "line_range": [
+            19,
+            25
+          ],
+          "title": "Anchors"
+        },
+        {
+          "attributes": [
+            [
+              "ID",
+              "sources"
+            ],
+            [
+              "PATHS",
+              "Controllers/UsersGuide/ReleaseNotes.mo#section.Version_4_1_0"
+            ]
+          ],
+          "heading_path": "Overview / Supporting Docs",
+          "level": 2,
+          "line_range": [
+            26,
+            32
+          ],
+          "title": "Supporting Docs"
+        },
+        {
+          "attributes": [
+            [
+              "ID",
+              "examples"
+            ],
+            [
+              "PATHS",
+              "Controllers/Examples/Step.mo"
+            ]
+          ],
+          "heading_path": "Overview / Examples",
+          "level": 2,
+          "line_range": [
+            33,
+            38
+          ],
+          "title": "Examples"
+        }
+      ],
+      "title": "Version 4.1.0"
+    },
+    {
+      "doc_id": "reference/demo-controllers-c2b39e23a47d",
+      "page_id": "repo:demo:projection:reference:module:repo:demo:module:Demo.Controllers",
+      "path": "reference/demo-controllers-c2b39e23a47d.md",
+      "repo_id": "demo",
+      "sections": [
+        {
+          "attributes": [
+            [
+              "FORMATS",
+              "modelica_annotation, modelica_users_guide_release_notes_version, modelica_users_guide_tutorial"
+            ],
+            [
+              "KIND",
+              "reference"
+            ],
+            [
+              "TYPE",
+              "PROJECTED_PAGE"
+            ]
+          ],
+          "heading_path": "Demo.Controllers",
+          "level": 1,
+          "line_range": [
+            1,
+            7
+          ],
+          "title": "Demo.Controllers"
+        },
+        {
+          "attributes": [
+            [
+              "ID",
+              "overview"
+            ],
+            [
+              "PATHS",
+              "Controllers/Examples/Step.mo, Controllers/PI.mo#annotation.documentation, Controllers/UsersGuide/ReleaseNotes.mo#section.Version_4_1_0, Controllers/UsersGuide/Tutorial/FirstSteps.mo, Controllers/package.mo"
+            ]
+          ],
+          "heading_path": "Overview",
+          "level": 1,
+          "line_range": [
+            8,
+            23
+          ],
+          "title": "Overview"
+        },
+        {
+          "attributes": [
+            [
+              "ID",
+              "anchors"
+            ],
+            [
+              "PATHS",
+              "Controllers/package.mo"
+            ]
+          ],
+          "heading_path": "Overview / Anchors",
+          "level": 2,
+          "line_range": [
+            24,
+            30
+          ],
+          "title": "Anchors"
+        },
+        {
+          "attributes": [
+            [
+              "ID",
+              "sources"
+            ],
+            [
+              "PATHS",
+              "Controllers/UsersGuide/Tutorial/FirstSteps.mo, Controllers/PI.mo#annotation.documentation, Controllers/UsersGuide/ReleaseNotes.mo#section.Version_4_1_0"
+            ]
+          ],
+          "heading_path": "Overview / Documentation",
+          "level": 2,
+          "line_range": [
+            31,
+            39
+          ],
+          "title": "Documentation"
+        },
+        {
+          "attributes": [
+            [
+              "ID",
+              "examples"
+            ],
+            [
+              "PATHS",
+              "Controllers/Examples/Step.mo"
+            ]
+          ],
+          "heading_path": "Overview / Examples",
+          "level": 2,
+          "line_range": [
+            40,
+            45
+          ],
+          "title": "Examples"
+        }
+      ],
+      "title": "Demo.Controllers"
+    },
+    {
+      "doc_id": "reference/demo-controllers-pi-e27f9ce1a3d1",
+      "page_id": "repo:demo:projection:reference:symbol:repo:demo:symbol:Demo.Controllers.PI",
+      "path": "reference/demo-controllers-pi-e27f9ce1a3d1.md",
+      "repo_id": "demo",
+      "sections": [
+        {
+          "attributes": [
+            [
+              "FORMATS",
+              "modelica_annotation"
+            ],
+            [
+              "KIND",
+              "reference"
+            ],
+            [
+              "TYPE",
+              "PROJECTED_PAGE"
+            ]
+          ],
+          "heading_path": "Demo.Controllers.PI",
+          "level": 1,
+          "line_range": [
+            1,
+            7
+          ],
+          "title": "Demo.Controllers.PI"
+        },
+        {
+          "attributes": [
+            [
+              "ID",
+              "overview"
+            ],
+            [
+              "PATHS",
+              "Controllers/PI.mo, Controllers/PI.mo#annotation.documentation"
+            ]
+          ],
+          "heading_path": "Overview",
+          "level": 1,
+          "line_range": [
+            8,
+            18
+          ],
+          "title": "Overview"
+        },
+        {
+          "attributes": [
+            [
+              "ID",
+              "anchors"
+            ],
+            [
+              "PATHS",
+              "Controllers/PI.mo, Controllers/package.mo"
+            ]
+          ],
+          "heading_path": "Overview / Anchors",
+          "level": 2,
+          "line_range": [
+            19,
+            28
+          ],
+          "title": "Anchors"
+        },
+        {
+          "attributes": [
+            [
+              "ID",
+              "sources"
+            ],
+            [
+              "PATHS",
+              "Controllers/PI.mo#annotation.documentation"
+            ]
+          ],
+          "heading_path": "Overview / Documentation",
+          "level": 2,
+          "line_range": [
+            29,
+            34
+          ],
+          "title": "Documentation"
+        }
+      ],
+      "title": "Demo.Controllers.PI"
+    },
+    {
+      "doc_id": "reference/pi-documentation-c6fc4dbd7b2e",
+      "page_id": "repo:demo:projection:reference:doc:repo:demo:doc:Controllers/PI.mo#annotation.documentation",
+      "path": "reference/pi-documentation-c6fc4dbd7b2e.md",
+      "repo_id": "demo",
+      "sections": [
+        {
+          "attributes": [
+            [
+              "FORMATS",
+              "modelica_annotation"
+            ],
+            [
+              "KIND",
+              "reference"
+            ],
+            [
+              "TYPE",
+              "PROJECTED_PAGE"
+            ]
+          ],
+          "heading_path": "PI documentation",
+          "level": 1,
+          "line_range": [
+            1,
+            7
+          ],
+          "title": "PI documentation"
+        },
+        {
+          "attributes": [
+            [
+              "ID",
+              "overview"
+            ],
+            [
+              "PATHS",
+              "Controllers/PI.mo#annotation.documentation"
+            ]
+          ],
+          "heading_path": "Overview",
+          "level": 1,
+          "line_range": [
+            8,
+            17
+          ],
+          "title": "Overview"
+        },
+        {
+          "attributes": [
+            [
+              "ID",
+              "anchors"
+            ],
+            [
+              "PATHS",
+              "Controllers/PI.mo"
+            ]
+          ],
+          "heading_path": "Overview / Anchors",
+          "level": 2,
+          "line_range": [
+            18,
+            24
+          ],
+          "title": "Anchors"
+        },
+        {
+          "attributes": [
+            [
+              "ID",
+              "sources"
+            ],
+            [
+              "PATHS",
+              "Controllers/PI.mo#annotation.documentation"
+            ]
+          ],
+          "heading_path": "Overview / Documentation",
+          "level": 2,
+          "line_range": [
+            25,
+            30
+          ],
+          "title": "Documentation"
+        }
+      ],
+      "title": "PI documentation"
+    },
+    {
+      "doc_id": "tutorial/first-steps-94f268aebe26",
+      "page_id": "repo:demo:projection:tutorial:doc:repo:demo:doc:Controllers/UsersGuide/Tutorial/FirstSteps.mo",
+      "path": "tutorial/first-steps-94f268aebe26.md",
+      "repo_id": "demo",
+      "sections": [
+        {
+          "attributes": [
+            [
+              "FORMATS",
+              "modelica_users_guide_tutorial"
+            ],
+            [
+              "KIND",
+              "tutorial"
+            ],
+            [
+              "TYPE",
+              "PROJECTED_PAGE"
+            ]
+          ],
+          "heading_path": "First Steps",
+          "level": 1,
+          "line_range": [
+            1,
+            7
+          ],
+          "title": "First Steps"
+        },
+        {
+          "attributes": [
+            [
+              "ID",
+              "overview"
+            ],
+            [
+              "PATHS",
+              "Controllers/Examples/Step.mo, Controllers/UsersGuide/Tutorial/FirstSteps.mo"
+            ]
+          ],
+          "heading_path": "Overview",
+          "level": 1,
+          "line_range": [
+            8,
+            18
+          ],
+          "title": "Overview"
+        },
+        {
+          "attributes": [
+            [
+              "ID",
+              "anchors"
+            ],
+            [
+              "PATHS",
+              "Controllers/package.mo"
+            ]
+          ],
+          "heading_path": "Overview / Anchors",
+          "level": 2,
+          "line_range": [
+            19,
+            25
+          ],
+          "title": "Anchors"
+        },
+        {
+          "attributes": [
+            [
+              "ID",
+              "sources"
+            ],
+            [
+              "PATHS",
+              "Controllers/UsersGuide/Tutorial/FirstSteps.mo"
+            ]
+          ],
+          "heading_path": "Overview / Sources",
+          "level": 2,
+          "line_range": [
+            26,
+            32
+          ],
+          "title": "Sources"
+        },
+        {
+          "attributes": [
+            [
+              "ID",
+              "examples"
+            ],
+            [
+              "PATHS",
+              "Controllers/Examples/Step.mo"
+            ]
+          ],
+          "heading_path": "Overview / Examples",
+          "level": 2,
+          "line_range": [
+            33,
+            38
+          ],
+          "title": "Examples"
+        }
+      ],
+      "title": "First Steps"
+    }
+  ]
+}

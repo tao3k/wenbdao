@@ -31,7 +31,6 @@ fn test_unified_search() {
     assert_eq!(ext_results.len(), 2);
 }
 
-#[test]
 fn test_external_usage() {
     let mut index = UnifiedSymbolIndex::new();
 

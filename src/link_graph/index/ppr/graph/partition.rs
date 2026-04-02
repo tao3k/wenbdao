@@ -1,5 +1,5 @@
-use super::super::super::{LinkGraphIndex, LinkGraphPprSubgraphMode};
-use super::super::constants::RELATED_PPR_PARTITION_TRIGGER_NODES;
+use crate::link_graph::index::ppr::constants::RELATED_PPR_PARTITION_TRIGGER_NODES;
+use crate::link_graph::index::{LinkGraphIndex, LinkGraphPprSubgraphMode};
 use std::collections::HashSet;
 use std::time::Instant;
 

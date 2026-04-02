@@ -1,4 +1,5 @@
-use super::{CrateSymbols, SymbolIndex};
+use super::SymbolIndex;
+use super::types::CrateSymbols;
 use crate::dependency_indexer::symbols::ExternalSymbol;
 
 impl SymbolIndex {

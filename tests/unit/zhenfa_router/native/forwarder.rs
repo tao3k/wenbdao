@@ -1,4 +1,7 @@
+use super::payload::DiffPreview;
+use super::rate_limiter::RateLimiter;
 use super::*;
+use crate::zhenfa_router::native::sentinel::{DriftConfidence, SemanticDriftSignal};
 
 #[test]
 fn forwarder_config_default() {

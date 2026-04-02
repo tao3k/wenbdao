@@ -1,4 +1,5 @@
 use super::*;
+use std::collections::HashMap;
 
 fn parse_valid_observation(input: &str) -> CodeObservation {
     match CodeObservation::parse(input) {

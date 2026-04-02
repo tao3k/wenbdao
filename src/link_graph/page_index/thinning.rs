@@ -2,10 +2,10 @@ use crate::link_graph::models::PageIndexNode;
 use std::sync::Arc;
 
 /// Default pruning threshold for folding tiny parent sections into a single chunk.
-pub(in crate::link_graph) const DEFAULT_PAGE_INDEX_THINNING_TOKEN_THRESHOLD: usize = 12;
+pub(crate) const DEFAULT_PAGE_INDEX_THINNING_TOKEN_THRESHOLD: usize = 12;
 
 /// Thin a page tree in place by folding descendants into undersized parent nodes.
-pub(in crate::link_graph) fn thin_page_index_tree(nodes: &mut [PageIndexNode], threshold: usize) {
+pub(crate) fn thin_page_index_tree(nodes: &mut [PageIndexNode], threshold: usize) {
     let effective_threshold = threshold.max(1);
     for node in nodes {
         thin_node(node, effective_threshold);

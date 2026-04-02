@@ -10,7 +10,9 @@ use std::path::PathBuf;
 use xiuxian_zhenfa::{MethodRegistry, ZhenfaRouter};
 
 use super::models::{WendaoSearchHttpResponse, WendaoSearchRequest};
-use super::rpc::{execute_search_async, search_from_rpc_params};
+use super::rpc::{
+    execute_search_async, export_plugin_artifact_from_rpc_params, search_from_rpc_params,
+};
 use crate::link_graph::{
     LinkGraphDirection, LinkGraphDocument, LinkGraphIndex, LinkGraphMetadata, LinkGraphNeighbor,
     LinkGraphPlannedSearchPayload, LinkGraphSearchOptions, LinkGraphStats,
@@ -72,6 +74,9 @@ impl ZhenfaRouter for WendaoZhenfaRouter {
         registry.register_fn("wendao.search", move |params, _meta| async move {
             search_from_rpc_params(params)
         });
+        registry.register_fn("wendao.plugin_artifact", move |params, _meta| async move {
+            export_plugin_artifact_from_rpc_params(params)
+        });
     }
 }
 
@@ -79,6 +84,8 @@ impl ZhenfaRouter for WendaoZhenfaRouter {
 #[derive(Debug, Deserialize)]
 struct WendaoSearchPlannedRequest {
     query: String,
+    #[serde(default)]
+    query_vector: Option<Vec<f32>>,
     #[serde(default)]
     limit: Option<usize>,
     #[serde(default)]
@@ -156,8 +163,9 @@ async fn search_planned_http(
         parse_search_options(body.options).map_err(|error| bad_request(error.as_str()))?;
 
     let payload = index
-        .search_planned_payload_with_agentic_async(
+        .search_planned_payload_with_agentic_async_with_query_vector(
             query,
+            body.query_vector.as_deref().unwrap_or(&[]),
             limit,
             base_options,
             body.include_provisional,

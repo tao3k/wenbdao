@@ -1,0 +1,167 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/integration/../support/repo_projection_support.rs
+expression: value
+---
+{
+  "center_page": {
+    "doc_id": "repo:projection-sample:doc:docs/solve.md",
+    "doc_ids": [
+      "repo:projection-sample:doc:docs/solve.md"
+    ],
+    "example_ids": [
+      "repo:projection-sample:example:examples/solve_demo.jl"
+    ],
+    "format_hints": [
+      "md"
+    ],
+    "keywords": [
+      "docs/solve.md",
+      "md",
+      "repo:projection-sample:doc:docs/solve.md",
+      "solve"
+    ],
+    "kind": "reference",
+    "module_ids": [],
+    "page_id": "repo:projection-sample:projection:reference:doc:repo:projection-sample:doc:docs/solve.md",
+    "path": "docs/solve.md",
+    "paths": [
+      "docs/solve.md",
+      "examples/solve_demo.jl"
+    ],
+    "repo_id": "projection-sample",
+    "sections": [
+      {
+        "body": "Projected reference page for `solve`.\nFormat hints:\n- `md`\nSource paths:\n- `docs/solve.md`\n- `examples/solve_demo.jl`",
+        "level": 1,
+        "paths": [
+          "docs/solve.md",
+          "examples/solve_demo.jl"
+        ],
+        "section_id": "repo:projection-sample:projection:reference:doc:repo:projection-sample:doc:docs/solve.md#overview",
+        "title": "Overview"
+      },
+      {
+        "body": "Symbols:\n- `ProjectionPkg.solve` (src/ProjectionPkg.jl)",
+        "level": 2,
+        "paths": [
+          "src/ProjectionPkg.jl"
+        ],
+        "section_id": "repo:projection-sample:projection:reference:doc:repo:projection-sample:doc:docs/solve.md#anchors",
+        "title": "Anchors"
+      },
+      {
+        "body": "Documentation:\n- `solve` (docs/solve.md)",
+        "level": 2,
+        "paths": [
+          "docs/solve.md"
+        ],
+        "section_id": "repo:projection-sample:projection:reference:doc:repo:projection-sample:doc:docs/solve.md#sources",
+        "title": "Documentation"
+      },
+      {
+        "body": "Examples:\n- `solve_demo` (examples/solve_demo.jl)",
+        "level": 2,
+        "paths": [
+          "examples/solve_demo.jl"
+        ],
+        "section_id": "repo:projection-sample:projection:reference:doc:repo:projection-sample:doc:docs/solve.md#examples",
+        "title": "Examples"
+      }
+    ],
+    "symbol_ids": [
+      "repo:projection-sample:symbol:ProjectionPkg.solve"
+    ],
+    "title": "solve"
+  },
+  "family": {
+    "kind": "how_to",
+    "pages": [
+      {
+        "page": {
+          "doc_id": "repo:projection-sample:doc:README.md",
+          "doc_ids": [
+            "repo:projection-sample:doc:README.md",
+            "repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:solve",
+            "repo:projection-sample:doc:docs/solve.md"
+          ],
+          "example_ids": [
+            "repo:projection-sample:example:examples/solve_demo.jl"
+          ],
+          "format_hints": [
+            "julia_docstring",
+            "md"
+          ],
+          "keywords": [
+            "README.md",
+            "julia_docstring",
+            "md",
+            "repo:projection-sample:doc:README.md",
+            "solve_demo"
+          ],
+          "kind": "how_to",
+          "module_ids": [
+            "repo:projection-sample:module:ProjectionPkg"
+          ],
+          "page_id": "repo:projection-sample:projection:howto:example:repo:projection-sample:example:examples/solve_demo.jl",
+          "path": "README.md",
+          "paths": [
+            "README.md",
+            "docs/solve.md",
+            "examples/solve_demo.jl",
+            "src/ProjectionPkg.jl#symbol:solve"
+          ],
+          "repo_id": "projection-sample",
+          "sections": [
+            {
+              "body": "Projected how-to page for `solve_demo`.\nFormat hints:\n- `julia_docstring`\n- `md`\nSource paths:\n- `README.md`\n- `docs/solve.md`\n- `examples/solve_demo.jl`\n- `src/ProjectionPkg.jl#symbol:solve`",
+              "level": 1,
+              "paths": [
+                "README.md",
+                "docs/solve.md",
+                "examples/solve_demo.jl",
+                "src/ProjectionPkg.jl#symbol:solve"
+              ],
+              "section_id": "repo:projection-sample:projection:howto:example:repo:projection-sample:example:examples/solve_demo.jl#overview",
+              "title": "Overview"
+            },
+            {
+              "body": "Modules:\n- `ProjectionPkg` (src/ProjectionPkg.jl)\n\nSymbols:\n- `ProjectionPkg.solve` (src/ProjectionPkg.jl)",
+              "level": 2,
+              "paths": [
+                "src/ProjectionPkg.jl"
+              ],
+              "section_id": "repo:projection-sample:projection:howto:example:repo:projection-sample:example:examples/solve_demo.jl#anchors",
+              "title": "Anchors"
+            },
+            {
+              "body": "Documentation:\n- `README.md` (README.md)\n- `solve` (docs/solve.md)\n- `solve` (src/ProjectionPkg.jl#symbol:solve)",
+              "level": 2,
+              "paths": [
+                "README.md",
+                "docs/solve.md",
+                "src/ProjectionPkg.jl#symbol:solve"
+              ],
+              "section_id": "repo:projection-sample:projection:howto:example:repo:projection-sample:example:examples/solve_demo.jl#sources",
+              "title": "Supporting Docs"
+            },
+            {
+              "body": "Examples:\n- `solve_demo` (examples/solve_demo.jl)",
+              "level": 2,
+              "paths": [
+                "examples/solve_demo.jl"
+              ],
+              "section_id": "repo:projection-sample:projection:howto:example:repo:projection-sample:example:examples/solve_demo.jl#examples",
+              "title": "Examples"
+            }
+          ],
+          "symbol_ids": [
+            "repo:projection-sample:symbol:ProjectionPkg.solve"
+          ],
+          "title": "solve_demo"
+        },
+        "shared_anchor_score": 3
+      }
+    ]
+  },
+  "repo_id": "projection-sample"
+}

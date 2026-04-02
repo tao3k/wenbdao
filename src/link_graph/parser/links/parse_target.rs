@@ -1,11 +1,11 @@
 use std::path::Path;
 
-use super::ParsedTarget;
 use super::normalize::{
     has_external_scheme, has_supported_note_extension, normalize_attachment_target,
     normalize_markdown_note_target, normalize_wikilink_note_target, strip_fragment_and_query,
     strip_target_decorations,
 };
+use super::types::ParsedTarget;
 
 pub(super) fn parse_markdown_target(
     raw: &str,

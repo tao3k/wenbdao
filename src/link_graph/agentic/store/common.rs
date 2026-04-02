@@ -1,9 +1,14 @@
-use super::super::types::LinkGraphSuggestedLinkState;
+use crate::link_graph::agentic::types::LinkGraphSuggestedLinkState;
+use crate::valkey_common::open_client;
 use std::time::{SystemTime, UNIX_EPOCH};
 use xxhash_rust::xxh3::xxh3_64;
 
+/// Build a Redis client for suggested-link store operations.
+///
+/// # Errors
+/// Returns an error when the provided Valkey URL is invalid.
 pub fn redis_client(valkey_url: &str) -> Result<redis::Client, String> {
-    redis::Client::open(valkey_url)
+    open_client(valkey_url)
         .map_err(|err| format!("invalid valkey url for link_graph suggested_link store: {err}"))
 }
 
@@ -74,4 +79,23 @@ pub fn push_stream_entry(
             .map_err(|err| format!("failed to EXPIRE {stream_label} stream: {err}"))?;
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::redis_client;
+
+    #[test]
+    fn redis_client_opens_trimmed_valid_url() {
+        let client = redis_client(" redis://127.0.0.1/ ");
+        assert!(client.is_ok());
+    }
+
+    #[test]
+    fn redis_client_preserves_agentic_error_context() {
+        let Err(error) = redis_client("  ") else {
+            panic!("blank URL should fail");
+        };
+        assert!(error.contains("link_graph suggested_link store"));
+    }
 }

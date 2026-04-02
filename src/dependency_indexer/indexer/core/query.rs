@@ -1,5 +1,5 @@
 use super::DependencyIndexer;
-use super::{DependencyStats, ExternalSymbol};
+use crate::dependency_indexer::indexer::{DependencyStats, ExternalSymbol};
 
 impl DependencyIndexer {
     /// Search for symbols by name pattern.

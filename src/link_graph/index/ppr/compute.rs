@@ -3,9 +3,11 @@ mod orchestrate;
 
 use self::finalize::finalize_related_ppr_result;
 use self::orchestrate::run_related_ppr_orchestration;
-use super::super::{LinkGraphIndex, LinkGraphPprSubgraphMode, LinkGraphRelatedPprOptions};
-use super::runtime::resolve_related_ppr_runtime;
-use super::types::RelatedPprComputation;
+use crate::link_graph::index::ppr::runtime::resolve_related_ppr_runtime;
+use crate::link_graph::index::ppr::types::RelatedPprComputation;
+use crate::link_graph::index::{
+    LinkGraphIndex, LinkGraphPprSubgraphMode, LinkGraphRelatedPprOptions,
+};
 use crate::link_graph::runtime_config::resolve_link_graph_related_runtime;
 use crate::link_graph::saliency::{learned_saliency_signal_from_state, valkey_saliency_get_many};
 use std::collections::{HashMap, HashSet};

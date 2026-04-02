@@ -1,0 +1,52 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/integration/../support/repo_intelligence.rs
+expression: value
+---
+{
+  "covered_symbols": 2,
+  "docs": [
+    {
+      "doc_id": "repo:coverage-sample:doc:README.md",
+      "format": "md",
+      "path": "README.md",
+      "repo_id": "coverage-sample",
+      "title": "README.md"
+    },
+    {
+      "doc_id": "repo:coverage-sample:doc:docs/Problem.md",
+      "format": "md",
+      "path": "docs/Problem.md",
+      "repo_id": "coverage-sample",
+      "title": "Problem"
+    },
+    {
+      "doc_id": "repo:coverage-sample:doc:docs/solve.md",
+      "format": "md",
+      "path": "docs/solve.md",
+      "repo_id": "coverage-sample",
+      "title": "solve"
+    },
+    {
+      "doc_id": "repo:coverage-sample:doc:src/CoveragePkg.jl#symbol:Problem",
+      "format": "julia_docstring",
+      "path": "src/CoveragePkg.jl#symbol:Problem",
+      "repo_id": "coverage-sample",
+      "title": "Problem"
+    },
+    {
+      "doc_id": "repo:coverage-sample:doc:src/CoveragePkg.jl#symbol:solve",
+      "format": "julia_docstring",
+      "path": "src/CoveragePkg.jl#symbol:solve",
+      "repo_id": "coverage-sample",
+      "title": "solve"
+    }
+  ],
+  "hierarchical_uri": "repo://coverage-sample",
+  "hierarchy": [
+    "repo",
+    "coverage-sample"
+  ],
+  "module_id": "repo:coverage-sample:module:CoveragePkg",
+  "repo_id": "coverage-sample",
+  "uncovered_symbols": 0
+}

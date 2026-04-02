@@ -1,6 +1,6 @@
-use super::super::super::{LinkGraphIndex, LinkGraphPprSubgraphMode};
-use super::super::types::RelatedPprKernelResult;
 use super::RelatedPprKernelTelemetry;
+use crate::link_graph::index::ppr::types::RelatedPprKernelResult;
+use crate::link_graph::index::{LinkGraphIndex, LinkGraphPprSubgraphMode};
 use rayon::prelude::*;
 use std::collections::{HashMap, HashSet};
 use std::time::Instant;

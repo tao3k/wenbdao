@@ -14,4 +14,5 @@ pub(crate) use commands::{
 };
 #[cfg(feature = "zhenfa-router")]
 pub(crate) use commands::{GatewayArgs, GatewayCommand, GatewayStartArgs};
+pub(crate) use commands::{RepoCommand, RepoSyncModeArg};
 pub(crate) use enums::{LinkGraphScopeArg, OutputFormat, RelatedPprSubgraphModeArg};

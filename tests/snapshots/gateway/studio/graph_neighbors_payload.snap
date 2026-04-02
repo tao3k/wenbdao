@@ -1,5 +1,6 @@
 ---
 source: packages/rust/crates/xiuxian-wendao/src/gateway/studio/test_support.rs
+assertion_line: 9
 expression: value
 ---
 {
@@ -10,7 +11,9 @@ expression: value
     "label": "Alpha",
     "navigationTarget": {
       "category": "doc",
-      "path": "kernel/alpha.md"
+      "path": "kernel/alpha.md",
+      "projectName": "kernel",
+      "rootLabel": "kernel"
     },
     "nodeType": "doc",
     "path": "kernel/alpha.md"

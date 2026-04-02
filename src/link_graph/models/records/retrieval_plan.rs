@@ -1,7 +1,8 @@
 use serde::{Deserialize, Serialize};
 
 /// Canonical schema version for `LinkGraph` retrieval-plan records.
-pub const LINK_GRAPH_RETRIEVAL_PLAN_SCHEMA_VERSION: &str = "omni.link_graph.retrieval_plan.v1";
+pub const LINK_GRAPH_RETRIEVAL_PLAN_SCHEMA_VERSION: &str =
+    "xiuxian_wendao.link_graph.retrieval_plan.v1";
 /// Policy reason emitted when the backend cannot be initialized.
 pub const LINK_GRAPH_REASON_BACKEND_UNAVAILABLE: &str = "backend_unavailable";
 /// Policy reason emitted when caller explicitly requests vector-only routing.

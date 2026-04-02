@@ -18,6 +18,10 @@ pub enum WendaoSearchResponseFormat {
 pub struct WendaoSearchRequest {
     /// Query string with optional directives.
     pub query: String,
+    /// Optional precomputed query embedding used by semantic ignition and
+    /// Julia rerank when the caller already owns the vectorization step.
+    #[serde(default)]
+    pub query_vector: Option<Vec<f32>>,
     /// Maximum number of hits requested.
     #[serde(default)]
     pub limit: Option<usize>,

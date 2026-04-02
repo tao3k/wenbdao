@@ -1,0 +1,76 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/support/repo_intelligence.rs
+expression: value
+---
+[
+  {
+    "kind": "contains",
+    "source_id": "repo:relation-sample",
+    "target_id": "repo:relation-sample:doc:README.md"
+  },
+  {
+    "kind": "contains",
+    "source_id": "repo:relation-sample",
+    "target_id": "repo:relation-sample:doc:docs/guide.md"
+  },
+  {
+    "kind": "contains",
+    "source_id": "repo:relation-sample",
+    "target_id": "repo:relation-sample:doc:src/RelationPkg.jl#symbol:Problem"
+  },
+  {
+    "kind": "contains",
+    "source_id": "repo:relation-sample",
+    "target_id": "repo:relation-sample:doc:src/RelationPkg.jl#symbol:solve"
+  },
+  {
+    "kind": "contains",
+    "source_id": "repo:relation-sample",
+    "target_id": "repo:relation-sample:example:examples/basic.jl"
+  },
+  {
+    "kind": "contains",
+    "source_id": "repo:relation-sample",
+    "target_id": "repo:relation-sample:example:test/runtests.jl"
+  },
+  {
+    "kind": "contains",
+    "source_id": "repo:relation-sample",
+    "target_id": "repo:relation-sample:module:RelationPkg"
+  },
+  {
+    "kind": "declares",
+    "source_id": "repo:relation-sample:module:RelationPkg",
+    "target_id": "repo:relation-sample:symbol:RelationPkg.Problem"
+  },
+  {
+    "kind": "declares",
+    "source_id": "repo:relation-sample:module:RelationPkg",
+    "target_id": "repo:relation-sample:symbol:RelationPkg.solve"
+  },
+  {
+    "kind": "documents",
+    "source_id": "repo:relation-sample:doc:README.md",
+    "target_id": "repo:relation-sample:module:RelationPkg"
+  },
+  {
+    "kind": "documents",
+    "source_id": "repo:relation-sample:doc:src/RelationPkg.jl#symbol:Problem",
+    "target_id": "repo:relation-sample:symbol:RelationPkg.Problem"
+  },
+  {
+    "kind": "documents",
+    "source_id": "repo:relation-sample:doc:src/RelationPkg.jl#symbol:solve",
+    "target_id": "repo:relation-sample:symbol:RelationPkg.solve"
+  },
+  {
+    "kind": "uses",
+    "source_id": "repo:relation-sample:module:RelationPkg",
+    "target_id": "external:LinearAlgebra"
+  },
+  {
+    "kind": "uses",
+    "source_id": "repo:relation-sample:module:RelationPkg",
+    "target_id": "external:SciMLBase"
+  }
+]

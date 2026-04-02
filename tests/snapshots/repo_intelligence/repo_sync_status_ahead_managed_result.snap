@@ -1,0 +1,46 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/support/repo_intelligence.rs
+expression: value
+---
+{
+  "checked_at": "[checked-at]",
+  "checkout_path": "[checkout-path]",
+  "checkout_state": "observed",
+  "drift_state": "ahead",
+  "health_state": "has_local_commits",
+  "last_fetched_at": "[last-fetched-at]",
+  "mirror_path": "[mirror-path]",
+  "mirror_revision": "282d0c8ca93be7848287b399819f03776d8667fe",
+  "mirror_state": "observed",
+  "mode": "status",
+  "refresh": "fetch",
+  "repo_id": "managed-drift",
+  "revision": "5a7cf5a64333617643b635affe6466936e0ec482",
+  "source_kind": "managed_remote",
+  "staleness_state": "fresh",
+  "status_summary": {
+    "attention_required": true,
+    "drift_state": "ahead",
+    "freshness": {
+      "checked_at": "[checked-at]",
+      "last_fetched_at": "[last-fetched-at]",
+      "staleness_state": "fresh"
+    },
+    "health_state": "has_local_commits",
+    "lifecycle": {
+      "checkout_ready": true,
+      "checkout_state": "observed",
+      "mirror_ready": true,
+      "mirror_state": "observed",
+      "source_kind": "managed_remote"
+    },
+    "revisions": {
+      "aligned_with_mirror": false,
+      "checkout_revision": "5a7cf5a64333617643b635affe6466936e0ec482",
+      "mirror_revision": "282d0c8ca93be7848287b399819f03776d8667fe",
+      "tracking_revision": "282d0c8ca93be7848287b399819f03776d8667fe"
+    }
+  },
+  "tracking_revision": "282d0c8ca93be7848287b399819f03776d8667fe",
+  "upstream_url": "[upstream-url]"
+}

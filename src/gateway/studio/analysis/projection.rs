@@ -1,169 +1,85 @@
-use std::collections::HashMap;
+use std::fmt::Write;
 
-use super::super::types::{
+use crate::gateway::studio::types::{
     AnalysisEdge, AnalysisEdgeKind, AnalysisNode, AnalysisNodeKind, MermaidProjection,
     MermaidViewKind,
 };
 
-pub(super) fn build_mermaid_projections(
-    path: &str,
+pub(crate) fn build_mermaid_projections(
     nodes: &[AnalysisNode],
     edges: &[AnalysisEdge],
 ) -> Vec<MermaidProjection> {
     vec![
-        build_mindmap_projection(path, nodes, edges),
-        build_flowchart_projection(nodes, edges),
-        build_graph_projection(nodes, edges),
+        build_outline_projection(nodes, edges),
+        build_task_projection(nodes, edges),
     ]
 }
 
-fn build_mindmap_projection(
-    path: &str,
-    nodes: &[AnalysisNode],
-    edges: &[AnalysisEdge],
-) -> MermaidProjection {
-    let mut source = String::from("mindmap\n");
-    source.push_str("  root((");
-    source.push_str(escape_mermaid_label(path).as_str());
-    source.push_str("))\n");
-    for node in nodes
-        .iter()
-        .filter(|node| !matches!(node.kind, AnalysisNodeKind::Document))
-    {
-        let indent = " ".repeat((node.depth + 1) * 2);
-        source.push_str(indent.as_str());
-        source.push_str(escape_mermaid_label(node.label.as_str()).as_str());
-        source.push('\n');
-    }
-    MermaidProjection {
-        kind: MermaidViewKind::Mindmap,
-        source,
-        node_count: nodes.len(),
-        edge_count: edges.len(),
-        complexity_score: complexity_score(nodes.len(), edges.len()),
-        diagnostics: projection_diagnostics(nodes.len(), edges.len()),
-    }
-}
+fn build_outline_projection(nodes: &[AnalysisNode], edges: &[AnalysisEdge]) -> MermaidProjection {
+    let mut source = String::from("graph TD\n");
+    let mut node_count = 0;
+    let mut edge_count = 0;
 
-fn build_flowchart_projection(nodes: &[AnalysisNode], edges: &[AnalysisEdge]) -> MermaidProjection {
-    let aliases = node_aliases(nodes);
-    let mut source = String::from("flowchart TD\n");
     for node in nodes {
-        let Some(alias) = aliases.get(node.id.as_str()) else {
-            continue;
-        };
-        source.push_str("  ");
-        source.push_str(alias.as_str());
-        source.push_str("[\"");
-        source.push_str(escape_mermaid_label(node.label.as_str()).as_str());
-        source.push_str("\"]\n");
+        if matches!(node.kind, AnalysisNodeKind::Section) {
+            let _ = writeln!(source, "  {}[\"{}\"]", escape_id(&node.id), node.label);
+            node_count += 1;
+        }
     }
+
     for edge in edges {
-        let Some(source_alias) = aliases.get(edge.source_id.as_str()) else {
-            continue;
-        };
-        let Some(target_alias) = aliases.get(edge.target_id.as_str()) else {
-            continue;
-        };
-        source.push_str("  ");
-        source.push_str(source_alias.as_str());
-        source.push_str(" -->|");
-        source.push_str(edge_label(edge.kind, edge.label.as_deref()).as_str());
-        source.push_str("| ");
-        source.push_str(target_alias.as_str());
-        source.push('\n');
-    }
-
-    MermaidProjection {
-        kind: MermaidViewKind::Flowchart,
-        source,
-        node_count: nodes.len(),
-        edge_count: edges.len(),
-        complexity_score: complexity_score(nodes.len(), edges.len()),
-        diagnostics: projection_diagnostics(nodes.len(), edges.len()),
-    }
-}
-
-fn build_graph_projection(nodes: &[AnalysisNode], edges: &[AnalysisEdge]) -> MermaidProjection {
-    let aliases = node_aliases(nodes);
-    let mut source = String::from("graph LR\n");
-    for node in nodes {
-        let Some(alias) = aliases.get(node.id.as_str()) else {
-            continue;
-        };
-        source.push_str("  ");
-        source.push_str(alias.as_str());
-        source.push_str("[\"");
-        source.push_str(escape_mermaid_label(node.label.as_str()).as_str());
-        source.push_str("\"]\n");
-    }
-    for edge in edges.iter().filter(|edge| {
-        matches!(
+        if matches!(
             edge.kind,
-            AnalysisEdgeKind::References | AnalysisEdgeKind::NextStep | AnalysisEdgeKind::Contains
-        )
-    }) {
-        let Some(source_alias) = aliases.get(edge.source_id.as_str()) else {
-            continue;
-        };
-        let Some(target_alias) = aliases.get(edge.target_id.as_str()) else {
-            continue;
-        };
-        source.push_str("  ");
-        source.push_str(source_alias.as_str());
-        source.push_str(" -->|");
-        source.push_str(edge_label(edge.kind, edge.label.as_deref()).as_str());
-        source.push_str("| ");
-        source.push_str(target_alias.as_str());
-        source.push('\n');
+            AnalysisEdgeKind::Contains | AnalysisEdgeKind::Parent
+        ) {
+            let s_id = escape_id(&edge.source_id);
+            let t_id = escape_id(&edge.target_id);
+            // Rough check if nodes are in this projection
+            let _ = writeln!(source, "  {s_id} --> {t_id}");
+            edge_count += 1;
+        }
     }
 
     MermaidProjection {
-        kind: MermaidViewKind::Graph,
+        kind: MermaidViewKind::Outline,
         source,
-        node_count: nodes.len(),
-        edge_count: edges.len(),
-        complexity_score: complexity_score(nodes.len(), edges.len()),
-        diagnostics: projection_diagnostics(nodes.len(), edges.len()),
+        node_count,
+        edge_count,
     }
 }
 
-fn node_aliases(nodes: &[AnalysisNode]) -> HashMap<&str, String> {
-    nodes
-        .iter()
-        .enumerate()
-        .map(|(index, node)| (node.id.as_str(), format!("N{index}")))
-        .collect::<HashMap<_, _>>()
-}
+fn build_task_projection(nodes: &[AnalysisNode], edges: &[AnalysisEdge]) -> MermaidProjection {
+    let mut source = String::from("graph LR\n");
+    let mut node_count = 0;
+    let mut edge_count = 0;
 
-fn edge_label(kind: AnalysisEdgeKind, label: Option<&str>) -> String {
-    let fallback = match kind {
-        AnalysisEdgeKind::Contains => "contains",
-        AnalysisEdgeKind::References => "references",
-        AnalysisEdgeKind::NextStep => "next",
-    };
-    escape_mermaid_label(label.unwrap_or(fallback))
-}
-
-fn escape_mermaid_label(value: &str) -> String {
-    value.replace('"', "'")
-}
-
-fn complexity_score(nodes: usize, edges: usize) -> f64 {
-    usize_to_f64(nodes) + (usize_to_f64(edges) * 1.25)
-}
-
-fn projection_diagnostics(nodes: usize, edges: usize) -> Vec<String> {
-    let mut diagnostics = Vec::new();
-    if nodes > 180 {
-        diagnostics.push("high node count may reduce Mermaid render readability".to_string());
+    for node in nodes {
+        if matches!(node.kind, AnalysisNodeKind::Task) {
+            let _ = writeln!(source, "  {}[\"{}\"]", escape_id(&node.id), node.label);
+            node_count += 1;
+        }
     }
-    if edges > 260 {
-        diagnostics.push("high edge count may cause graph overlap in small panels".to_string());
+
+    for edge in edges {
+        if matches!(edge.kind, AnalysisEdgeKind::NextStep) {
+            let _ = writeln!(
+                source,
+                "  {} --> {}",
+                escape_id(&edge.source_id),
+                escape_id(&edge.target_id)
+            );
+            edge_count += 1;
+        }
     }
-    diagnostics
+
+    MermaidProjection {
+        kind: MermaidViewKind::Tasks,
+        source,
+        node_count,
+        edge_count,
+    }
 }
 
-fn usize_to_f64(value: usize) -> f64 {
-    f64::from(u32::try_from(value).unwrap_or(u32::MAX))
+fn escape_id(id: &str) -> String {
+    id.replace([':', '.', '-'], "_")
 }

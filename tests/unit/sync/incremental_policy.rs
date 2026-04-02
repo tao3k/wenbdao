@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use xiuxian_wendao::IncrementalSyncPolicy;
+use xiuxian_wendao::sync::IncrementalSyncPolicy;
 
 #[test]
 fn test_incremental_sync_policy_supports_configured_extensions() {

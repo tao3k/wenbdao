@@ -3,7 +3,9 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
+use super::helpers::path_match_suffix;
 use super::*;
+use crate::link_graph::PageIndexNode;
 
 fn make_test_node_with_path(title: &str, path: &[&str], hash: Option<&str>) -> PageIndexNode {
     PageIndexNode {
@@ -163,6 +165,25 @@ fn test_fuzzy_resolve_substring() {
         matches
             .iter()
             .any(|m| m.match_type == MatchType::TitleSubstring)
+    );
+}
+
+#[test]
+fn test_fuzzy_resolve_title_typo() {
+    let mut trees = HashMap::new();
+    trees.insert(
+        "doc.md".to_string(),
+        vec![make_test_node_with_path("Storage", &["Storage"], None)],
+    );
+
+    let index = TopologyIndex::build_from_trees(&trees);
+
+    let matches = index.fuzzy_resolve("stroage", 5);
+    assert!(!matches.is_empty());
+    assert!(
+        matches
+            .iter()
+            .any(|m| m.match_type == MatchType::TitleFuzzy)
     );
 }
 

@@ -1,0 +1,51 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/integration/../support/repo_intelligence.rs
+assertion_line: 32
+expression: value
+---
+{
+  "module_hits": [
+    {
+      "hierarchical_uri": "wendao://repo/unknown/module-sample/api/src:ModulePkg.jl/repo:module-sample:module:ModulePkg",
+      "hierarchy": [
+        "src",
+        "ModulePkg.jl"
+      ],
+      "implicit_backlink_items": [
+        {
+          "id": "repo:module-sample:doc:README.md",
+          "kind": "documents",
+          "path": "README.md",
+          "title": "README.md"
+        }
+      ],
+      "implicit_backlinks": [
+        "repo:module-sample:doc:README.md"
+      ],
+      "module": {
+        "module_id": "repo:module-sample:module:ModulePkg",
+        "path": "src/ModulePkg.jl",
+        "qualified_name": "ModulePkg",
+        "repo_id": "module-sample"
+      },
+      "projection_page_ids": [
+        "repo:module-sample:projection:explanation:doc:repo:module-sample:doc:README.md",
+        "repo:module-sample:projection:reference:module:repo:module-sample:module:ModulePkg",
+        "repo:module-sample:projection:reference:symbol:repo:module-sample:symbol:ModulePkg.Problem",
+        "repo:module-sample:projection:reference:symbol:repo:module-sample:symbol:ModulePkg.solve"
+      ],
+      "rank": 1,
+      "saliency_score": 0.5,
+      "score": 1.0
+    }
+  ],
+  "modules": [
+    {
+      "module_id": "repo:module-sample:module:ModulePkg",
+      "path": "src/ModulePkg.jl",
+      "qualified_name": "ModulePkg",
+      "repo_id": "module-sample"
+    }
+  ],
+  "repo_id": "module-sample"
+}

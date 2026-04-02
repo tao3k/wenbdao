@@ -1,0 +1,199 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/integration/../support/repo_intelligence.rs
+assertion_line: 22
+expression: value
+---
+{
+  "diagnostics": [
+    {
+      "line": 0,
+      "message": "expected root file `src/FallbackPkg.jl` was not found; using `Other.jl` instead",
+      "path": "src/Other.jl",
+      "repo_id": "fallback",
+      "severity": "warning"
+    }
+  ],
+  "docs": [
+    {
+      "doc_id": "repo:fallback:doc:README.md",
+      "format": "md",
+      "path": "README.md",
+      "repo_id": "fallback",
+      "title": "README.md"
+    },
+    {
+      "doc_id": "repo:fallback:doc:docs/guide.md",
+      "format": "md",
+      "path": "docs/guide.md",
+      "repo_id": "fallback",
+      "title": "guide"
+    },
+    {
+      "doc_id": "repo:fallback:doc:src/Other.jl#symbol:Problem",
+      "format": "julia_docstring",
+      "path": "src/Other.jl#symbol:Problem",
+      "repo_id": "fallback",
+      "title": "Problem"
+    },
+    {
+      "doc_id": "repo:fallback:doc:src/Other.jl#symbol:solve",
+      "format": "julia_docstring",
+      "path": "src/Other.jl#symbol:solve",
+      "repo_id": "fallback",
+      "title": "solve"
+    }
+  ],
+  "examples": [
+    {
+      "example_id": "repo:fallback:example:examples/basic.jl",
+      "path": "examples/basic.jl",
+      "repo_id": "fallback",
+      "summary": null,
+      "title": "basic"
+    },
+    {
+      "example_id": "repo:fallback:example:test/runtests.jl",
+      "path": "test/runtests.jl",
+      "repo_id": "fallback",
+      "summary": null,
+      "title": "runtests"
+    }
+  ],
+  "modules": [
+    {
+      "module_id": "repo:fallback:module:FallbackPkgAlt",
+      "path": "src/Other.jl",
+      "qualified_name": "FallbackPkgAlt",
+      "repo_id": "fallback"
+    }
+  ],
+  "relations": [
+    {
+      "kind": "uses",
+      "repo_id": "fallback",
+      "source_id": "repo:fallback:module:FallbackPkgAlt",
+      "target_id": "external:LinearAlgebra"
+    },
+    {
+      "kind": "uses",
+      "repo_id": "fallback",
+      "source_id": "repo:fallback:module:FallbackPkgAlt",
+      "target_id": "external:SciMLBase"
+    },
+    {
+      "kind": "documents",
+      "repo_id": "fallback",
+      "source_id": "repo:fallback:doc:src/Other.jl#symbol:Problem",
+      "target_id": "repo:fallback:symbol:FallbackPkgAlt.Problem"
+    },
+    {
+      "kind": "documents",
+      "repo_id": "fallback",
+      "source_id": "repo:fallback:doc:src/Other.jl#symbol:solve",
+      "target_id": "repo:fallback:symbol:FallbackPkgAlt.solve"
+    },
+    {
+      "kind": "contains",
+      "repo_id": "fallback",
+      "source_id": "repo:fallback",
+      "target_id": "repo:fallback:module:FallbackPkgAlt"
+    },
+    {
+      "kind": "declares",
+      "repo_id": "fallback",
+      "source_id": "repo:fallback:module:FallbackPkgAlt",
+      "target_id": "repo:fallback:symbol:FallbackPkgAlt.Problem"
+    },
+    {
+      "kind": "declares",
+      "repo_id": "fallback",
+      "source_id": "repo:fallback:module:FallbackPkgAlt",
+      "target_id": "repo:fallback:symbol:FallbackPkgAlt.solve"
+    },
+    {
+      "kind": "contains",
+      "repo_id": "fallback",
+      "source_id": "repo:fallback",
+      "target_id": "repo:fallback:example:examples/basic.jl"
+    },
+    {
+      "kind": "contains",
+      "repo_id": "fallback",
+      "source_id": "repo:fallback",
+      "target_id": "repo:fallback:example:test/runtests.jl"
+    },
+    {
+      "kind": "contains",
+      "repo_id": "fallback",
+      "source_id": "repo:fallback",
+      "target_id": "repo:fallback:doc:README.md"
+    },
+    {
+      "kind": "contains",
+      "repo_id": "fallback",
+      "source_id": "repo:fallback",
+      "target_id": "repo:fallback:doc:docs/guide.md"
+    },
+    {
+      "kind": "contains",
+      "repo_id": "fallback",
+      "source_id": "repo:fallback",
+      "target_id": "repo:fallback:doc:src/Other.jl#symbol:Problem"
+    },
+    {
+      "kind": "contains",
+      "repo_id": "fallback",
+      "source_id": "repo:fallback",
+      "target_id": "repo:fallback:doc:src/Other.jl#symbol:solve"
+    },
+    {
+      "kind": "documents",
+      "repo_id": "fallback",
+      "source_id": "repo:fallback:doc:README.md",
+      "target_id": "repo:fallback:module:FallbackPkgAlt"
+    }
+  ],
+  "repository": {
+    "dependencies": [
+      "LinearAlgebra",
+      "SciMLBase"
+    ],
+    "name": "FallbackPkg",
+    "path": "[repo-root]",
+    "repo_id": "fallback",
+    "revision": "3226b51265d93472bbf6583e7112e7ef8b458a04",
+    "url": "https://example.invalid/xiuxian-wendao/fallbackpkg.git",
+    "uuid": "12345678-1234-1234-1234-123456789abc",
+    "version": "0.1.0"
+  },
+  "symbols": [
+    {
+      "audit_status": "unreviewed",
+      "kind": "type",
+      "line_end": null,
+      "line_start": null,
+      "module_id": "repo:fallback:module:FallbackPkgAlt",
+      "name": "Problem",
+      "path": "src/Other.jl",
+      "qualified_name": "FallbackPkgAlt.Problem",
+      "repo_id": "fallback",
+      "signature": null,
+      "symbol_id": "repo:fallback:symbol:FallbackPkgAlt.Problem",
+      "verification_state": "verified"
+    },
+    {
+      "audit_status": "unreviewed",
+      "kind": "function",
+      "line_end": null,
+      "line_start": null,
+      "module_id": "repo:fallback:module:FallbackPkgAlt",
+      "name": "solve",
+      "path": "src/Other.jl",
+      "qualified_name": "FallbackPkgAlt.solve",
+      "repo_id": "fallback",
+      "signature": "solve(problem::Problem)",
+      "symbol_id": "repo:fallback:symbol:FallbackPkgAlt.solve",
+      "verification_state": "verified"
+    }
+  ]
+}

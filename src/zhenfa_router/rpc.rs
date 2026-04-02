@@ -4,6 +4,7 @@ use serde_json::{Value, json};
 use xiuxian_zhenfa::{INTERNAL_ERROR_CODE, JsonRpcErrorObject};
 
 use super::models::{WendaoSearchRequest, WendaoSearchResponseFormat};
+use super::native::{WendaoPluginArtifactArgs, export_plugin_artifact};
 use crate::link_graph::{LinkGraphIndex, LinkGraphPlannedSearchPayload};
 
 pub(super) const DEFAULT_SEARCH_LIMIT: usize = 20;
@@ -26,6 +27,26 @@ pub fn search_from_rpc_params(params: Value) -> Result<String, JsonRpcErrorObjec
     })
 }
 
+/// Execute `wendao.plugin_artifact` from JSON-RPC parameters.
+///
+/// # Errors
+/// Returns JSON-RPC error payloads when params are invalid or export fails.
+pub fn export_plugin_artifact_from_rpc_params(params: Value) -> Result<String, JsonRpcErrorObject> {
+    let request: WendaoPluginArtifactArgs = serde_json::from_value(params).map_err(|error| {
+        JsonRpcErrorObject::invalid_params(format!(
+            "invalid wendao.plugin_artifact params: {error}"
+        ))
+    })?;
+
+    export_plugin_artifact(request).map_err(|error: xiuxian_zhenfa::ZhenfaError| {
+        JsonRpcErrorObject::new(
+            INTERNAL_ERROR_CODE,
+            "wendao plugin artifact export failed",
+            Some(json!({ "details": error.to_string() })),
+        )
+    })
+}
+
 /// Execute one Wendao search request.
 ///
 /// # Errors
@@ -35,13 +56,24 @@ pub fn execute_search(request: &WendaoSearchRequest) -> Result<String, String> {
         validate_search_request(request)?;
     let index = LinkGraphIndex::build(&root)
         .map_err(|error| format!("failed to build LinkGraph index at `{root_dir}`: {error}"))?;
-    let payload = index.search_planned_payload_with_agentic(
-        query,
-        limit,
-        base_options,
-        request.include_provisional,
-        request.provisional_limit,
-    );
+    let payload = if let Some(query_vector) = request.query_vector.as_deref() {
+        index.search_planned_payload_with_agentic_query_vector(
+            query,
+            query_vector,
+            limit,
+            base_options,
+            request.include_provisional,
+            request.provisional_limit,
+        )
+    } else {
+        index.search_planned_payload_with_agentic(
+            query,
+            limit,
+            base_options,
+            request.include_provisional,
+            request.provisional_limit,
+        )
+    };
     render_payload(&payload, response_format)
 }
 
@@ -49,14 +81,16 @@ pub fn execute_search(request: &WendaoSearchRequest) -> Result<String, String> {
 ///
 /// # Errors
 /// Returns an error when index construction, query execution, or payload serialization fails.
+#[cfg(feature = "zhenfa-router")]
 pub async fn execute_search_async(request: &WendaoSearchRequest) -> Result<String, String> {
     let (root, root_dir, query, limit, base_options, response_format) =
         validate_search_request(request)?;
     let index = LinkGraphIndex::build(&root)
         .map_err(|error| format!("failed to build LinkGraph index at `{root_dir}`: {error}"))?;
     let payload = index
-        .search_planned_payload_with_agentic_async(
+        .search_planned_payload_with_agentic_async_with_query_vector(
             query,
+            request.query_vector.as_deref().unwrap_or(&[]),
             limit,
             base_options,
             request.include_provisional,

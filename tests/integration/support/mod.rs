@@ -1,0 +1,9 @@
+#[path = "../../support/repo_fixture.rs"]
+pub(crate) mod repo_fixture;
+#[path = "../../support/repo_intelligence.rs"]
+pub(crate) mod repo_intelligence;
+#[path = "../../support/repo_projection_support.rs"]
+pub(crate) mod repo_projection_support;
+pub(crate) mod wendaoarrow_common;
+pub(crate) mod wendaoarrow_custom_service;
+pub(crate) mod wendaoarrow_official_examples;

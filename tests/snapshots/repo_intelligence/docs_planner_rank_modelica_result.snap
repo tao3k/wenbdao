@@ -1,0 +1,8 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/integration/support/../../support/repo_intelligence.rs
+expression: value
+---
+{
+  "hits": [],
+  "repo_id": "modelica-docs-planner-rank"
+}

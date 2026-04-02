@@ -1,0 +1,8 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/support/repo_intelligence.rs
+expression: value
+---
+{
+  "examples": [],
+  "repo_id": "example-sample"
+}

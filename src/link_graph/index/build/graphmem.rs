@@ -6,15 +6,20 @@ use crate::link_graph::saliency::{
     DEFAULT_SALIENCY_BASE, LINK_GRAPH_SALIENCY_SCHEMA_VERSION, LinkGraphSaliencyPolicy,
     LinkGraphSaliencyState, compute_link_graph_saliency, edge_in_key, edge_out_key, saliency_key,
 };
+use crate::valkey_common::open_client;
 use std::collections::HashMap;
 use std::time::{SystemTime, UNIX_EPOCH};
+
+fn redis_client(valkey_url: &str) -> Result<redis::Client, String> {
+    open_client(valkey_url)
+        .map_err(|err| format!("invalid valkey url for link-graph graphmem sync: {err}"))
+}
 
 pub(super) fn sync_graphmem_state_to_valkey(
     index: &LinkGraphIndex,
     runtime: &LinkGraphCacheRuntimeConfig,
 ) -> Result<(), String> {
-    let client = redis::Client::open(runtime.valkey_url.as_str())
-        .map_err(|e| format!("invalid valkey url for link-graph graphmem sync: {e}"))?;
+    let client = redis_client(runtime.valkey_url.as_str())?;
     let mut conn = client
         .get_connection()
         .map_err(|e| format!("failed to connect valkey for link-graph graphmem sync: {e}"))?;
@@ -119,4 +124,23 @@ pub(super) fn sync_graphmem_state_best_effort(index: &LinkGraphIndex) {
         return;
     };
     let _ = sync_graphmem_state_to_valkey(index, &runtime);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::redis_client;
+
+    #[test]
+    fn redis_client_opens_trimmed_valid_url() {
+        let client = redis_client(" redis://127.0.0.1/ ");
+        assert!(client.is_ok());
+    }
+
+    #[test]
+    fn redis_client_preserves_graphmem_error_context() {
+        let Err(error) = redis_client("  ") else {
+            panic!("blank URL should fail");
+        };
+        assert!(error.contains("link-graph graphmem sync"));
+    }
 }

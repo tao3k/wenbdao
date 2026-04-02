@@ -1,0 +1,63 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/integration/support/../../support/repo_intelligence.rs
+expression: value
+---
+{
+  "repo_id": "modelica-symbol-search",
+  "symbol_hits": [
+    {
+      "hierarchical_uri": "wendao://repo/msl/modelica-symbol-search/api/Controllers:PI.mo/repo:modelica-symbol-search:symbol:Symbolica.Controllers.PI",
+      "hierarchy": [
+        "Controllers",
+        "PI.mo"
+      ],
+      "implicit_backlink_items": [
+        {
+          "id": "repo:modelica-symbol-search:doc:Controllers/PI.mo#annotation.documentation",
+          "kind": "documents",
+          "path": "Controllers/PI.mo#annotation.documentation",
+          "title": "PI documentation"
+        }
+      ],
+      "implicit_backlinks": [
+        "repo:modelica-symbol-search:doc:Controllers/PI.mo#annotation.documentation"
+      ],
+      "projection_page_ids": [
+        "repo:modelica-symbol-search:projection:reference:doc:repo:modelica-symbol-search:doc:Controllers/PI.mo#annotation.documentation",
+        "repo:modelica-symbol-search:projection:reference:symbol:repo:modelica-symbol-search:symbol:Symbolica.Controllers.PI"
+      ],
+      "rank": 1,
+      "saliency_score": 0.4,
+      "score": 1.0,
+      "symbol": {
+        "kind": "type",
+        "line_end": 2,
+        "line_start": 2,
+        "module_id": "repo:modelica-symbol-search:module:Symbolica.Controllers",
+        "name": "PI",
+        "path": "Controllers/PI.mo",
+        "qualified_name": "Symbolica.Controllers.PI",
+        "repo_id": "modelica-symbol-search",
+        "signature": "model PI",
+        "symbol_id": "repo:modelica-symbol-search:symbol:Symbolica.Controllers.PI",
+        "verification_state": "verified"
+      },
+      "verification_state": "verified"
+    }
+  ],
+  "symbols": [
+    {
+      "kind": "type",
+      "line_end": 2,
+      "line_start": 2,
+      "module_id": "repo:modelica-symbol-search:module:Symbolica.Controllers",
+      "name": "PI",
+      "path": "Controllers/PI.mo",
+      "qualified_name": "Symbolica.Controllers.PI",
+      "repo_id": "modelica-symbol-search",
+      "signature": "model PI",
+      "symbol_id": "repo:modelica-symbol-search:symbol:Symbolica.Controllers.PI",
+      "verification_state": "verified"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+---
+source: packages/rust/crates/xiuxian-wendao/src/gateway/studio/test_support.rs
+expression: value
+---
+{
+  "display_name": "Projectionica",
+  "doc_count": 6,
+  "example_count": 1,
+  "hierarchical_uri": "repo://modelica-gateway-overview",
+  "hierarchy": [
+    "repo",
+    "modelica-gateway-overview"
+  ],
+  "module_count": 3,
+  "repo_id": "modelica-gateway-overview",
+  "revision": "97867b37a68b78c443c9f90a44ad46bd68ee44c7",
+  "symbol_count": 1
+}

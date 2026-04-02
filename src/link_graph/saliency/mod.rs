@@ -1,11 +1,13 @@
 mod calc;
 mod keys;
+mod signal;
 mod store;
 mod touch;
 mod types;
 
 pub use calc::compute_link_graph_saliency;
 pub(crate) use keys::{edge_in_key, edge_out_key, saliency_key};
+pub use signal::learned_saliency_signal_from_state;
 pub use store::{
     valkey_saliency_decay_all, valkey_saliency_decay_all_with_valkey, valkey_saliency_del,
     valkey_saliency_get, valkey_saliency_get_many, valkey_saliency_get_many_with_valkey,
@@ -21,9 +23,3 @@ pub use types::{
     LinkGraphSaliencyDecaySweepRequest, LinkGraphSaliencyDecaySweepResult, LinkGraphSaliencyPolicy,
     LinkGraphSaliencyState, LinkGraphSaliencyTouchRequest,
 };
-
-/// Map a saliency state into a normalized learning signal.
-#[must_use]
-pub fn learned_saliency_signal_from_state(state: &LinkGraphSaliencyState) -> f64 {
-    state.current_saliency
-}

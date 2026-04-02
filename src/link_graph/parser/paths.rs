@@ -1,10 +1,10 @@
 use std::path::Path;
 
-pub(super) fn normalize_slashes(raw: &str) -> String {
+pub(in crate::link_graph::parser) fn normalize_slashes(raw: &str) -> String {
     raw.replace('\\', "/")
 }
 
-pub(super) fn trim_md_extension(raw: &str) -> String {
+pub(in crate::link_graph::parser) fn trim_md_extension(raw: &str) -> String {
     let lower = raw.to_lowercase();
     for ext in [".markdown", ".mdx", ".md"] {
         if lower.ends_with(ext) {
@@ -33,7 +33,7 @@ pub fn is_supported_note(path: &Path) -> bool {
         })
 }
 
-pub(super) fn relative_doc_id(path: &Path, root: &Path) -> Option<String> {
+pub(in crate::link_graph::parser) fn relative_doc_id(path: &Path, root: &Path) -> Option<String> {
     let rel = path.strip_prefix(root).ok()?;
     let rel_str = normalize_slashes(&rel.to_string_lossy());
     let without_ext = trim_md_extension(&rel_str);

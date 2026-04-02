@@ -1,0 +1,12 @@
+pub(crate) const INCOMING_RANK_FACTOR: f64 = 2.0;
+pub(crate) const OUTGOING_RANK_FACTOR: f64 = 1.0;
+pub(crate) const MAX_GRAPH_RANK_BOOST: f64 = 0.35;
+pub(crate) const WEIGHT_FTS_LEXICAL: f64 = 0.62;
+pub(crate) const WEIGHT_FTS_SECTION: f64 = 0.23;
+pub(crate) const WEIGHT_FTS_PATH: f64 = 0.15;
+pub(crate) const WEIGHT_PATH_FUZZY_PATH: f64 = 0.70;
+pub(crate) const WEIGHT_PATH_FUZZY_SECTION: f64 = 0.30;
+pub(crate) const INCREMENTAL_REBUILD_THRESHOLD: usize = 256;
+pub(crate) const DEFAULT_PER_DOC_SECTION_CAP: usize = 3;
+pub(crate) const DEFAULT_MIN_SECTION_WORDS: usize = 24;
+pub(crate) const SECTION_AGGREGATION_BETA: f64 = 0.15;

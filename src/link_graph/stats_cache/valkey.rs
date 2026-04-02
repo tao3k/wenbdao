@@ -3,6 +3,7 @@ use super::payload::decode_stats_payload_if_fresh;
 use super::runtime::{now_unix_f64, resolve_stats_cache_runtime};
 use super::schema::LINK_GRAPH_STATS_CACHE_SCHEMA_VERSION;
 use super::types::{LinkGraphStatsCachePayload, LinkGraphStatsCacheStats};
+use crate::valkey_common::open_client;
 
 /// Read `LinkGraph` stats cache payload from `Valkey` if still fresh.
 ///
@@ -18,8 +19,7 @@ pub fn valkey_stats_cache_get(source_key: &str, ttl_sec: f64) -> Result<Option<S
     let (valkey_url, key_prefix) = resolve_stats_cache_runtime()?;
     let cache_key = stats_cache_key(source_key, &key_prefix);
 
-    let client = redis::Client::open(valkey_url.as_str())
-        .map_err(|e| format!("invalid valkey url for link-graph stats cache: {e}"))?;
+    let client = redis_client(valkey_url.as_str())?;
     let mut conn = client
         .get_connection()
         .map_err(|e| format!("failed to connect valkey for link-graph stats cache: {e}"))?;
@@ -77,8 +77,7 @@ pub fn valkey_stats_cache_set(
     let ttl_rounded = std::time::Duration::try_from_secs_f64(ttl_sec.ceil().max(1.0))
         .map_or(u64::MAX, |duration| duration.as_secs().max(1));
 
-    let client = redis::Client::open(valkey_url.as_str())
-        .map_err(|e| format!("invalid valkey url for link-graph stats cache: {e}"))?;
+    let client = redis_client(valkey_url.as_str())?;
     let mut conn = client
         .get_connection()
         .map_err(|e| format!("failed to connect valkey for link-graph stats cache: {e}"))?;
@@ -104,8 +103,7 @@ pub fn valkey_stats_cache_del(source_key: &str) -> Result<(), String> {
     let (valkey_url, key_prefix) = resolve_stats_cache_runtime()?;
     let cache_key = stats_cache_key(source_key, &key_prefix);
 
-    let client = redis::Client::open(valkey_url.as_str())
-        .map_err(|e| format!("invalid valkey url for link-graph stats cache: {e}"))?;
+    let client = redis_client(valkey_url.as_str())?;
     let mut conn = client
         .get_connection()
         .map_err(|e| format!("failed to connect valkey for link-graph stats cache: {e}"))?;
@@ -114,4 +112,28 @@ pub fn valkey_stats_cache_del(source_key: &str) -> Result<(), String> {
         .query::<i64>(&mut conn)
         .map_err(|e| format!("failed to DEL link-graph stats cache from valkey: {e}"))?;
     Ok(())
+}
+
+fn redis_client(valkey_url: &str) -> Result<redis::Client, String> {
+    open_client(valkey_url)
+        .map_err(|err| format!("invalid valkey url for link-graph stats cache: {err}"))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::redis_client;
+
+    #[test]
+    fn redis_client_opens_trimmed_valid_url() {
+        let client = redis_client(" redis://127.0.0.1/ ");
+        assert!(client.is_ok());
+    }
+
+    #[test]
+    fn redis_client_preserves_stats_cache_error_context() {
+        let Err(error) = redis_client("  ") else {
+            panic!("blank URL should fail");
+        };
+        assert!(error.contains("link-graph stats cache"));
+    }
 }

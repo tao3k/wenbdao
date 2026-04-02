@@ -25,7 +25,7 @@ expression: value
       "path": "packages/python/demo/tool.py",
       "projectName": "kernel",
       "rootLabel": "packages",
-      "score": 0.95,
+      "score": 0.97,
       "signature": "class AlphaClient:"
     },
     {
@@ -48,7 +48,7 @@ expression: value
       "path": "packages/rust/crates/demo/src/lib.rs",
       "projectName": "kernel",
       "rootLabel": "packages",
-      "score": 0.95,
+      "score": 0.97,
       "signature": "pub struct AlphaService {"
     },
     {
@@ -71,7 +71,7 @@ expression: value
       "path": "packages/rust/crates/demo/src/lib.rs",
       "projectName": "kernel",
       "rootLabel": "packages",
-      "score": 0.95,
+      "score": 0.97,
       "signature": "pub fn alpha_handler() {}"
     },
     {
@@ -94,7 +94,7 @@ expression: value
       "path": "packages/python/demo/tool.py",
       "projectName": "kernel",
       "rootLabel": "packages",
-      "score": 0.95,
+      "score": 0.97,
       "signature": "def alpha_helper():"
     }
   ],

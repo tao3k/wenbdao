@@ -8,9 +8,11 @@ mod models;
 mod narrator;
 mod page_index;
 pub mod parser;
+/// Generic plugin-runtime vocabulary and compatibility helpers for link-graph plugin providers.
+pub mod plugin_runtime;
 pub mod ppr_hybrid;
 mod query;
-mod runtime_config;
+pub(crate) mod runtime_config;
 /// `GraphMem` saliency models, scoring, and Valkey persistence adapters.
 pub mod saliency;
 mod stats_cache;
@@ -45,6 +47,7 @@ pub use context_snapshot::{
     valkey_quantum_context_snapshot_rollback, valkey_quantum_context_snapshot_rollback_with_valkey,
     valkey_quantum_context_snapshot_save, valkey_quantum_context_snapshot_save_with_valkey,
 };
+pub(crate) use index::IndexedSection;
 pub use index::search::quantum_fusion::openai_ignition::{
     OpenAiCompatibleSemanticIgnition, OpenAiCompatibleSemanticIgnitionError,
 };
@@ -68,23 +71,29 @@ pub use models::{
     LINK_GRAPH_REASON_VECTOR_ONLY_REQUESTED, LINK_GRAPH_RETRIEVAL_PLAN_SCHEMA_VERSION,
     LinkGraphAttachment, LinkGraphAttachmentHit, LinkGraphAttachmentKind, LinkGraphCcsAudit,
     LinkGraphConfidenceLevel, LinkGraphDirection, LinkGraphDisplayHit, LinkGraphDocument,
-    LinkGraphEdgeType, LinkGraphHit, LinkGraphLinkFilter, LinkGraphMatchStrategy,
-    LinkGraphMetadata, LinkGraphNeighbor, LinkGraphPassage, LinkGraphPlannedSearchPayload,
-    LinkGraphPprSubgraphMode, LinkGraphPromotedOverlayTelemetry, LinkGraphRelatedFilter,
-    LinkGraphRelatedPprDiagnostics, LinkGraphRelatedPprOptions, LinkGraphRetrievalBudget,
-    LinkGraphRetrievalMode, LinkGraphRetrievalPlanInput, LinkGraphRetrievalPlanRecord,
-    LinkGraphScope, LinkGraphSearchFilters, LinkGraphSearchOptions, LinkGraphSemanticDocument,
-    LinkGraphSemanticDocumentKind, LinkGraphSemanticDocumentScope,
+    LinkGraphEdgeType, LinkGraphHit, LinkGraphJuliaRerankTelemetry, LinkGraphLinkFilter,
+    LinkGraphMatchStrategy, LinkGraphMetadata, LinkGraphNeighbor, LinkGraphPassage,
+    LinkGraphPlannedSearchPayload, LinkGraphPprSubgraphMode, LinkGraphPromotedOverlayTelemetry,
+    LinkGraphRelatedFilter, LinkGraphRelatedPprDiagnostics, LinkGraphRelatedPprOptions,
+    LinkGraphRetrievalBudget, LinkGraphRetrievalMode, LinkGraphRetrievalPlanInput,
+    LinkGraphRetrievalPlanRecord, LinkGraphScope, LinkGraphSearchFilters, LinkGraphSearchOptions,
+    LinkGraphSemanticDocument, LinkGraphSemanticDocumentKind, LinkGraphSemanticDocumentScope,
     LinkGraphSemanticIgnitionTelemetry, LinkGraphSemanticSearchPolicy, LinkGraphSortField,
     LinkGraphSortOrder, LinkGraphSortTerm, LinkGraphStats, LinkGraphTagFilter, MarkdownBlock,
     MarkdownBlockKind, PageIndexMeta, PageIndexNode, QuantumAnchorHit, QuantumContext,
     QuantumFusionOptions, QuantumFusionTelemetry, QuantumSemanticSearchRequest,
 };
 pub use narrator::narrate_subgraph;
+pub(crate) use page_index::{
+    DEFAULT_PAGE_INDEX_THINNING_TOKEN_THRESHOLD, build_page_index_tree, thin_page_index_tree,
+};
 pub use parser::blocks::extract_blocks;
 pub use query::{ParsedLinkGraphQuery, parse_search_query};
 pub use runtime_config::{
-    LinkGraphIndexRuntimeConfig, resolve_link_graph_index_runtime,
+    LinkGraphIndexRuntimeConfig, LinkGraphRerankFlightRuntimeSettings,
+    julia_deployment_artifact_selector, resolve_link_graph_index_runtime,
+    resolve_link_graph_rerank_binding, resolve_link_graph_rerank_flight_runtime_settings,
+    resolve_link_graph_rerank_schema_version, resolve_link_graph_rerank_score_weights,
     set_link_graph_config_home_override, set_link_graph_wendao_config_override,
 };
 pub use saliency::{

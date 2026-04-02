@@ -1,8 +1,7 @@
-use super::super::super::{
-    LinkGraphIndex, LinkGraphPprSubgraphMode, LinkGraphRelatedPprDiagnostics, doc_sort_key,
-};
-use super::super::types::RelatedPprComputation;
 use super::RelatedPprKernelTelemetry;
+use crate::link_graph::index::ppr::types::RelatedPprComputation;
+use crate::link_graph::index::{LinkGraphIndex, LinkGraphPprSubgraphMode, doc_sort_key};
+use crate::link_graph::models::LinkGraphRelatedPprDiagnostics;
 use std::cmp::Ordering;
 use std::collections::HashSet;
 use std::time::Instant;

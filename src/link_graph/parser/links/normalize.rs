@@ -165,25 +165,80 @@ pub(super) fn has_supported_note_extension(path: &str) -> bool {
         .is_some_and(|ext| matches!(ext.to_ascii_lowercase().as_str(), "md" | "markdown"))
 }
 
+fn resolve_relative_target(
+    target: &str,
+    source_path: &std::path::Path,
+    root: &std::path::Path,
+) -> Option<String> {
+    let normalized_target = crate::link_graph::parser::paths::normalize_slashes(target.trim());
+    if normalized_target.is_empty() {
+        return None;
+    }
+
+    let resolved_path = if std::path::Path::new(&normalized_target).is_absolute() {
+        root.join(normalized_target.trim_start_matches('/'))
+    } else {
+        source_path
+            .parent()
+            .unwrap_or(root)
+            .join(normalized_target.as_str())
+    };
+
+    let relative_path = resolved_path
+        .strip_prefix(root)
+        .unwrap_or(resolved_path.as_path());
+    let relative =
+        crate::link_graph::parser::paths::normalize_slashes(&relative_path.to_string_lossy());
+    (!relative.is_empty()).then_some(relative)
+}
+
 pub(super) fn normalize_markdown_note_target(
     target: &str,
-    _source_path: &std::path::Path,
-    _root: &std::path::Path,
+    source_path: &std::path::Path,
+    root: &std::path::Path,
 ) -> Option<String> {
-    let stem = target.split_once('.').map_or(target, |(s, _)| s);
+    let resolved = resolve_relative_target(target, source_path, root)?;
+    let stem = resolved
+        .split_once('.')
+        .map_or(resolved.as_str(), |(s, _)| s);
     (!stem.is_empty()).then(|| crate::link_graph::parser::normalize_alias(stem))
 }
 
 pub(super) fn normalize_attachment_target(
     target: &str,
-    _source_path: &std::path::Path,
-    _root: &std::path::Path,
+    source_path: &std::path::Path,
+    root: &std::path::Path,
 ) -> Option<String> {
-    (!target.is_empty()).then(|| target.to_string())
+    resolve_relative_target(target, source_path, root)
 }
 
 pub(super) fn normalize_wikilink_note_target(raw: &str) -> Option<String> {
     let stem = raw.split_once('|').map_or(raw, |(s, _)| s);
     let stem = stem.split_once('#').map_or(stem, |(s, _)| s);
     (!stem.is_empty()).then(|| crate::link_graph::parser::normalize_alias(stem))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn normalize_markdown_note_target_resolves_against_source_directory() {
+        let source_path = std::path::Path::new("/workspace/docs/index.md");
+        let root = std::path::Path::new("/workspace");
+
+        let resolved = normalize_markdown_note_target("testing/README.md", source_path, root);
+
+        assert_eq!(resolved.as_deref(), Some("docs/testing/readme"));
+    }
+
+    #[test]
+    fn normalize_attachment_target_resolves_against_source_directory() {
+        let source_path = std::path::Path::new("/workspace/docs/index.md");
+        let root = std::path::Path::new("/workspace");
+
+        let resolved = normalize_attachment_target("assets/diagram.svg", source_path, root);
+
+        assert_eq!(resolved.as_deref(), Some("docs/assets/diagram.svg"));
+    }
 }

@@ -1,0 +1,39 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/integration/../support/repo_intelligence.rs
+assertion_line: 22
+expression: value
+---
+{
+  "example_hits": [
+    {
+      "example": {
+        "example_id": "repo:cli-example:example:test/runtests.jl",
+        "path": "test/runtests.jl",
+        "repo_id": "cli-example",
+        "summary": null,
+        "title": "runtests"
+      },
+      "hierarchical_uri": "wendao://repo/unknown/cli-example/examples/test:runtests.jl/repo:cli-example:example:test/runtests.jl",
+      "hierarchy": [
+        "test",
+        "runtests.jl"
+      ],
+      "projection_page_ids": [
+        "repo:cli-example:projection:howto:example:repo:cli-example:example:test/runtests.jl"
+      ],
+      "rank": 1,
+      "saliency_score": 0.0,
+      "score": 0.8181818181818182
+    }
+  ],
+  "examples": [
+    {
+      "example_id": "repo:cli-example:example:test/runtests.jl",
+      "path": "test/runtests.jl",
+      "repo_id": "cli-example",
+      "summary": null,
+      "title": "runtests"
+    }
+  ],
+  "repo_id": "cli-example"
+}

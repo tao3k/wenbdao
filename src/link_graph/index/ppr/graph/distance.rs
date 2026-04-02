@@ -1,4 +1,4 @@
-use super::super::super::{LinkGraphIndex, doc_sort_key};
+use crate::link_graph::index::{LinkGraphIndex, doc_sort_key};
 use std::collections::{HashMap, HashSet, VecDeque};
 
 impl LinkGraphIndex {

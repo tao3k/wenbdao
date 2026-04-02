@@ -18,8 +18,8 @@ pub use markdown_block::{BlockAddress, MarkdownBlock, MarkdownBlockKind};
 pub use page_index::{PageIndexMeta, PageIndexNode};
 pub use passage::LinkGraphPassage;
 pub use payload::{
-    LinkGraphCcsAudit, LinkGraphPlannedSearchPayload, LinkGraphPromotedOverlayTelemetry,
-    LinkGraphSemanticIgnitionTelemetry,
+    LinkGraphCcsAudit, LinkGraphJuliaRerankTelemetry, LinkGraphPlannedSearchPayload,
+    LinkGraphPromotedOverlayTelemetry, LinkGraphSemanticIgnitionTelemetry,
 };
 pub use quantum_fusion::{
     QuantumAnchorHit, QuantumContext, QuantumFusionOptions, QuantumFusionTelemetry,

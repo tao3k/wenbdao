@@ -7,6 +7,7 @@
 use super::core::read_lock;
 use super::{GraphError, KnowledgeGraph};
 use crate::entity::{Entity, Relation};
+use crate::valkey_common::{first_non_empty_env, normalize_key_prefix, open_client};
 use chrono::Utc;
 use log::info;
 use serde::{Deserialize, Serialize};
@@ -27,30 +28,30 @@ struct GraphSnapshot {
 }
 
 fn resolve_graph_valkey_url() -> Result<String, GraphError> {
-    std::env::var(GRAPH_VALKEY_URL_ENV)
-        .ok()
-        .map(|value| value.trim().to_string())
-        .filter(|value| !value.is_empty())
-        .or_else(|| {
-            std::env::var("VALKEY_URL")
-                .ok()
-                .map(|value| value.trim().to_string())
-                .filter(|value| !value.is_empty())
-        })
-        .ok_or_else(|| {
-            GraphError::InvalidRelation(
-                GRAPH_VALKEY_URL_ENV.to_string(),
-                format!("graph valkey url is required (set {GRAPH_VALKEY_URL_ENV} or VALKEY_URL)"),
-            )
-        })
+    first_non_empty_env(&[GRAPH_VALKEY_URL_ENV, "VALKEY_URL"]).ok_or_else(|| {
+        GraphError::InvalidRelation(
+            GRAPH_VALKEY_URL_ENV.to_string(),
+            format!("graph valkey url is required (set {GRAPH_VALKEY_URL_ENV} or VALKEY_URL)"),
+        )
+    })
 }
 
 fn resolve_graph_key_prefix() -> String {
-    std::env::var(GRAPH_VALKEY_KEY_PREFIX_ENV)
-        .ok()
-        .map(|value| value.trim().to_string())
-        .filter(|value| !value.is_empty())
-        .unwrap_or_else(|| DEFAULT_GRAPH_VALKEY_KEY_PREFIX.to_string())
+    normalize_graph_key_prefix(
+        std::env::var(GRAPH_VALKEY_KEY_PREFIX_ENV)
+            .unwrap_or_default()
+            .as_str(),
+    )
+}
+
+fn normalize_graph_key_prefix(candidate: &str) -> String {
+    normalize_key_prefix(candidate, DEFAULT_GRAPH_VALKEY_KEY_PREFIX)
+}
+
+fn graph_redis_client(valkey_url: &str) -> Result<redis::Client, GraphError> {
+    open_client(valkey_url).map_err(|error| {
+        GraphError::InvalidRelation("graph_valkey_client".to_string(), error.to_string())
+    })
 }
 
 fn graph_snapshot_key(graph_scope: &str) -> String {
@@ -88,9 +89,7 @@ impl KnowledgeGraph {
             GraphError::InvalidRelation("graph_snapshot_serialize".to_string(), error.to_string())
         })?;
 
-        let client = redis::Client::open(valkey_url.as_str()).map_err(|error| {
-            GraphError::InvalidRelation("graph_valkey_client".to_string(), error.to_string())
-        })?;
+        let client = graph_redis_client(valkey_url.as_str())?;
         let mut conn = client.get_connection().map_err(|error| {
             GraphError::InvalidRelation("graph_valkey_connect".to_string(), error.to_string())
         })?;
@@ -129,9 +128,7 @@ impl KnowledgeGraph {
         let valkey_url = resolve_graph_valkey_url()?;
         let snapshot_key = graph_snapshot_key(graph_scope);
 
-        let client = redis::Client::open(valkey_url.as_str()).map_err(|error| {
-            GraphError::InvalidRelation("graph_valkey_client".to_string(), error.to_string())
-        })?;
+        let client = graph_redis_client(valkey_url.as_str())?;
         let mut conn = client.get_connection().map_err(|error| {
             GraphError::InvalidRelation("graph_valkey_connect".to_string(), error.to_string())
         })?;
@@ -176,5 +173,45 @@ impl KnowledgeGraph {
     /// fail, snapshot parsing fails, or restored graph entities/relations are invalid.
     pub fn load_from_valkey(&mut self, graph_scope: &str) -> Result<(), GraphError> {
         self.load_from_valkey_sync(graph_scope)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{
+        DEFAULT_GRAPH_VALKEY_KEY_PREFIX, GraphError, graph_redis_client, normalize_graph_key_prefix,
+    };
+
+    #[test]
+    fn normalize_graph_key_prefix_falls_back_for_blank_input() {
+        assert_eq!(
+            normalize_graph_key_prefix("   "),
+            DEFAULT_GRAPH_VALKEY_KEY_PREFIX.to_string()
+        );
+    }
+
+    #[test]
+    fn normalize_graph_key_prefix_trims_non_blank_input() {
+        assert_eq!(
+            normalize_graph_key_prefix("  xiuxian:graph:test  "),
+            "xiuxian:graph:test".to_string()
+        );
+    }
+
+    #[test]
+    fn graph_redis_client_opens_trimmed_valid_url() {
+        let client = graph_redis_client(" redis://127.0.0.1/ ");
+        assert!(client.is_ok());
+    }
+
+    #[test]
+    fn graph_redis_client_preserves_graph_error_identity() {
+        let Err(error) = graph_redis_client("  ") else {
+            panic!("blank URL should fail");
+        };
+        assert!(matches!(
+            error,
+            GraphError::InvalidRelation(ref field, _) if field == "graph_valkey_client"
+        ));
     }
 }

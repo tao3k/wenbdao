@@ -1,0 +1,9 @@
+---
+source: packages/rust/crates/xiuxian-wendao/src/gateway/studio/test_support.rs
+assertion_line: 9
+expression: value
+---
+{
+  "repo_id": "sciml/imports",
+  "imports": []
+}

@@ -3,7 +3,7 @@
 use std::path::Path;
 
 use tempfile::TempDir;
-use xiuxian_wendao::{SkillVfsError, SkillVfsResolver};
+use xiuxian_wendao::skill_vfs::{SkillVfsError, SkillVfsResolver};
 
 const SKILL_FRONTMATTER: &str = r#"---
 name: agenda-management

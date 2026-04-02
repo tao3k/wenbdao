@@ -1,0 +1,28 @@
+---
+source: packages/rust/crates/xiuxian-wendao/src/repo_intelligence/config.rs
+expression: value
+---
+{
+  "repos": [
+    {
+      "id": "local_modelica",
+      "path": "repos/modelica",
+      "plugins": [
+        "modelica"
+      ],
+      "ref": null,
+      "refresh": "fetch",
+      "url": "https://example.invalid/modelica.git"
+    },
+    {
+      "id": "sciml",
+      "path": null,
+      "plugins": [
+        "julia"
+      ],
+      "ref": "main",
+      "refresh": "manual",
+      "url": "https://example.invalid/sciml.git"
+    }
+  ]
+}

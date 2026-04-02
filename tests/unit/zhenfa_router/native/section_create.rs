@@ -1,6 +1,11 @@
 //! Unit tests for section creation logic.
 
-use super::*;
+use crate::zhenfa_router::native::section_create::building::generate_section_id;
+use crate::zhenfa_router::native::section_create::insertion::parse_heading_line;
+use crate::zhenfa_router::native::section_create::{
+    BuildSectionOptions, build_new_sections_content_with_options, compute_content_hash,
+    find_insertion_point,
+};
 
 #[test]
 fn test_parse_heading_line() {

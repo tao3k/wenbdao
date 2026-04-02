@@ -1,4 +1,5 @@
 //! Precision regression for weighted-seed PPR ranking.
+use serial_test::serial;
 use std::fs;
 use std::time::{SystemTime, UNIX_EPOCH};
 use xiuxian_wendao::link_graph::{
@@ -9,6 +10,7 @@ use xiuxian_wendao::link_graph::{
 const TEST_VALKEY_URL: &str = "redis://127.0.0.1:6379/0";
 
 #[test]
+#[serial(link_graph_runtime_config)]
 fn test_ppr_weight_precision_impact() -> Result<(), Box<dyn std::error::Error>> {
     let prefix = unique_prefix();
     if clear_prefix(&prefix).is_err() {

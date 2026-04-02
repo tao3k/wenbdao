@@ -6,7 +6,7 @@ use comrak::{
 use std::path::Path;
 
 use super::parse_target::{parse_markdown_target, parse_wikilink_target};
-use super::{ExtractedLinkTargets, ParsedTarget};
+use super::types::{ExtractedLinkTargets, ParsedTarget};
 
 pub(super) fn extract_markdown_links_with_comrak(
     body: &str,

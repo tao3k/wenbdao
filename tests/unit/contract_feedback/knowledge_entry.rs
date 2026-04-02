@@ -18,7 +18,7 @@ fn must_ok<T, E: std::fmt::Display>(result: Result<T, E>, context: &str) -> T {
 
 fn rest_failure_envelope() -> ContractKnowledgeEnvelope {
     ContractKnowledgeEnvelope {
-        entry_id: "wendao-contracts::rest_docs::REST-R003::/api/search".to_string(),
+        entry_id: "wendao-contracts::rest_docs::REST-R003::/api/search/definition".to_string(),
         suite_id: "wendao-contracts".to_string(),
         generated_at: "2026-03-17T00:00:00Z".to_string(),
         rule_id: "REST-R003".to_string(),

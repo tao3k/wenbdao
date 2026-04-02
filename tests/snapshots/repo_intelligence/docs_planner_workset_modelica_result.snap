@@ -1,0 +1,42 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/integration/support/../../support/repo_intelligence.rs
+expression: value
+---
+{
+  "balance": {
+    "family_balanced": true,
+    "family_distribution": [],
+    "family_group_count": 0,
+    "family_spread": 0,
+    "family_target_ceiling_count": 0,
+    "family_target_floor_count": 0,
+    "gap_kind_balanced": true,
+    "gap_kind_distribution": [],
+    "gap_kind_group_count": 0,
+    "gap_kind_spread": 0,
+    "gap_kind_target_ceiling_count": 0,
+    "gap_kind_target_floor_count": 0,
+    "selection_count": 0
+  },
+  "groups": [],
+  "items": [],
+  "queue": {
+    "groups": [],
+    "page_count": 11,
+    "repo_id": "modelica-docs-planner-workset",
+    "total_gap_count": 0
+  },
+  "ranked_hits": [],
+  "repo_id": "modelica-docs-planner-workset",
+  "strategy": {
+    "code": "empty_selection",
+    "family_group_count": 0,
+    "gap_kind_group_count": 0,
+    "reasons": [
+      {
+        "code": "empty_selection",
+        "detail": "no ranked gaps were selected into the workset"
+      }
+    ]
+  }
+}

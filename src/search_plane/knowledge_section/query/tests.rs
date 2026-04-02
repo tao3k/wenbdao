@@ -1,0 +1,57 @@
+use std::collections::HashMap;
+
+use crate::search_plane::knowledge_section::query::candidates::{
+    KnowledgeCandidate, retained_window,
+};
+use crate::search_plane::knowledge_section::query::ranking::{
+    candidate_path_key, compare_candidates,
+};
+use crate::search_plane::ranking::trim_ranked_string_map;
+
+#[test]
+fn trim_best_by_path_keeps_highest_ranked_hits() {
+    let mut best_by_path = HashMap::from([
+        (
+            "notes/zeta.md".to_string(),
+            KnowledgeCandidate {
+                id: "zeta".to_string(),
+                path: "notes/zeta.md".to_string(),
+                stem: "zeta".to_string(),
+                score: 0.82,
+            },
+        ),
+        (
+            "notes/beta.md".to_string(),
+            KnowledgeCandidate {
+                id: "beta".to_string(),
+                path: "notes/beta.md".to_string(),
+                stem: "beta".to_string(),
+                score: 0.95,
+            },
+        ),
+        (
+            "notes/alpha.md".to_string(),
+            KnowledgeCandidate {
+                id: "alpha".to_string(),
+                path: "notes/alpha.md".to_string(),
+                stem: "alpha".to_string(),
+                score: 0.95,
+            },
+        ),
+    ]);
+
+    trim_ranked_string_map(&mut best_by_path, 2, compare_candidates, candidate_path_key);
+
+    let mut retained = best_by_path.into_values().collect::<Vec<_>>();
+    retained.sort_by(compare_candidates);
+    assert_eq!(retained.len(), 2);
+    assert_eq!(retained[0].path, "notes/alpha.md");
+    assert_eq!(retained[1].path, "notes/beta.md");
+}
+
+#[test]
+fn retained_window_scales_with_limit() {
+    assert_eq!(retained_window(0).target, 128);
+    assert_eq!(retained_window(4).target, 128);
+    assert_eq!(retained_window(64).target, 512);
+}

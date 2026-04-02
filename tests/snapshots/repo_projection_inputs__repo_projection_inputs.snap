@@ -1,0 +1,163 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/repo_projection_inputs.rs
+expression: payload
+---
+{
+  "repo_id": "demo",
+  "page_count": 6,
+  "kinds": [
+    "explanation",
+    "howto",
+    "reference",
+    "reference",
+    "reference",
+    "tutorial"
+  ],
+  "pages": [
+    {
+      "repo_id": "demo",
+      "page_id": "repo:demo:projection:explanation:doc:repo:demo:doc:Controllers/UsersGuide/ReleaseNotes.mo#section.Version_4_1_0",
+      "kind": "explanation",
+      "title": "Version 4.1.0",
+      "module_ids": [
+        "repo:demo:module:Demo.Controllers"
+      ],
+      "symbol_ids": [],
+      "example_ids": [
+        "repo:demo:example:Controllers/Examples/Step.mo"
+      ],
+      "doc_ids": [
+        "repo:demo:doc:Controllers/UsersGuide/ReleaseNotes.mo#section.Version_4_1_0"
+      ],
+      "paths": [
+        "Controllers/Examples/Step.mo",
+        "Controllers/UsersGuide/ReleaseNotes.mo#section.Version_4_1_0"
+      ],
+      "format_hints": [
+        "modelica_users_guide_release_notes_version"
+      ]
+    },
+    {
+      "repo_id": "demo",
+      "page_id": "repo:demo:projection:howto:example:repo:demo:example:Controllers/Examples/Step.mo",
+      "kind": "how_to",
+      "title": "Step",
+      "module_ids": [
+        "repo:demo:module:Demo.Controllers"
+      ],
+      "symbol_ids": [],
+      "example_ids": [
+        "repo:demo:example:Controllers/Examples/Step.mo"
+      ],
+      "doc_ids": [
+        "repo:demo:doc:Controllers/UsersGuide/Tutorial/FirstSteps.mo",
+        "repo:demo:doc:Controllers/UsersGuide/ReleaseNotes.mo#section.Version_4_1_0"
+      ],
+      "paths": [
+        "Controllers/Examples/Step.mo",
+        "Controllers/UsersGuide/ReleaseNotes.mo#section.Version_4_1_0",
+        "Controllers/UsersGuide/Tutorial/FirstSteps.mo"
+      ],
+      "format_hints": [
+        "modelica_users_guide_release_notes_version",
+        "modelica_users_guide_tutorial"
+      ]
+    },
+    {
+      "repo_id": "demo",
+      "page_id": "repo:demo:projection:reference:module:repo:demo:module:Demo.Controllers",
+      "kind": "reference",
+      "title": "Demo.Controllers",
+      "module_ids": [
+        "repo:demo:module:Demo.Controllers"
+      ],
+      "symbol_ids": [],
+      "example_ids": [
+        "repo:demo:example:Controllers/Examples/Step.mo"
+      ],
+      "doc_ids": [
+        "repo:demo:doc:Controllers/UsersGuide/Tutorial/FirstSteps.mo",
+        "repo:demo:doc:Controllers/UsersGuide/ReleaseNotes.mo#section.Version_4_1_0",
+        "repo:demo:doc:Controllers/PI.mo#annotation.documentation"
+      ],
+      "paths": [
+        "Controllers/Examples/Step.mo",
+        "Controllers/PI.mo#annotation.documentation",
+        "Controllers/UsersGuide/ReleaseNotes.mo#section.Version_4_1_0",
+        "Controllers/UsersGuide/Tutorial/FirstSteps.mo",
+        "Controllers/package.mo"
+      ],
+      "format_hints": [
+        "modelica_annotation",
+        "modelica_users_guide_release_notes_version",
+        "modelica_users_guide_tutorial"
+      ]
+    },
+    {
+      "repo_id": "demo",
+      "page_id": "repo:demo:projection:reference:symbol:repo:demo:symbol:Demo.Controllers.PI",
+      "kind": "reference",
+      "title": "Demo.Controllers.PI",
+      "module_ids": [
+        "repo:demo:module:Demo.Controllers"
+      ],
+      "symbol_ids": [
+        "repo:demo:symbol:Demo.Controllers.PI"
+      ],
+      "example_ids": [],
+      "doc_ids": [
+        "repo:demo:doc:Controllers/PI.mo#annotation.documentation"
+      ],
+      "paths": [
+        "Controllers/PI.mo",
+        "Controllers/PI.mo#annotation.documentation"
+      ],
+      "format_hints": [
+        "modelica_annotation"
+      ]
+    },
+    {
+      "repo_id": "demo",
+      "page_id": "repo:demo:projection:reference:doc:repo:demo:doc:Controllers/PI.mo#annotation.documentation",
+      "kind": "reference",
+      "title": "PI documentation",
+      "module_ids": [],
+      "symbol_ids": [
+        "repo:demo:symbol:Demo.Controllers.PI"
+      ],
+      "example_ids": [],
+      "doc_ids": [
+        "repo:demo:doc:Controllers/PI.mo#annotation.documentation"
+      ],
+      "paths": [
+        "Controllers/PI.mo#annotation.documentation"
+      ],
+      "format_hints": [
+        "modelica_annotation"
+      ]
+    },
+    {
+      "repo_id": "demo",
+      "page_id": "repo:demo:projection:tutorial:doc:repo:demo:doc:Controllers/UsersGuide/Tutorial/FirstSteps.mo",
+      "kind": "tutorial",
+      "title": "First Steps",
+      "module_ids": [
+        "repo:demo:module:Demo.Controllers"
+      ],
+      "symbol_ids": [],
+      "example_ids": [
+        "repo:demo:example:Controllers/Examples/Step.mo"
+      ],
+      "doc_ids": [
+        "repo:demo:doc:Controllers/UsersGuide/Tutorial/FirstSteps.mo"
+      ],
+      "paths": [
+        "Controllers/Examples/Step.mo",
+        "Controllers/UsersGuide/Tutorial/FirstSteps.mo"
+      ],
+      "format_hints": [
+        "modelica_users_guide_tutorial"
+      ]
+    }
+  ]
+}

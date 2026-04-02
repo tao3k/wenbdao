@@ -1,4 +1,4 @@
-pub(crate) use self::service::{AnalysisError, analyze_markdown, compile_markdown_nodes};
+pub(crate) use self::service::{analyze_markdown, compile_markdown_nodes};
 
 mod markdown;
 mod projection;

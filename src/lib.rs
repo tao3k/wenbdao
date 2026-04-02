@@ -10,6 +10,13 @@
 //! - `dependency_indexer` / `dep_indexer_py`: Dependency scanning
 //! - `unified_symbol` / `unified_symbol_py`: Cross-language symbol index
 //!
+//! The Python binding implementation lives under `pybindings/` and is
+//! exposed through the `xiuxian_wendao::pybindings` namespace when the
+//! `pybindings` feature is enabled.
+//!
+//! Python bindings are available behind the `pybindings` feature so the
+//! default build stays free of PyO3-only dependencies.
+//!
 //! # Examples
 //!
 //! ```rust
@@ -39,7 +46,7 @@
 //!
 //! graph.add_entity(entity).unwrap();
 //! ```
-use pyo3::prelude::*;
+extern crate self as xiuxian_wendao;
 
 // ---------------------------------------------------------------------------
 // Core domain modules
@@ -50,56 +57,67 @@ pub mod graph;
 pub mod hmas;
 pub mod kg_cache;
 pub mod link_graph;
-pub mod link_graph_py;
+/// Optional Python binding namespace.
+#[cfg(feature = "pybindings")]
+pub mod pybindings;
+/// Internal query-core skeleton for RFC-driven Wendao execution adapters.
+pub mod query_core;
 pub mod schemas;
+pub mod search;
+/// Lance/Arrow/Valkey-backed search-plane domain for Studio search corpora.
+pub mod search_plane;
 pub mod storage;
 pub mod sync;
-mod types;
-
-// ---------------------------------------------------------------------------
-// PyO3 binding modules (one per domain)
-// ---------------------------------------------------------------------------
-pub mod graph_py;
-pub mod knowledge_py;
-mod python_module;
-/// Python bindings for accessing bundled JSON schemas by canonical name.
-pub mod schema_py;
-pub mod storage_py;
-pub mod sync_py;
+pub mod types;
+mod valkey_common;
 
 // ---------------------------------------------------------------------------
 // Fusion recall boost (Rust computation, Python thin wrapper)
 // ---------------------------------------------------------------------------
 pub mod fusion;
-pub mod fusion_py;
+pub mod git;
 
 // ---------------------------------------------------------------------------
 // Feature modules (enhancer, link graph refs, dependency, unified symbol)
 // ---------------------------------------------------------------------------
+pub mod analyzers;
 /// Bridges contract-testing findings into Wendao knowledge ingestion payloads.
 pub mod contract_feedback;
-pub mod dep_indexer_py;
 pub mod dependency_indexer;
 pub mod enhancer;
-pub mod enhancer_py;
 pub mod gateway;
 pub mod ingress;
 pub mod link_graph_refs;
-mod link_graph_refs_py;
 pub mod skill_vfs;
 pub mod unified_symbol;
-pub mod unified_symbol_py;
 /// High-level search router for integrating multiple backends.
 pub mod zhenfa_router;
 
 // ---------------------------------------------------------------------------
 // Public re-exports (crate API)
 // ---------------------------------------------------------------------------
-pub use contract_feedback::WendaoContractFeedbackAdapter;
-pub use dep_indexer_py::{
-    PyDependencyConfig, PyDependencyIndexResult, PyDependencyIndexer, PyDependencyStats,
-    PyExternalDependency, PyExternalSymbol, PySymbolIndex,
+pub use analyzers::{
+    AnalysisContext, DiagnosticRecord, DocCoverageQuery, DocCoverageResult, DocRecord,
+    ExampleRecord, ExampleSearchHit, ExampleSearchQuery, ExampleSearchResult, ModuleRecord,
+    ModuleSearchHit, ModuleSearchQuery, ModuleSearchResult, PluginAnalysisOutput,
+    PluginLinkContext, PluginRegistry, RegisteredRepository, RelationKind, RelationRecord,
+    RepoBacklinkItem, RepoIntelligenceConfig, RepoIntelligenceError, RepoIntelligencePlugin,
+    RepoOverviewQuery, RepoOverviewResult, RepoSourceFile, RepoSourceKind, RepoSymbolKind,
+    RepoSyncDriftState, RepoSyncFreshnessSummary, RepoSyncHealthState, RepoSyncLifecycleSummary,
+    RepoSyncMode, RepoSyncQuery, RepoSyncResult, RepoSyncRevisionSummary, RepoSyncStalenessState,
+    RepoSyncState, RepoSyncStatusSummary, RepositoryAnalysisOutput, RepositoryPluginConfig,
+    RepositoryRecord, RepositoryRef, RepositoryRefreshPolicy, SymbolRecord, SymbolSearchHit,
+    SymbolSearchQuery, SymbolSearchResult, analyze_repository_from_config,
+    analyze_repository_from_config_with_registry, bootstrap_builtin_registry, build_doc_coverage,
+    build_example_search, build_module_search, build_repo_overview, build_symbol_search,
+    doc_coverage_from_config, doc_coverage_from_config_with_registry, example_search_from_config,
+    example_search_from_config_with_registry, load_registered_repository,
+    load_repo_intelligence_config, module_search_from_config,
+    module_search_from_config_with_registry, repo_overview_from_config,
+    repo_overview_from_config_with_registry, repo_sync_from_config, symbol_search_from_config,
+    symbol_search_from_config_with_registry,
 };
+pub use contract_feedback::WendaoContractFeedbackAdapter;
 pub use dependency_indexer::{
     ConfigExternalDependency, DependencyBuildConfig, DependencyConfig, DependencyIndexResult,
     DependencyIndexer, DependencyStats, ExternalSymbol, SymbolIndex, SymbolKind,
@@ -108,10 +126,6 @@ pub use enhancer::{
     EnhancedNote, EntityRefData, InferredRelation, NoteFrontmatter, NoteInput, RefStatsData,
     WendaoResourceLinkTarget, WendaoResourceRegistry, classify_skill_reference, enhance_note,
     enhance_notes_batch, infer_relations, parse_frontmatter,
-};
-pub use enhancer_py::{
-    PyEnhancedNote, PyInferredRelation, PyNoteFrontmatter, link_graph_enhance_note,
-    link_graph_enhance_notes_batch, link_graph_parse_frontmatter,
 };
 pub use entity::{
     Entity, EntitySearchQuery, EntityType, GraphStats, MultiHopOptions, Relation, RelationType,
@@ -168,19 +182,15 @@ pub use link_graph::{
     valkey_suggested_link_recent_latest, valkey_suggested_link_recent_latest_with_valkey,
     valkey_suggested_link_recent_with_valkey,
 };
-pub use link_graph_py::{
-    PyLinkGraphEngine, link_graph_stats_cache_del, link_graph_stats_cache_get,
-    link_graph_stats_cache_set,
-};
 pub use link_graph_refs::{
     LinkGraphEntityRef, LinkGraphRefStats, count_entity_refs, extract_entity_refs,
     extract_entity_refs_batch, find_notes_referencing_entity, get_ref_stats, is_valid_entity_ref,
     parse_entity_ref,
 };
-pub use link_graph_refs_py::{
-    PyLinkGraphEntityRef, PyLinkGraphRefStats, link_graph_count_refs,
-    link_graph_extract_entity_refs, link_graph_find_referencing_notes, link_graph_get_ref_stats,
-    link_graph_is_valid_ref, link_graph_parse_entity_ref,
+pub use search::{
+    FuzzyMatch, FuzzyMatcher, FuzzyScore, FuzzySearchOptions, LexicalMatcher, SearchDocument,
+    SearchDocumentFields, SearchDocumentIndex, TantivyDocumentMatch, TantivyMatcher, edit_distance,
+    levenshtein_distance, normalized_score, passes_prefix_requirement, shared_prefix_len,
 };
 pub use skill_vfs::{
     ATTR_JOURNAL_CARRYOVER, ATTR_TIMER_REMINDED, ATTR_TIMER_SCHEDULED, AssetRequest,
@@ -198,7 +208,6 @@ pub use sync::{
 };
 pub use types::{KnowledgeCategory, KnowledgeEntry, KnowledgeSearchQuery, KnowledgeStats};
 pub use unified_symbol::{SymbolSource, UnifiedIndexStats, UnifiedSymbol, UnifiedSymbolIndex};
-pub use unified_symbol_py::{PyUnifiedIndexStats, PyUnifiedSymbol, PyUnifiedSymbolIndex};
 
 #[cfg(feature = "zhenfa-router")]
 pub use zhenfa_router::WendaoZhenfaRouter;
@@ -206,22 +215,3 @@ pub use zhenfa_router::WendaoZhenfaRouter;
 pub use zhenfa_router::execute_search;
 /// Execute a search via the router using raw RPC parameters.
 pub use zhenfa_router::search_from_rpc_params;
-
-// Re-export PyO3 types for convenience
-pub use graph_py::{
-    PyEntity, PyEntityType, PyKnowledgeGraph, PyQueryIntent, PyRelation, PySkillDoc,
-    extract_query_intent, invalidate_kg_cache, load_kg_from_valkey_cached,
-};
-pub use knowledge_py::{PyKnowledgeCategory, PyKnowledgeEntry, create_knowledge_entry};
-pub use storage_py::PyKnowledgeStorage;
-pub use sync_py::{PySyncEngine, PySyncResult, compute_hash};
-
-// ---------------------------------------------------------------------------
-// Python module registration
-// ---------------------------------------------------------------------------
-
-/// Python module definition — delegates to domain-specific binding modules.
-#[pymodule]
-fn _xiuxian_wendao(py: Python, m: &Bound<PyModule>) -> PyResult<()> {
-    python_module::register(py, m)
-}

@@ -1,0 +1,365 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/integration/../support/repo_intelligence.rs
+assertion_line: 37
+expression: value
+---
+{
+  "analysis": {
+    "diagnostics": [
+      {
+        "line": 1,
+        "message": "Modelica analysis is conservative and currently based on package layout plus lightweight declaration scanning.",
+        "path": "package.mo",
+        "repo_id": "modelica-demo",
+        "severity": "info"
+      }
+    ],
+    "docs": [
+      {
+        "doc_id": "repo:modelica-demo:doc:Controllers/PI.mo#annotation.documentation",
+        "format": "modelica_annotation",
+        "path": "Controllers/PI.mo#annotation.documentation",
+        "repo_id": "modelica-demo",
+        "title": "PI documentation"
+      },
+      {
+        "doc_id": "repo:modelica-demo:doc:Controllers/UsersGuide/Tutorial/FirstSteps.mo",
+        "format": "modelica_users_guide_tutorial",
+        "path": "Controllers/UsersGuide/Tutorial/FirstSteps.mo",
+        "repo_id": "modelica-demo",
+        "title": "FirstSteps"
+      },
+      {
+        "doc_id": "repo:modelica-demo:doc:Controllers/UsersGuide/Tutorial/FirstSteps.mo#annotation.documentation",
+        "format": "modelica_users_guide_tutorial_annotation",
+        "path": "Controllers/UsersGuide/Tutorial/FirstSteps.mo#annotation.documentation",
+        "repo_id": "modelica-demo",
+        "title": "FirstSteps documentation"
+      },
+      {
+        "doc_id": "repo:modelica-demo:doc:Controllers/UsersGuide/package.mo",
+        "format": "modelica_users_guide_page",
+        "path": "Controllers/UsersGuide/package.mo",
+        "repo_id": "modelica-demo",
+        "title": "UsersGuide"
+      },
+      {
+        "doc_id": "repo:modelica-demo:doc:package.mo#annotation.documentation",
+        "format": "modelica_annotation",
+        "path": "package.mo#annotation.documentation",
+        "repo_id": "modelica-demo",
+        "title": "package documentation"
+      },
+      {
+        "doc_id": "repo:modelica-demo:doc:README.md",
+        "format": "md",
+        "path": "README.md",
+        "repo_id": "modelica-demo",
+        "title": "README"
+      }
+    ],
+    "examples": [
+      {
+        "example_id": "repo:modelica-demo:example:Controllers/Examples/Step.mo",
+        "path": "Controllers/Examples/Step.mo",
+        "repo_id": "modelica-demo",
+        "summary": null,
+        "title": "Step"
+      }
+    ],
+    "modules": [
+      {
+        "module_id": "repo:modelica-demo:module:DemoLib",
+        "path": "package.mo",
+        "qualified_name": "DemoLib",
+        "repo_id": "modelica-demo"
+      },
+      {
+        "module_id": "repo:modelica-demo:module:DemoLib.Controllers",
+        "path": "Controllers/package.mo",
+        "qualified_name": "DemoLib.Controllers",
+        "repo_id": "modelica-demo"
+      },
+      {
+        "module_id": "repo:modelica-demo:module:DemoLib.Controllers.UsersGuide",
+        "path": "Controllers/UsersGuide/package.mo",
+        "qualified_name": "DemoLib.Controllers.UsersGuide",
+        "repo_id": "modelica-demo"
+      }
+    ],
+    "relations": [
+      {
+        "kind": "contains",
+        "repo_id": "modelica-demo",
+        "source_id": "repo:modelica-demo:module:DemoLib",
+        "target_id": "repo:modelica-demo:module:DemoLib.Controllers"
+      },
+      {
+        "kind": "contains",
+        "repo_id": "modelica-demo",
+        "source_id": "repo:modelica-demo:module:DemoLib.Controllers",
+        "target_id": "repo:modelica-demo:module:DemoLib.Controllers.UsersGuide"
+      },
+      {
+        "kind": "declares",
+        "repo_id": "modelica-demo",
+        "source_id": "repo:modelica-demo:module:DemoLib.Controllers",
+        "target_id": "repo:modelica-demo:symbol:DemoLib.Controllers.PI"
+      },
+      {
+        "kind": "exampleof",
+        "repo_id": "modelica-demo",
+        "source_id": "repo:modelica-demo:example:Controllers/Examples/Step.mo",
+        "target_id": "repo:modelica-demo:module:DemoLib.Controllers"
+      },
+      {
+        "kind": "documents",
+        "repo_id": "modelica-demo",
+        "source_id": "repo:modelica-demo:doc:Controllers/PI.mo#annotation.documentation",
+        "target_id": "repo:modelica-demo:symbol:DemoLib.Controllers.PI"
+      },
+      {
+        "kind": "documents",
+        "repo_id": "modelica-demo",
+        "source_id": "repo:modelica-demo:doc:Controllers/UsersGuide/Tutorial/FirstSteps.mo",
+        "target_id": "repo:modelica-demo:module:DemoLib.Controllers"
+      },
+      {
+        "kind": "documents",
+        "repo_id": "modelica-demo",
+        "source_id": "repo:modelica-demo:doc:Controllers/UsersGuide/Tutorial/FirstSteps.mo",
+        "target_id": "repo:modelica-demo:module:DemoLib.Controllers.UsersGuide"
+      },
+      {
+        "kind": "documents",
+        "repo_id": "modelica-demo",
+        "source_id": "repo:modelica-demo:doc:Controllers/UsersGuide/Tutorial/FirstSteps.mo#annotation.documentation",
+        "target_id": "repo:modelica-demo:module:DemoLib.Controllers"
+      },
+      {
+        "kind": "documents",
+        "repo_id": "modelica-demo",
+        "source_id": "repo:modelica-demo:doc:Controllers/UsersGuide/Tutorial/FirstSteps.mo#annotation.documentation",
+        "target_id": "repo:modelica-demo:module:DemoLib.Controllers.UsersGuide"
+      },
+      {
+        "kind": "documents",
+        "repo_id": "modelica-demo",
+        "source_id": "repo:modelica-demo:doc:Controllers/UsersGuide/package.mo",
+        "target_id": "repo:modelica-demo:module:DemoLib.Controllers"
+      },
+      {
+        "kind": "documents",
+        "repo_id": "modelica-demo",
+        "source_id": "repo:modelica-demo:doc:Controllers/UsersGuide/package.mo",
+        "target_id": "repo:modelica-demo:module:DemoLib.Controllers.UsersGuide"
+      },
+      {
+        "kind": "documents",
+        "repo_id": "modelica-demo",
+        "source_id": "repo:modelica-demo:doc:package.mo#annotation.documentation",
+        "target_id": "repo:modelica-demo:module:DemoLib"
+      },
+      {
+        "kind": "documents",
+        "repo_id": "modelica-demo",
+        "source_id": "repo:modelica-demo:doc:README.md",
+        "target_id": "repo:modelica-demo:module:DemoLib"
+      }
+    ],
+    "repository": {
+      "dependencies": [],
+      "name": "DemoLib",
+      "path": "[repo-root]",
+      "repo_id": "modelica-demo",
+      "revision": "634360fe424f0bb3f632a10ac40904edac31b2ad",
+      "url": "https://example.invalid/xiuxian-wendao/demolib.git",
+      "uuid": null,
+      "version": null
+    },
+    "symbols": [
+      {
+        "kind": "type",
+        "line_end": 2,
+        "line_start": 2,
+        "module_id": "repo:modelica-demo:module:DemoLib.Controllers",
+        "name": "PI",
+        "path": "Controllers/PI.mo",
+        "qualified_name": "DemoLib.Controllers.PI",
+        "repo_id": "modelica-demo",
+        "signature": "model PI",
+        "symbol_id": "repo:modelica-demo:symbol:DemoLib.Controllers.PI",
+        "verification_state": "verified"
+      }
+    ]
+  },
+  "example_search": {
+    "example_hits": [
+      {
+        "example": {
+          "example_id": "repo:modelica-demo:example:Controllers/Examples/Step.mo",
+          "path": "Controllers/Examples/Step.mo",
+          "repo_id": "modelica-demo",
+          "summary": null,
+          "title": "Step"
+        },
+        "hierarchical_uri": "wendao://repo/msl/modelica-demo/examples/Controllers:Examples:Step.mo/repo:modelica-demo:example:Controllers/Examples/Step.mo",
+        "hierarchy": [
+          "Controllers",
+          "Examples",
+          "Step.mo"
+        ],
+        "projection_page_ids": [
+          "repo:modelica-demo:projection:howto:doc:repo:modelica-demo:doc:Controllers/UsersGuide/package.mo",
+          "repo:modelica-demo:projection:howto:example:repo:modelica-demo:example:Controllers/Examples/Step.mo",
+          "repo:modelica-demo:projection:reference:module:repo:modelica-demo:module:DemoLib.Controllers",
+          "repo:modelica-demo:projection:tutorial:doc:repo:modelica-demo:doc:Controllers/UsersGuide/Tutorial/FirstSteps.mo",
+          "repo:modelica-demo:projection:tutorial:doc:repo:modelica-demo:doc:Controllers/UsersGuide/Tutorial/FirstSteps.mo#annotation.documentation"
+        ],
+        "rank": 1,
+        "saliency_score": 0.1,
+        "score": 1.0
+      }
+    ],
+    "examples": [
+      {
+        "example_id": "repo:modelica-demo:example:Controllers/Examples/Step.mo",
+        "path": "Controllers/Examples/Step.mo",
+        "repo_id": "modelica-demo",
+        "summary": null,
+        "title": "Step"
+      }
+    ],
+    "repo_id": "modelica-demo"
+  },
+  "module_search": {
+    "module_hits": [
+      {
+        "hierarchical_uri": "wendao://repo/msl/modelica-demo/api/Controllers:package.mo/repo:modelica-demo:module:DemoLib.Controllers",
+        "hierarchy": [
+          "Controllers",
+          "package.mo"
+        ],
+        "implicit_backlink_items": [
+          {
+            "id": "repo:modelica-demo:doc:Controllers/UsersGuide/Tutorial/FirstSteps.mo",
+            "kind": "documents",
+            "path": "Controllers/UsersGuide/Tutorial/FirstSteps.mo",
+            "title": "FirstSteps"
+          },
+          {
+            "id": "repo:modelica-demo:doc:Controllers/UsersGuide/Tutorial/FirstSteps.mo#annotation.documentation",
+            "kind": "documents",
+            "path": "Controllers/UsersGuide/Tutorial/FirstSteps.mo#annotation.documentation",
+            "title": "FirstSteps documentation"
+          },
+          {
+            "id": "repo:modelica-demo:doc:Controllers/UsersGuide/package.mo",
+            "kind": "documents",
+            "path": "Controllers/UsersGuide/package.mo",
+            "title": "UsersGuide"
+          }
+        ],
+        "implicit_backlinks": [
+          "repo:modelica-demo:doc:Controllers/UsersGuide/Tutorial/FirstSteps.mo",
+          "repo:modelica-demo:doc:Controllers/UsersGuide/Tutorial/FirstSteps.mo#annotation.documentation",
+          "repo:modelica-demo:doc:Controllers/UsersGuide/package.mo"
+        ],
+        "module": {
+          "module_id": "repo:modelica-demo:module:DemoLib.Controllers",
+          "path": "Controllers/package.mo",
+          "qualified_name": "DemoLib.Controllers",
+          "repo_id": "modelica-demo"
+        },
+        "projection_page_ids": [
+          "repo:modelica-demo:projection:howto:doc:repo:modelica-demo:doc:Controllers/UsersGuide/package.mo",
+          "repo:modelica-demo:projection:howto:example:repo:modelica-demo:example:Controllers/Examples/Step.mo",
+          "repo:modelica-demo:projection:reference:module:repo:modelica-demo:module:DemoLib.Controllers",
+          "repo:modelica-demo:projection:reference:symbol:repo:modelica-demo:symbol:DemoLib.Controllers.PI",
+          "repo:modelica-demo:projection:tutorial:doc:repo:modelica-demo:doc:Controllers/UsersGuide/Tutorial/FirstSteps.mo",
+          "repo:modelica-demo:projection:tutorial:doc:repo:modelica-demo:doc:Controllers/UsersGuide/Tutorial/FirstSteps.mo#annotation.documentation"
+        ],
+        "rank": 1,
+        "saliency_score": 1.0,
+        "score": 0.5
+      },
+      {
+        "hierarchical_uri": "wendao://repo/msl/modelica-demo/api/Controllers:UsersGuide:package.mo/repo:modelica-demo:module:DemoLib.Controllers.UsersGuide",
+        "hierarchy": [
+          "Controllers",
+          "UsersGuide",
+          "package.mo"
+        ],
+        "implicit_backlink_items": [
+          {
+            "id": "repo:modelica-demo:doc:Controllers/UsersGuide/Tutorial/FirstSteps.mo",
+            "kind": "documents",
+            "path": "Controllers/UsersGuide/Tutorial/FirstSteps.mo",
+            "title": "FirstSteps"
+          },
+          {
+            "id": "repo:modelica-demo:doc:Controllers/UsersGuide/Tutorial/FirstSteps.mo#annotation.documentation",
+            "kind": "documents",
+            "path": "Controllers/UsersGuide/Tutorial/FirstSteps.mo#annotation.documentation",
+            "title": "FirstSteps documentation"
+          },
+          {
+            "id": "repo:modelica-demo:doc:Controllers/UsersGuide/package.mo",
+            "kind": "documents",
+            "path": "Controllers/UsersGuide/package.mo",
+            "title": "UsersGuide"
+          }
+        ],
+        "implicit_backlinks": [
+          "repo:modelica-demo:doc:Controllers/UsersGuide/Tutorial/FirstSteps.mo",
+          "repo:modelica-demo:doc:Controllers/UsersGuide/Tutorial/FirstSteps.mo#annotation.documentation",
+          "repo:modelica-demo:doc:Controllers/UsersGuide/package.mo"
+        ],
+        "module": {
+          "module_id": "repo:modelica-demo:module:DemoLib.Controllers.UsersGuide",
+          "path": "Controllers/UsersGuide/package.mo",
+          "qualified_name": "DemoLib.Controllers.UsersGuide",
+          "repo_id": "modelica-demo"
+        },
+        "projection_page_ids": [
+          "repo:modelica-demo:projection:howto:doc:repo:modelica-demo:doc:Controllers/UsersGuide/package.mo",
+          "repo:modelica-demo:projection:reference:module:repo:modelica-demo:module:DemoLib.Controllers.UsersGuide",
+          "repo:modelica-demo:projection:tutorial:doc:repo:modelica-demo:doc:Controllers/UsersGuide/Tutorial/FirstSteps.mo",
+          "repo:modelica-demo:projection:tutorial:doc:repo:modelica-demo:doc:Controllers/UsersGuide/Tutorial/FirstSteps.mo#annotation.documentation"
+        ],
+        "rank": 2,
+        "saliency_score": 0.4,
+        "score": 0.5
+      }
+    ],
+    "modules": [
+      {
+        "module_id": "repo:modelica-demo:module:DemoLib.Controllers",
+        "path": "Controllers/package.mo",
+        "qualified_name": "DemoLib.Controllers",
+        "repo_id": "modelica-demo"
+      },
+      {
+        "module_id": "repo:modelica-demo:module:DemoLib.Controllers.UsersGuide",
+        "path": "Controllers/UsersGuide/package.mo",
+        "qualified_name": "DemoLib.Controllers.UsersGuide",
+        "repo_id": "modelica-demo"
+      }
+    ],
+    "repo_id": "modelica-demo"
+  },
+  "overview": {
+    "display_name": "DemoLib",
+    "doc_count": 6,
+    "example_count": 1,
+    "hierarchical_uri": "repo://modelica-demo",
+    "hierarchy": [
+      "repo",
+      "modelica-demo"
+    ],
+    "module_count": 3,
+    "repo_id": "modelica-demo",
+    "revision": "634360fe424f0bb3f632a10ac40904edac31b2ad",
+    "symbol_count": 1
+  }
+}

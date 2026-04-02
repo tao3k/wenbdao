@@ -1,0 +1,34 @@
+---
+source: packages/rust/crates/xiuxian-wendao/src/gateway/studio/test_support.rs
+assertion_line: 19
+expression: value
+---
+{
+  "repo_id": "import-snapshot",
+  "imports": [
+    {
+      "repo_id": "import-snapshot",
+      "module_id": "repo:import-snapshot:module:ProjectionPkg",
+      "import_name": "solve",
+      "target_package": "SciMLBase",
+      "source_module": "BaseModelica",
+      "kind": "symbol",
+      "resolved_id": "repo:import-snapshot:symbol:ProjectionPkg.solve"
+    }
+  ],
+  "import_hits": [
+    {
+      "import": {
+        "repo_id": "import-snapshot",
+        "module_id": "repo:import-snapshot:module:ProjectionPkg",
+        "import_name": "solve",
+        "target_package": "SciMLBase",
+        "source_module": "BaseModelica",
+        "kind": "symbol",
+        "resolved_id": "repo:import-snapshot:symbol:ProjectionPkg.solve"
+      },
+      "score": 1.0,
+      "rank": 1
+    }
+  ]
+}

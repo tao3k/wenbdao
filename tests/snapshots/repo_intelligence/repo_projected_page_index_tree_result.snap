@@ -1,0 +1,90 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/integration/../support/repo_intelligence.rs
+assertion_line: 22
+expression: value
+---
+{
+  "repo_id": "projection-sample",
+  "tree": {
+    "doc_id": "reference/solve-41db401ae519",
+    "kind": "reference",
+    "page_id": "repo:projection-sample:projection:reference:doc:repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:solve",
+    "path": "reference/solve-41db401ae519.md",
+    "repo_id": "projection-sample",
+    "root_count": 2,
+    "roots": [
+      {
+        "children": [],
+        "is_thinned": false,
+        "level": 1,
+        "line_range": [
+          1,
+          7
+        ],
+        "node_id": "reference/solve-41db401ae519#solve",
+        "structural_path": [
+          "solve"
+        ],
+        "summary": ":PROPERTIES:\n:TYPE: PROJECTED_PAGE\n:KIND: reference\n:FORMATS: julia_docstring\n:END:",
+        "text": ":PROPERTIES:\n:TYPE: PROJECTED_PAGE\n:KIND: reference\n:FORMATS: julia_docstring\n:END:",
+        "title": "solve",
+        "token_count": 8
+      },
+      {
+        "children": [
+          {
+            "children": [],
+            "is_thinned": false,
+            "level": 2,
+            "line_range": [
+              18,
+              24
+            ],
+            "node_id": "reference/solve-41db401ae519#anchors",
+            "structural_path": [
+              "Overview",
+              "Anchors"
+            ],
+            "summary": ":ID: anchors\n:PATHS: src/ProjectionPkg",
+            "text": ":ID: anchors\n:PATHS: src/ProjectionPkg.jl\n\nSymbols:\n- `ProjectionPkg.solve` (src/ProjectionPkg.jl)",
+            "title": "Anchors",
+            "token_count": 8
+          },
+          {
+            "children": [],
+            "is_thinned": false,
+            "level": 2,
+            "line_range": [
+              25,
+              30
+            ],
+            "node_id": "reference/solve-41db401ae519#sources",
+            "structural_path": [
+              "Overview",
+              "Documentation"
+            ],
+            "summary": ":ID: sources\n:PATHS: src/ProjectionPkg",
+            "text": ":ID: sources\n:PATHS: src/ProjectionPkg.jl#symbol:solve\n\nDocumentation:\n- `solve` (src/ProjectionPkg.jl#symbol:solve)",
+            "title": "Documentation",
+            "token_count": 8
+          }
+        ],
+        "is_thinned": false,
+        "level": 1,
+        "line_range": [
+          8,
+          17
+        ],
+        "node_id": "reference/solve-41db401ae519#overview",
+        "structural_path": [
+          "Overview"
+        ],
+        "summary": ":ID: overview\n:PATHS: src/ProjectionPkg",
+        "text": ":ID: overview\n:PATHS: src/ProjectionPkg.jl#symbol:solve\n\nProjected reference page for `solve`.\nFormat hints:\n- `julia_docstring`\nSource paths:\n- `src/ProjectionPkg.jl#symbol:solve`",
+        "title": "Overview",
+        "token_count": 17
+      }
+    ],
+    "title": "solve"
+  }
+}

@@ -1,0 +1,65 @@
+---
+source: packages/rust/crates/xiuxian-wendao/tests/integration/../support/repo_intelligence.rs
+assertion_line: 22
+expression: value
+---
+{
+  "page": {
+    "doc_id": "repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:solve",
+    "doc_ids": [
+      "repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:solve"
+    ],
+    "example_ids": [],
+    "format_hints": [
+      "julia_docstring"
+    ],
+    "keywords": [
+      "julia_docstring",
+      "repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:solve",
+      "solve",
+      "src/ProjectionPkg.jl#symbol:solve"
+    ],
+    "kind": "reference",
+    "module_ids": [],
+    "page_id": "repo:projection-sample:projection:reference:doc:repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:solve",
+    "path": "src/ProjectionPkg.jl#symbol:solve",
+    "paths": [
+      "src/ProjectionPkg.jl#symbol:solve"
+    ],
+    "repo_id": "projection-sample",
+    "sections": [
+      {
+        "body": "Projected reference page for `solve`.\nFormat hints:\n- `julia_docstring`\nSource paths:\n- `src/ProjectionPkg.jl#symbol:solve`",
+        "level": 1,
+        "paths": [
+          "src/ProjectionPkg.jl#symbol:solve"
+        ],
+        "section_id": "repo:projection-sample:projection:reference:doc:repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:solve#overview",
+        "title": "Overview"
+      },
+      {
+        "body": "Symbols:\n- `ProjectionPkg.solve` (src/ProjectionPkg.jl)",
+        "level": 2,
+        "paths": [
+          "src/ProjectionPkg.jl"
+        ],
+        "section_id": "repo:projection-sample:projection:reference:doc:repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:solve#anchors",
+        "title": "Anchors"
+      },
+      {
+        "body": "Documentation:\n- `solve` (src/ProjectionPkg.jl#symbol:solve)",
+        "level": 2,
+        "paths": [
+          "src/ProjectionPkg.jl#symbol:solve"
+        ],
+        "section_id": "repo:projection-sample:projection:reference:doc:repo:projection-sample:doc:src/ProjectionPkg.jl#symbol:solve#sources",
+        "title": "Documentation"
+      }
+    ],
+    "symbol_ids": [
+      "repo:projection-sample:symbol:ProjectionPkg.solve"
+    ],
+    "title": "solve"
+  },
+  "repo_id": "projection-sample"
+}
